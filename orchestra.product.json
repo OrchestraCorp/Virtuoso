@@ -1,0 +1,138 @@
+{
+  "schemaVersion": 1,
+  "product": {
+    "id": "virtuoso",
+    "version": "0.1.0",
+    "desktop": {
+      "appId": "com.orchestracorp.virtuoso",
+      "dataDirectory": "Virtuoso",
+      "updateNamespace": "virtuoso"
+    },
+    "pwa": {
+      "id": "/virtuoso",
+      "scope": "/virtuoso/"
+    }
+  },
+  "bundles": [
+    {
+      "id": "base",
+      "state": "planned",
+      "capabilities": [
+        "stage.connection",
+        "stage.identity",
+        "stage.api",
+        "agent.sessions",
+        "agent.background-tasks",
+        "ui.work-center",
+        "ui.task-board",
+        "execution.cloud",
+        "office.remote",
+        "computer-use.remote"
+      ]
+    },
+    {
+      "id": "web",
+      "state": "planned",
+      "capabilities": [
+        "host.web",
+        "host.pwa"
+      ]
+    },
+    {
+      "id": "desktop",
+      "state": "planned",
+      "capabilities": [
+        "host.desktop",
+        "execution.local",
+        "office.local",
+        "computer-use.local",
+        "filesystem.local"
+      ]
+    }
+  ],
+  "profiles": [
+    {
+      "id": "web",
+      "state": "planned",
+      "bundles": [
+        "base",
+        "web"
+      ]
+    },
+    {
+      "id": "desktop",
+      "state": "planned",
+      "bundles": [
+        "base",
+        "desktop"
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "id": "cloud-linux-x64",
+      "profile": "web",
+      "os": "linux",
+      "arch": "x64",
+      "artifact": "oci-image",
+      "state": "planned"
+    },
+    {
+      "id": "cloud-linux-arm64",
+      "profile": "web",
+      "os": "linux",
+      "arch": "arm64",
+      "artifact": "oci-image",
+      "state": "planned"
+    },
+    {
+      "id": "desktop-macos-arm64",
+      "profile": "desktop",
+      "os": "darwin",
+      "arch": "arm64",
+      "artifact": "desktop-installer",
+      "state": "planned"
+    },
+    {
+      "id": "desktop-macos-x64",
+      "profile": "desktop",
+      "os": "darwin",
+      "arch": "x64",
+      "artifact": "desktop-installer",
+      "state": "planned"
+    },
+    {
+      "id": "desktop-windows-x64",
+      "profile": "desktop",
+      "os": "win32",
+      "arch": "x64",
+      "artifact": "desktop-installer",
+      "state": "planned"
+    }
+  ],
+  "runtimeConfig": {
+    "allowedFields": [
+      "stageServerUrl",
+      "proxyUrl",
+      "workspacePath"
+    ]
+  },
+  "compatibility": {
+    "stageApi": null,
+    "clientProtocol": null,
+    "storageFormat": null
+  },
+  "enterprisePolicy": {
+    "state": "planned"
+  },
+  "buildAdapter": {
+    "state": "planned"
+  },
+  "release": {
+    "channels": [
+      "beta",
+      "stable"
+    ],
+    "promotion": "same-artifact"
+  }
+}

@@ -216,7 +216,10 @@
     "verify-official-bundle-catalog": "tsx scripts/gen-official-bundle-catalog.ts --check",
     "gen-provider-data": "tsx packages/llm/llm-pi-ai/scripts/gen-provider-data.ts",
     "verify-provider-data": "tsx packages/llm/llm-pi-ai/scripts/gen-provider-data.ts --check",
-    "verify-product-use": "tsx scripts/verify-product-use.ts"
+    "verify-product-use": "tsx scripts/verify-product-use.ts",
+    "product:check": "node --experimental-strip-types scripts/orchestra/product-plan.ts check",
+    "product:plan": "node --experimental-strip-types scripts/orchestra/product-plan.ts plan",
+    "product:test": "node --experimental-strip-types --test scripts/orchestra/product-contract.test.mjs"
   },
   "devDependencies": {
     "@deepseek-ai/dsh-hooks-claude-code": "workspace:*",

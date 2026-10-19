@@ -1,0 +1,42 @@
+name: Product design rules
+
+on:
+  pull_request:
+    paths:
+      - 'orchestra.product.json'
+      - 'ORCHESTRA_UPSTREAM.json'
+      - 'scripts/orchestra/**'
+      - 'package.json'
+      - '.github/workflows/product-design.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'orchestra.product.json'
+      - 'ORCHESTRA_UPSTREAM.json'
+      - 'scripts/orchestra/**'
+      - 'package.json'
+      - '.github/workflows/product-design.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  design:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '24.13.0'
+          package-manager-cache: false
+      - name: Validate product design
+        run: node --experimental-strip-types scripts/orchestra/product-plan.ts check
+      - name: Test design rules
+        run: node --experimental-strip-types --test scripts/orchestra/product-contract.test.mjs
+      - name: Inspect web design plan
+        run: node --experimental-strip-types scripts/orchestra/product-plan.ts plan --profile web --target cloud-linux-x64 --channel beta
+      - name: Inspect desktop design plan
+        run: node --experimental-strip-types scripts/orchestra/product-plan.ts plan --profile desktop --target desktop-windows-x64 --channel beta
