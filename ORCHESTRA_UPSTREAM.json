@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "repository": "https://github.com/deepseek-ai/deepseek-harness.git",
+  "source_branch": "master",
+  "source_commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+  "source_tree": "f127f0f96a815eac4dea336a2ae0d9cd0f2aa82d",
+  "source_version": "0.2.1-rc.2",
+  "baseline_ref": "refs/tags/orchestra-upstream/2026-10-19",
+  "acquired_via": "Independent local Git clone of the verified upstream baseline; no shared Git object store",
+  "verification": {
+    "source_tree_matches_upstream": true,
+    "commit_object_matches_upstream": true
+  },
+  "history": {
+    "mode": "shallow",
+    "boundary_commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
+    "parent_objects_available": false
+  },
+  "date": "2026-10-19",
+  "product": "Virtuoso",
+  "maintenance_mode": "independent_product_fork"
+}
