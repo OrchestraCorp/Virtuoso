@@ -22,6 +22,6 @@ Virtuoso 提供员工与 Agent 的工作体验，不保存公司的第二套任�
 
 当前已从核验过的上游提交建立独立本地 fork，拥有自己的 `.git`、`main`、上游引用和基线标签。原有职责与权限设计保存在本文件；根目录 `README.md` 与 `README.zh.md` 保留上游说明。
 
-当前完整源码仍是上游运行时基线，产品 profile、界面适配和企业连接器尚未实现，依赖安装与应用运行尚未验证。企业 GitLab `origin` 待项目组统一建立后配置。
+当前完整源码仍是上游运行时基线，产品 profile、界面适配和企业连接器尚未实现，依赖安装与应用运行尚未验证。产品 `origin` 指向 GitHub 私有仓库 `OrchestraCorp/Virtuoso`。
 
 [仓库维护说明](ORCHESTRA_FORK.md)记录来源、历史状态和独立同步规则。
