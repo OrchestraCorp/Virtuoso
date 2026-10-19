@@ -12,9 +12,11 @@
     "commit_object_matches_upstream": true
   },
   "history": {
-    "mode": "shallow",
-    "boundary_commit": "687f282e8625c6b8d11ff58211a90524be2e4317",
-    "parent_objects_available": false
+    "mode": "full",
+    "boundary_commit": null,
+    "parent_objects_available": true,
+    "upstream_tags_imported": false,
+    "completed_on": "2026-10-19"
   },
   "date": "2026-10-19",
   "product": "Virtuoso",
