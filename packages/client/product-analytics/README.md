@@ -25,7 +25,7 @@ Desktop mounts Analytics and its required Telemetry exporter. The `product-analy
 
 The renderer and Electron subscribe to the Host policy through the existing authenticated stream, including reconnection. Electron also reads the initial policy before native launch reporting. Welcome obtains the current policy over IPC. The Host checks its current volatile configuration again at event intake and after environment and identity lookup. `DSH_PRODUCT_ANALYTICS_OTLP_URL` overrides the export destination for isolated collectors. The [exporter](../../host/product-telemetry-otel/README.md) owns batching, retry, and shutdown delivery.
 
-Every product event carries available `device_id`, `user_id`, and `app_version` plus the static fields below. Identity reuses the existing login record without creating an identifier and is read for each event through `deepseekAccount.getDeviceIdentity()`. Static environment collection is independent of identity lookup. No separate environment event is emitted; API keys, account tokens, prompts, responses, hostnames, and machine UUIDs are excluded.
+Every product event carries available `device_id`, `user_id`, and `app_version` plus the static fields below. When an account provider is explicitly mounted, identity reuses its existing login record without creating an identifier and is read for each event through `deepseekAccount.getDeviceIdentity()`; without that provider, reporting omits identity fields. Static environment collection is independent of identity lookup. No separate environment event is emitted; API keys, account tokens, prompts, responses, hostnames, and machine UUIDs are excluded.
 
 | Field | Meaning and source |
 |---|---|

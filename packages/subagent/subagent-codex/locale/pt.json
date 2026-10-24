@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Subagente do Codex",
+    "description": "Delega uma tarefa ao Codex usando sua autenticação e configurações nativas."
+  }
+}

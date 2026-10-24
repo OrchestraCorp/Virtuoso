@@ -1,0 +1,32 @@
+- region "Model connections":
+  - heading "Model connections" [level=2]
+  - button "Refresh connections"
+  - paragraph: Connect a model API, choose its models, and set the default for new conversations.
+  - status: Connection settings saved.
+  - list:
+    - listitem:
+      - strong: Browser API
+      - code: https://llm-api.x-aio.com/v1
+      - text: Enabled · API key configured
+      - button "Edit"
+      - button "Delete"
+      - text: Discovery protocol
+      - combobox "Discovery protocol Browser API":
+        - option "OpenAI Chat Completions" [selected]
+        - option "OpenAI Responses"
+        - option "Anthropic Messages"
+      - button "Fetch models"
+      - list:
+        - listitem:
+          - text: GPT 6.1 Sol
+          - code: gpt-6.1-sol
+          - text: OpenAI Responses
+          - button "Test model gpt-6.1-sol": Test model
+          - button "Set as default gpt-6.1-sol" [disabled]: Default
+        - listitem:
+          - text: Private model
+          - code: private-browser-model
+          - text: OpenAI Chat Completions
+          - button "Test model private-browser-model": Test model
+          - button "Set as default private-browser-model": Set as default
+  - button "Add connection"

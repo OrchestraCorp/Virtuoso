@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Percepción del tiempo",
+    "description": "Indica al modelo en cada paso la hora actual, la zona horaria del navegador y el tiempo transcurrido desde el mensaje anterior."
+  }
+}

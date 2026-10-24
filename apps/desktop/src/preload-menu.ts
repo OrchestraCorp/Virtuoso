@@ -13,17 +13,32 @@ export function installWindowsMenu(): { update(): void; dispose(): void } {
   const shadow = host.attachShadow({ mode: 'open' })
   const style = document.createElement('style')
   style.textContent = `
-    :host { position: fixed; top: 0; left: var(--dsh-windows-menu-start, 48px); z-index: 1100;
+    :host { position: fixed; top: 0; left: var(--dsh-windows-menu-start, calc(20px + var(--dsw-control-height-compact, 36px))); z-index: 1100;
       height: var(--dsh-windows-titlebar-height); display: flex; align-items: center;
       font-family: var(--dsw-font-family); -webkit-app-region: no-drag; }
     [role=menubar] { display: flex; gap: 2px; }
-    button { height: 28px; padding: 0 10px; border: 0; border-radius: 6px;
-      background: transparent; color: var(--dsw-alias-label-secondary);
+    button { box-sizing: border-box; height: var(--dsw-control-height-compact, 36px);
+      min-width: var(--dsw-control-height-compact, 36px); padding: 0 10px;
+      border: 1px solid transparent; border-radius: var(--dsw-control-radius, 999px); corner-shape: round;
+      background: transparent; color: var(--dsw-alias-label-secondary, inherit);
       font: inherit; font-size: 14px; cursor: default; }
-    button:hover, button[aria-expanded=true] { background: var(--dsw-alias-interactive-bg-hover);
-      color: var(--dsw-alias-label-primary); }
-    button:focus-visible { outline: 2px solid var(--dsw-alias-state-business-primary); outline-offset: -2px; }
+    @media (hover: hover) {
+      button:hover { background: var(--dsw-alias-interactive-bg-hover, rgb(127 127 127 / 12%));
+        color: var(--dsw-alias-label-primary, inherit); }
+    }
+    button[aria-expanded=true] { background: var(--dsw-alias-interactive-bg-hover, rgb(127 127 127 / 12%));
+      color: var(--dsw-alias-label-primary, inherit); }
+    button:focus-visible { outline: var(--dsw-focus-ring-width, 2px) solid var(--dsw-focus-ring-color, var(--dsw-control-focus-ring, currentColor));
+      outline-offset: -2px; }
     :host-context(html[data-input-modality='pointer']) button:focus-visible { outline-color: transparent; }
+    @media (pointer: coarse) {
+      button { min-width: 44px; min-height: 44px; }
+    }
+    @media (forced-colors: active) {
+      button { border-color: ButtonText; background: Canvas; color: ButtonText; }
+      button[aria-expanded=true] { background: Highlight; color: HighlightText; }
+      button:focus-visible { outline-color: Highlight; }
+    }
   `
   const bar = document.createElement('div')
   bar.setAttribute('role', 'menubar')

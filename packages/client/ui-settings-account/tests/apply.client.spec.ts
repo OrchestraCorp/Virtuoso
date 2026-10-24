@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-/** Account operations in the shipped client composition, in Desktop and in a plain browser. */
+/** Account operations with the optional account plugin added to the shipped client composition. */
 import { afterEach, beforeEach, expect, vi } from 'vitest'
 import { ok } from '@deepseek-ai/dsh-remote-mock'
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
-import { createClientTest, type TestClient, webApp } from '@deepseek-ai/dsh-client-test-runtime/src/assembly/index.ts'
+import { ClientRoster, createClientTest, type TestClient, webApp } from '@deepseek-ai/dsh-client-test-runtime/src/assembly/index.ts'
 import type {
   AccountBonusBatch, AccountBonusOrderId, AccountDetails, AccountUserId, AccountView, SignInAttemptId,
 } from '@deepseek-ai/dsh-deepseek-account/types'
@@ -22,8 +22,16 @@ import type { AccountPlatformHostInjected } from '../src/client/AccountPlatformH
 import { AccountQuotaNotice } from '../src/client/AccountQuotaNotice.tsx'
 import type { AccountQuotaNoticeInjected } from '../src/client/AccountQuotaNotice.tsx'
 
-const it = createClientTest({ roster: webApp })
 const SELF = '@deepseek-ai/dsh-client-ui-settings-account'
+const accountRoster = ClientRoster.of([...webApp.rows, {
+  name: SELF,
+  inject: [
+    '@deepseek-ai/dsh-api-remotes', '@deepseek-ai/dsh-client-locale', '@deepseek-ai/dsh-client-ui-chat',
+    '@deepseek-ai/dsh-client-ui-layout', '@deepseek-ai/dsh-client-ui-settings', '@deepseek-ai/dsh-client-ui-theme',
+  ],
+  immediately: false,
+}])
+const it = createClientTest({ roster: accountRoster })
 const view: AccountView = {
   status: 'signed-out', attempt: null,
   links: { usageUrl: 'https://platform.deepseek.com/usage', topUpUrl: 'https://platform.deepseek.com/top_up' },

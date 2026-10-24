@@ -98,10 +98,12 @@ describe('WorkspaceBrowser.module.css list', () => {
 
   it('keeps the compact fade, overflow control, search field, and row heights', () => {
     expect(declarations('.fade')?.get('height')).toBe('24px')
-    expect(declarations('.sessionOverflowButton')?.get('height')).toBe('28px')
-    expect(declarations('.searchExpanded')?.get('height')).toBe('30px')
-    expect(rowDeclarations('.projectRow')?.get('height')).toBe('34px')
-    expect(rowDeclarations('.sessionRow')?.get('height')).toBe('32px')
+    expect(declarations('.sessionOverflowButton')?.get('height')).toBe('var(--dsw-control-height-compact)')
+    expect(declarations('.searchExpanded')?.get('height')).toBe('var(--dsw-control-height-compact)')
+    expect(rowDeclarations('.projectRow')?.get('height')).toBe('var(--dsw-control-height-compact)')
+    expect(rowDeclarations('.sessionRow')?.get('height')).toBe('var(--dsw-control-height-compact)')
+    expect(rowDeclarations('.iconButton')?.get('width')).toBe('var(--dsw-control-height-compact)')
+    expect(rowDeclarations('.iconButton')?.get('height')).toBe('var(--dsw-control-height-compact)')
     // One leading status cell for every session row, grouped or flat: the cell
     // hosts either the row's status dot or the leading seat, and it reserves its
     // own box, so the title's one shared margin below needs no per-view override.
@@ -110,7 +112,7 @@ describe('WorkspaceBrowser.module.css list', () => {
     expect(rowDeclarations('.sessionRow .title')?.get('margin')).toBe('0 6px 0 4px')
     expect(rowDeclarations('.searchResultRow')?.get('min-height')).toBe('48px')
     expect(rowDeclarations('.sessionRow.selected')?.get('background'))
-      .toBe('var(--dsw-alias-interactive-bg-hover)')
+      .toBe('var(--dsw-control-selected-fill)')
   })
 
   it('marquees a clipped session title on row hover', () => {
@@ -131,7 +133,7 @@ describe('WorkspaceBrowser.module.css list', () => {
 
   it('pins both rail controls to the shared left anchor during the column slide', () => {
     expect(declarations('.rail .sectionHeader')?.get('justify-content')).toBe('flex-start')
-    expect(declarations('.rail .iconButton')?.get('width')).toBe('36px')
-    expect(declarations('.rail .search')?.get('width')).toBe('36px')
+    expect(declarations('.rail .iconButton')?.get('width')).toBe('var(--dsw-control-height-compact)')
+    expect(declarations('.rail .search')?.get('width')).toBe('var(--dsw-control-height-compact)')
   })
 })

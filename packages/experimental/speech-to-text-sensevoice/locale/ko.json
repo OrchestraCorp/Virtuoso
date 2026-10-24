@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "로컬 SenseVoice 인식",
+    "description": "SenseVoice를 사용해 녹음을 로컬에서 텍스트로 전사합니다."
+  }
+}

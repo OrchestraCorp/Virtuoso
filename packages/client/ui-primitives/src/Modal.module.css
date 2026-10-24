@@ -26,7 +26,7 @@
   position: absolute;
   inset: 0;
   background: var(--dsw-alias-bg-mask-1);
-  animation: modalEnter var(--ds-transition-duration) var(--ds-ease-in-out);
+  animation: modalEnter var(--dsw-motion-enter) var(--ds-ease-in-out);
 }
 
 /* Dialogs use the prominent elevation on the secondary layer. */
@@ -41,10 +41,10 @@
   padding: 0 0 24px;
   overflow: hidden;
   border: 0;
-  border-radius: var(--dsw-radius-panel);
-  background: var(--dsw-alias-bg-layer-2);
+  border-radius: var(--dsw-control-panel-radius);
+  background: var(--dsw-content-panel-fill);
   box-shadow: var(--dsw-elevation-prominent);
-  animation: modalEnter var(--ds-transition-duration) var(--ds-ease-in-out);
+  animation: modalEnter var(--dsw-motion-enter) var(--ds-ease-in-out);
 }
 
 @keyframes modalEnter {
@@ -85,21 +85,34 @@
 }
 
 .close {
+  box-sizing: border-box;
   flex: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   cursor: pointer;
   color: var(--dsw-alias-label-secondary);
 }
 
-.close:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .close:hover {
+    background: var(--dsw-control-hover-fill);
+  }
+}
+
+.close:active {
+  box-shadow: var(--dsw-control-pressed-shadow);
+}
+
+.close:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 /* Description and body share the 332px content column (24px side pads). */
@@ -126,4 +139,13 @@
   justify-content: flex-end;
   gap: 8px;
   padding: 0 24px;
+}
+
+@media (prefers-contrast: more) {
+  .dialog { border: 1px solid var(--dsw-control-edge); }
+}
+
+@media (forced-colors: active) {
+  .dialog { border: 1px solid CanvasText; }
+  .close { border: 1px solid ButtonText; }
 }

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Vérification automatique des autorisations",
+    "description": "Ajouter un mode d'autorisation Vérification automatique qui utilise le modèle pour évaluer l'autorisation avant chaque appel d'outil."
+  }
+}

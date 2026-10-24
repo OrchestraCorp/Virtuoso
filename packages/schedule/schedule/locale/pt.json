@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Agendamento de tarefas",
+    "description": "Armazena tarefas automatizadas, executa cada uma na sessão original no horário previsto e fornece ao agente ferramentas para gerenciá-las."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Árboles de trabajo de Git",
+    "description": "Permite al agente crear una rama y un árbol de trabajo nuevos de Git y continuar allí."
+  }
+}

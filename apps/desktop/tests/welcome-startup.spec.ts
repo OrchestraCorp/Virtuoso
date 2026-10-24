@@ -1,11 +1,9 @@
 vi.mock('../src/web-document.ts', () => ({ authenticateWebHost: async () => 'test-cookie', serveWebDocument: vi.fn(), forwardWebRequest: vi.fn() }))
-/** Welcome startup uses the Host before transitioning to the workspace. */
+/** Desktop startup opens the workspace without a provider-account or credential gate. */
 
 import { afterEach, expect, it, vi } from 'vitest'
 import type { BrowserWindowConstructorOptions } from 'electron'
 import type { DesktopLocale } from '../src/locale.ts'
-import type { AccountView } from '@deepseek-ai/dsh-deepseek-account/types'
-import type { WelcomeOperations } from '../src/welcome-api.ts'
 import { DESKTOP_IPC } from '../src/ipc.ts'
 
 const state = vi.hoisted(() => ({
@@ -14,11 +12,6 @@ const state = vi.hoisted(() => ({
   beforeRead: vi.fn(async () => {}),
   beforeWelcome: vi.fn(async () => {}),
   copy: vi.fn(),
-  expiryListener: undefined as (() => void) | undefined,
-  accountListener: undefined as ((value: AccountView) => void) | undefined,
-  accountState: vi.fn<() => Promise<AccountView>>().mockResolvedValue({
-    status: 'signed-out', attempt: null, links: { usageUrl: '', topUpUrl: '' },
-  }),
   quit: vi.fn(),
   startHost: vi.fn().mockResolvedValue({ url: 'http://127.0.0.1:3080/?token=test', injections: [] }),
   stopHost: vi.fn<() => Promise<void>>().mockResolvedValue(undefined),
@@ -37,7 +30,6 @@ const state = vi.hoisted(() => ({
   contents: undefined as { mainFrame: { url: string } } | undefined,
   windowOptions: undefined as BrowserWindowConstructorOptions | undefined,
   menu: vi.fn(),
-  operations: undefined as WelcomeOperations | undefined,
   nativeTheme: { themeSource: 'system', shouldUseDarkColors: false },
 }))
 
@@ -122,23 +114,10 @@ vi.mock('../src/host-process.ts', () => ({
     }
   },
 }))
-vi.mock('../src/welcome-backend.ts', () => ({
-  connectDesktopWelcome: async () => ({
+vi.mock('../src/shell-backend.ts', () => ({
+  connectDesktopShell: async () => ({
     analyticsEnabled: async () => false,
-    readLocalePreference: async () => state.preference,
-    read: async () => {
-      await state.beforeRead()
-      return { loggedIn: false, hasApiKey: state.hasApiKey, writable: true, localePreference: state.preference }
-    },
-    save: async () => ({ ok: true }),
-    account: {
-      watch: (listener: (value: AccountView) => void, _failed: () => void, expired: () => void) => {
-        state.accountListener = listener
-        state.expiryListener = expired
-        return () => {}
-      },
-      state: state.accountState,
-    },
+    readLocalePreference: async () => { await state.beforeRead(); return state.preference },
   }),
 }))
 vi.mock('node:fs/promises', async importOriginal => ({
@@ -154,15 +133,7 @@ vi.mock('../src/update-coordinator.ts', () => ({ DesktopUpdateCoordinator: class
   check = vi.fn(async () => this.state)
   dispose = vi.fn()
 } }))
-vi.mock('../src/welcome-window.ts', () => ({
-  openWelcomeWindow: async (locale: DesktopLocale, operations: WelcomeOperations) => {
-    state.welcomeLocale = locale
-    state.operations = operations
-    await state.beforeWelcome()
-    return { once: vi.fn(), close: state.closeWelcome, isDestroyed: () => false,
-      show: vi.fn(), focus: vi.fn(), webContents: { send: vi.fn() } }
-  },
-}))
+vi.mock('../src/welcome-window.ts', () => ({ openWelcomeWindow: state.beforeWelcome }))
 
 afterEach(() => {
   vi.clearAllTimers()
@@ -172,13 +143,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-it.each([false, true])('starts welcome onboarding without carrying update focus into login or skip (Windows update=%s)', async (updated) => {
+it.each([false, true])('opens the workspace without account login or an API key (Windows update=%s)', async (updated) => {
   vi.resetModules()
   vi.clearAllMocks()
   state.preference = 'zh'
   state.hasApiKey = false
-  state.operations = undefined
-  state.accountState.mockResolvedValue({ status: 'signed-out', attempt: null, links: { usageUrl: '', topUpUrl: '' } })
   if (updated) vi.stubGlobal('process', { ...process, platform: 'win32', argv: ['desktop', '--updated'] })
   vi.useFakeTimers()
   vi.stubEnv('DSH_CLIENT_VERSION', '1.2.3')
@@ -192,9 +161,7 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
   vi.stubEnv('DSH_DESKTOP_MANDATORY_UPDATE_CONFIG', undefined)
   vi.stubEnv('DSH_DESKTOP_UPDATE_JOURNAL_DIR', undefined)
   const reading = Promise.withResolvers<undefined>()
-  const loading = Promise.withResolvers<undefined>()
   state.beforeRead.mockReturnValueOnce(reading.promise)
-  state.beforeWelcome.mockReturnValueOnce(loading.promise)
   const activate = () => {
     state.appListeners.get('second-instance')!()
     state.appListeners.get('open-url')!({ preventDefault: vi.fn() }, 'dsh://open')
@@ -204,52 +171,24 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
   try {
     activate()
     expect(state.showWorkspace).not.toHaveBeenCalled()
-    reading.resolve(undefined)
-    await vi.waitFor(() => { expect(state.beforeWelcome).toHaveBeenCalledOnce() })
-    activate()
-    expect(state.showWorkspace).not.toHaveBeenCalled()
   } finally {
     reading.resolve(undefined)
-    loading.resolve(undefined)
   }
-  await vi.waitFor(() => { expect(state.operations).toBeDefined() })
+  await vi.waitFor(() => { expect(state.showWorkspace).toHaveBeenCalledOnce() })
   expect(state.startHost).toHaveBeenCalledOnce()
   expect(state.loadWorkspace).toHaveBeenCalledExactlyOnceWith('dsh-app://app/')
-  expect(state.showWorkspace).not.toHaveBeenCalled()
-  state.loadWorkspace.mockClear()
-  expect(state.welcomeLocale).toMatchObject({ id: 'zh-CN' })
-  expect(await state.operations!.takeNotice()).toBeUndefined()
+  expect(state.beforeWelcome).not.toHaveBeenCalled()
   expect(state.dialogLocale!().id).toBe('zh-CN')
-  const attemptId = 'login' as NonNullable<AccountView['attempt']>['id']
-  const account: AccountView = { status: 'signed-out', links: { usageUrl: '', topUpUrl: '' },
-    attempt: { id: attemptId, phase: 'waiting-browser', authorizeUrl: 'https://example.test/login' } }
-  state.accountState.mockResolvedValue(account)
-  await state.operations!.copySignInLink(attemptId)
-  expect(state.copy).toHaveBeenCalledExactlyOnceWith('https://example.test/login?theme=light')
-  state.nativeTheme.shouldUseDarkColors = true
-  await state.operations!.copySignInLink(attemptId)
-  expect(state.copy).toHaveBeenLastCalledWith('https://example.test/login?theme=dark')
-  state.nativeTheme.shouldUseDarkColors = false
-  await expect(state.operations!.copySignInLink('stale' as typeof attemptId)).rejects.toThrow('login link is unavailable')
-  state.accountState.mockResolvedValue({ ...account, attempt: { id: attemptId, phase: 'expired' } })
-  await expect(state.operations!.copySignInLink(attemptId)).rejects.toThrow('login link is unavailable')
-  expect(state.copy).toHaveBeenCalledTimes(2)
-  await state.operations!.skip()
-  expect(state.loadWorkspace).not.toHaveBeenCalled()
-  expect(state.showWorkspace).toHaveBeenCalledOnce()
-  expect(state.moveTopWorkspace).not.toHaveBeenCalled()
-  expect(state.focusWorkspace).not.toHaveBeenCalled()
-  expect(state.windowOptions).toMatchObject({
-    ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 16, y: 18 }, vibrancy: 'sidebar' } : {}),
-    webPreferences: { contextIsolation: true, sandbox: true },
-  })
-  expect(state.closeWelcome).toHaveBeenCalledOnce()
+  expect(state.windowOptions).toMatchObject({ webPreferences: { contextIsolation: true, sandbox: true } })
+  expect([...state.handlers.keys(), ...state.listeners.keys()].some(channel =>
+    channel.startsWith('dsh-welcome:') || channel.startsWith('dsh-platform:') || channel.includes('onboarding'),
+  )).toBe(false)
   activate()
   expect(state.showWorkspace).toHaveBeenCalledTimes(3)
   expect(state.quit).not.toHaveBeenCalled()
   expect(state.stopHost).not.toHaveBeenCalled()
-  const contents = state.contents as { mainFrame: { url: string }; send: ReturnType<typeof vi.fn> }
-  expect(contents.send).toHaveBeenCalledWith(DESKTOP_IPC.enterWorkspace)
+
+  const contents = state.contents!
   const event = { sender: contents, senderFrame: contents.mainFrame }
   const bootstrap = state.handlers.get(DESKTOP_IPC.localeBootstrap)!
   expect(await bootstrap(event)).toEqual({ languages: ['en-US'], preference: 'zh' })
@@ -263,40 +202,4 @@ it.each([false, true])('starts welcome onboarding without carrying update focus 
   changed(event, 'en')
   expect(state.dialogLocale!().id).toBe('en')
   expect(state.menu).toHaveBeenCalledTimes(initialMenus + 1)
-  expect(await bootstrap(event)).toEqual({ languages: ['en-US'], preference: 'en' })
-  const welcomeCount = state.beforeWelcome.mock.calls.length
-  state.hasApiKey = true
-  state.accountListener!({ ...account, status: 'credential-stored', attempt: null })
-  state.accountListener!({ ...account, status: 'signed-out', attempt: null })
-  state.expiryListener!()
-  await vi.advanceTimersByTimeAsync(0)
-  expect(state.beforeWelcome).toHaveBeenCalledTimes(welcomeCount)
-  expect(await state.operations!.takeNotice()).toBeUndefined()
-  state.hasApiKey = false
-  state.accountListener!({ ...account, status: 'credential-stored', attempt: null })
-  state.accountListener!({ ...account, status: 'signed-out', attempt: null })
-  state.expiryListener!()
-  await vi.waitFor(() => { expect(state.beforeWelcome).toHaveBeenCalledTimes(welcomeCount + 1) })
-  expect(await state.operations!.takeNotice()).toBe('session-expired')
-  expect(await state.operations!.takeNotice()).toBeUndefined()
-  state.accountListener!({ ...account, status: 'signed-out', attempt: null })
-  await vi.advanceTimersByTimeAsync(0)
-  expect(await state.operations!.takeNotice()).toBeUndefined()
-  state.accountListener!({ ...account, status: 'credential-stored', attempt: null })
-  state.accountListener!({ ...account, status: 'signed-out', attempt: null })
-  await vi.advanceTimersByTimeAsync(0)
-  expect(await state.operations!.takeNotice()).toBeUndefined()
-  state.showWorkspace.mockClear()
-  state.focusWorkspace.mockClear()
-  vi.stubEnv('DSH_DESKTOP_OPEN_DEVTOOLS', '1')
-  state.accountListener!({ ...account, status: 'credential-stored', attempt: { id: attemptId, phase: 'succeeded' } })
-  await vi.waitFor(() => { expect(state.showInactiveWorkspace).toHaveBeenCalledOnce() })
-  expect(state.showWorkspace).not.toHaveBeenCalled()
-  expect(state.focusWorkspace).not.toHaveBeenCalled()
-  expect(state.moveTopWorkspace).not.toHaveBeenCalled()
-  expect(state.openDevTools).not.toHaveBeenCalled()
-  state.appListeners.get('open-url')!({ preventDefault: vi.fn() }, 'dsh://open')
-  expect(state.showWorkspace).toHaveBeenCalledOnce()
-  expect(state.focusWorkspace).toHaveBeenCalledOnce()
-
 })

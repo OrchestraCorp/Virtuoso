@@ -2,6 +2,7 @@
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import type {} from '@deepseek-ai/dsh-model-connections'
 import { chromium, type Browser, type Page } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import {
@@ -19,7 +20,8 @@ describe.skipIf(webSnapshotMode() === 'record')('web e2e: DeepSeek Messages sett
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true })
+    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true,
+      extraOverlayPath: fileURLToPath(new URL('./fixtures/credential-onboarding.overlay.yml', import.meta.url)) })
     browser = await chromium.launch()
     page = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: ZH_BROWSER_LOCALE })
     tripwire = watchConsole(page)
@@ -39,7 +41,6 @@ describe.skipIf(webSnapshotMode() === 'record')('web e2e: DeepSeek Messages sett
     expect(scaffold.ctx.llm.listProviders()).toContainEqual({ id: 'deepseek-official', name: 'DeepSeek' })
     expect(scaffold.ctx.llm.listProviders().filter(provider => provider.id === 'deepseek-official')).toHaveLength(1)
     expect(scaffold.ctx.agentDefaultModel.currentSelection()).toEqual({ provider: 'deepseek-official', model: 'deepseek-flash' })
-    await page.getByRole('dialog', { name: '开始使用', exact: true }).getByRole('button', { name: '添加 API Key', exact: true }).click()
     const onboarding = page.getByRole('dialog', { name: '添加一个 API Key 开始使用' })
     await onboarding.getByLabel('API 密钥', { exact: true }).fill('sk-messages-onboarding')
     await onboarding.getByRole('button', { name: '保存并继续' }).click()
@@ -109,8 +110,11 @@ describe.skipIf(webSnapshotMode() === 'record')('web e2e: DeepSeek Messages sett
     await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection()).toMatchObject({
       provider: 'deepseek-official', model: 'deepseek-flash',
     })
+    await expect.poll(async () => (await scaffold.ctx.modelConnections.list()).defaultSelection).toEqual({
+      provider: 'deepseek-official', model: 'deepseek-flash', reasoningEffort: 'high',
+    })
     const settings = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
-    expect(settings).toContain('provider: deepseek-official')
+    expect(settings).not.toContain('id: agent-default-model')
     expect(tripwire.pageErrors).toEqual([])
   }, 60_000)
 })

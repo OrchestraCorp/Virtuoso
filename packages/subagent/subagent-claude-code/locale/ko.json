@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Claude Code 하위 에이전트",
+    "description": "Claude Code의 기본 인증 및 설정을 사용하여 작업 하나를 위임합니다."
+  }
+}

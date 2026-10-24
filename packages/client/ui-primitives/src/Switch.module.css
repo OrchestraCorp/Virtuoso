@@ -47,3 +47,52 @@
 .switch[aria-checked='true'] .thumb {
   transform: translateX(16px);
 }
+
+@media (pointer: coarse) {
+  .switch,
+  .switch[aria-checked='true'] {
+    width: 44px;
+    height: 44px;
+    padding: 14px 6px;
+    background: transparent;
+  }
+
+  .switch::before {
+    content: '';
+    position: absolute;
+    inset: 12px 4px;
+    border-radius: inherit;
+    corner-shape: round;
+    background: var(--dsw-alias-border-l3);
+  }
+
+  .switch[aria-checked='true']::before { background: var(--dsw-alias-brand-primary); }
+  .thumb { position: relative; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thumb { transition: none; }
+}
+
+@media (forced-colors: active) {
+  .switch {
+    forced-color-adjust: none;
+    border: 1px solid ButtonText;
+    padding: 1px;
+    background: Canvas;
+  }
+
+  .switch[aria-checked='true'] { background: Highlight; border-color: Highlight; }
+  .switch[aria-checked='false'] .thumb { background: ButtonText; }
+  .switch[aria-checked='true'] .thumb { background: HighlightText; }
+  .switch:disabled { opacity: 1; border-color: GrayText; }
+  .switch:disabled .thumb { background: GrayText; }
+}
+
+@media (forced-colors: active) and (pointer: coarse) {
+  .switch,
+  .switch[aria-checked='true'] { border: 0; padding: 14px 6px; background: transparent; }
+  .switch::before { border: 1px solid ButtonText; background: Canvas; }
+  .switch[aria-checked='true']::before { border-color: Highlight; background: Highlight; }
+  .switch:disabled::before { border-color: GrayText; }
+}

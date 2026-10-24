@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Controle do navegador (Playwright)",
+    "description": "Permite que o modelo navegue e opere páginas da web pelo Playwright MCP em uma instância aberta do Chromium."
+  }
+}

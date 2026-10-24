@@ -6,8 +6,9 @@ import { expect, it, onTestFinished, vi } from 'vitest'
 import type { AccountView } from '@deepseek-ai/dsh-deepseek-account/types'
 import type {} from '@deepseek-ai/dsh-deepseek-account'
 import {
-  captureStableAria, compareOrRefreshGolden, launchWebScaffold, webSnapshotMode,
+  captureStableAria, compareOrRefreshGolden, webSnapshotMode,
 } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 import { openSettings, ZH_BROWSER_LOCALE } from './support.ts'
 
 const EXPECTED = fileURLToPath(new URL('./expected/settings-appearance', import.meta.url))
@@ -24,7 +25,7 @@ function appearance(element: Locator) {
 }
 
 it('shares settings card materials and control sizes in both palettes', async () => {
-  const scaffold = await launchWebScaffold({})
+  const scaffold = await launchOptionalAccountScaffold({})
   onTestFinished(() => scaffold.close())
   await scaffold.ctx.settings.mutate('ui-settings-account', [
     { op: 'set', path: ['step'], value: 'done' },
@@ -65,8 +66,8 @@ it('shares settings card materials and control sizes in both palettes', async ()
     await dialog.getByRole('button', { name: label, exact: true }).click()
     await expect.poll(() => page.evaluate(() => document.body.hasAttribute('data-ds-dark-theme'))).toBe(palette === 'dark')
     const selector = await appearance(dialog.getByRole('button', { name: '工作区内修改', exact: true }))
-    expect(selector.radius).toBe('12px')
-    expect((await appearance(dialog)).radius).toBe('28px')
+    expect(selector.radius).toBe('16px')
+    expect((await appearance(dialog)).radius).toBe('20px')
 
     await dialog.getByRole('button', { name: '账号与余额', exact: true }).click()
     const section = dialog.getByRole('region', { name: '账号与余额', exact: true })
@@ -81,8 +82,8 @@ it('shares settings card materials and control sizes in both palettes', async ()
     expect(balance).toMatchObject(material)
     const usage = await appearance(section.getByRole('link', { name: '查询用量', exact: true }))
     const topUp = await appearance(section.getByRole('link', { name: '充值', exact: true }))
-    expect(usage).toMatchObject({ radius: '12px', height: 36 })
-    expect(topUp).toMatchObject({ radius: '12px', height: 36 })
+    expect(usage).toMatchObject({ radius: '999px', height: 44 })
+    expect(topUp).toMatchObject({ radius: '999px', height: 44 })
     await compareOrRefreshGolden(join(EXPECTED, 'account.expected.md'),
       await captureStableAria(page, 'section[aria-label="账号与余额"]', scaffold.workspaceCwd), webSnapshotMode())
 
@@ -101,9 +102,9 @@ it('shares settings card materials and control sizes in both palettes', async ()
     await dialog.getByRole('button', { name: '添加模型提供商', exact: true }).click()
     const field = dialog.getByLabel('提供商', { exact: true })
     await field.waitFor()
-    expect(await appearance(field)).toMatchObject({ radius: '12px', height: 32 })
+    expect(await appearance(field)).toMatchObject({ radius: '16px', height: 44 })
     const save = await appearance(dialog.getByRole('button', { name: '保存', exact: true }))
-    expect(save).toMatchObject({ radius: '12px', height: 36 })
+    expect(save).toMatchObject({ radius: '999px', height: 36 })
     await compareOrRefreshGolden(join(EXPECTED, `${palette}.expected.md`),
       JSON.stringify({ card: material, selector, usage, topUp, save }, null, 2), webSnapshotMode())
     await dialog.getByRole('button', { name: '取消', exact: true }).click()

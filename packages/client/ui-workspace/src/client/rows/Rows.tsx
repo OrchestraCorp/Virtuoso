@@ -11,7 +11,7 @@
  * session and workspace hover cards are suppressed while a menu is open.
  */
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { RefObject } from 'react'
+import type { KeyboardEvent, RefObject } from 'react'
 import clsx from 'clsx'
 import type { PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import {
@@ -29,6 +29,14 @@ import css from './Rows.module.css'
 
 /** The standard locale seat, prop-passed from the browser root. */
 type RowTranslate = WorkspaceBrowserProps['t']
+
+function activateTreeRow(event: KeyboardEvent<HTMLDivElement>, activate: () => void): void {
+  if (event.target !== event.currentTarget || event.nativeEvent.isComposing || event.repeat
+    || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return
+  if (event.key !== 'Enter' && event.key !== ' ') return
+  event.preventDefault()
+  activate()
+}
 
 /**
  * Child-seat renderer threaded from the browser root: the row's action lists,
@@ -244,8 +252,10 @@ export function ProjectRowItem({ group, containsCurrentDescendant = false, onTog
       className={clsx(css.projectRow, menuOpen && css.menuOpen)}
       data-row-key={`workspace:${group.key}`}
       role="treeitem"
+      tabIndex={0}
       aria-expanded={row.expanded}
       onClick={onToggle}
+      onKeyDown={(event) => { activateTreeRow(event, onToggle) }}
       draggable={drag !== undefined}
       onDragStart={drag === undefined
         ? undefined
@@ -483,9 +493,11 @@ export function SearchResultItem({ result, currentId, onOpen, onUnarchive, t }: 
     <div
       className={clsx(css.searchResultRow, selected && css.selected, result.archived && css.archived)}
       role="treeitem"
+      tabIndex={0}
       aria-selected={selected}
       aria-description={result.archived ? t('toast.archivedNotOpenable') : undefined}
       onClick={() => { onOpen(result.id) }}
+      onKeyDown={(event) => { activateTreeRow(event, () => { onOpen(result.id) }) }}
     >
       <span className={css.searchResultHeading}>
         {/* Like session rows, the leading slot owns every row marker; on
@@ -523,7 +535,7 @@ export function SearchResultItem({ result, currentId, onOpen, onUnarchive, t }: 
 }
 
 /**
- * One top-level 32px session row: leading 16px cell (status dot, or the
+ * One top-level session row at the shared control height: leading 16px cell (status dot, or the
  * leading seat while the row's primary state is idle), title, relative time or
  * compact pending label, and the row actions menu. A row that owns a state dot
  * keeps that cell and renders no seat, so an ambient automation mark never
@@ -594,9 +606,11 @@ export function SessionNodeItem({
         drag?.marker === 'before' && css.dropBefore, drag?.marker === 'after' && css.dropAfter,
       )}
       role="treeitem"
+      tabIndex={0}
       aria-selected={selected}
       aria-description={row.archived ? t('toast.archivedNotOpenable') : undefined}
       onClick={() => { onOpen(node.id) }}
+      onKeyDown={(event) => { activateTreeRow(event, () => { onOpen(node.id) }) }}
       onPointerEnter={marquee.enter}
       onPointerLeave={marquee.leave}
       draggable={draggable}

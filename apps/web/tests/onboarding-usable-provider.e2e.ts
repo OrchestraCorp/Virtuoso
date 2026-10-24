@@ -28,7 +28,8 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
   let tripwire: ReturnType<typeof watchConsole>
 
   beforeAll(async () => {
-    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true })
+    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true,
+      extraOverlayPath: fileURLToPath(new URL('./fixtures/credential-onboarding.overlay.yml', import.meta.url)) })
     browser = await chromium.launch()
     // The scenario asserts the shipped Chinese copy, so the browser asks for it.
     page = await browser.newPage({ viewport: { width: 1440, height: 960 }, locale: ZH_BROWSER_LOCALE })
@@ -44,9 +45,6 @@ describe.skipIf(MODE === 'record')('web e2e: another usable provider ends first-
 
   it('closes the setup card without discarding the add card beside it', async () => {
     onTestFailed(() => saveFailureShot(page, 'web-e2e-onboarding-setup-card-cancel'))
-    const signIn = page.getByRole('dialog', { name: '开始使用', exact: true })
-    await signIn.waitFor({ timeout: 15_000 })
-    await signIn.getByRole('button', { name: '添加 API Key', exact: true }).click()
     const credentialStep = page.getByRole('dialog', { name: CREDENTIAL_STEP })
     await credentialStep.waitFor({ timeout: 15_000 })
     await credentialStep.getByRole('button', { name: '稍后配置' }).click()

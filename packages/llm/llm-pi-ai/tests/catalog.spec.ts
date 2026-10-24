@@ -600,6 +600,31 @@ describe('catalog routes with per-model configuration', () => {
     expect(server.paths).toEqual(['/v1/chat/completions', '/v1/chat/completions'])
   })
 
+  it('retains native transports beside an explicitly repointed catalog model', () => {
+    const catalog = catalogProvider('amazon-bedrock')
+    const [repointed, nativeModel] = getBuiltinModels('amazon-bedrock')
+    if (catalog === undefined || repointed === undefined || nativeModel === undefined) throw new Error('the installed Bedrock catalog needs two models')
+    const direct = new AssistantMessageEventStream()
+    const simple = new AssistantMessageEventStream()
+    const stream = vi.spyOn(catalog, 'stream').mockReturnValue(direct)
+    const streamSimple = vi.spyOn(catalog, 'streamSimple').mockReturnValue(simple)
+    try {
+      const built = resolveProfiles({ 'amazon-bedrock': {
+        models: [{ id: repointed.id, api: 'openai-completions' }, { id: nativeModel.id }],
+      } }).get('amazon-bedrock')?.piProvider
+      const model = built?.getModels().find(model => model.id === nativeModel.id)
+      if (built === undefined || model === undefined) throw new Error('the mixed catalog resolved no native model')
+      const context = normalizeContext({ messages: [] })
+      expect(built.stream(model, context)).toBe(direct)
+      expect(built.streamSimple(model, context)).toBe(simple)
+      expect(stream).toHaveBeenCalledWith(model, context, undefined)
+      expect(streamSimple).toHaveBeenCalledWith(model, context, undefined)
+    } finally {
+      stream.mockRestore()
+      streamSimple.mockRestore()
+    }
+  })
+
   it('keeps each model its own endpoint when the catalog route declares none', () => {
     // `opencode` ships no provider-level endpoint: the address lives on every
     // catalog model, so the route resolves without any configured baseURL.

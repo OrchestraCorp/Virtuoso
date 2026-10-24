@@ -148,10 +148,12 @@ export function AgentPresetSection({
                 {/* Reading the declaration is the one thing this page offers
                   beyond choosing: a broken preset's YAML is also where its
                   diagnostic points, so the viewer stays available for it. */}
-                <button type="button" className={css.iconButton} data-tip={t('view')} aria-label={`${t('view')}: ${display.name}`}
-                  onClick={(event) => { viewTrigger.current = event.currentTarget; void view(row.id) }}>
-                  <IconBrowseOutlineRegular />
-                </button>
+                <Tooltip label={t('view')} portal>
+                  <button type="button" className={css.iconButton} aria-label={`${t('view')}: ${display.name}`}
+                    onClick={(event) => { viewTrigger.current = event.currentTarget; void view(row.id) }}>
+                    <IconBrowseOutlineRegular />
+                  </button>
+                </Tooltip>
               </div>
             </li>
           })}

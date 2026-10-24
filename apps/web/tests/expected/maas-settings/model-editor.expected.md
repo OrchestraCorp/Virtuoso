@@ -1,0 +1,153 @@
+- region "Model connections":
+  - heading "Model connections" [level=2]
+  - button "Refresh connections"
+  - paragraph: Connect a model API, choose its models, and set the default for new conversations.
+  - list:
+    - listitem:
+      - strong: Browser API
+      - code: https://llm-api.x-aio.com/v1
+      - text: Enabled · API key configured
+      - button "Edit" [disabled]
+      - button "Delete" [disabled]
+      - text: Discovery protocol
+      - combobox "Discovery protocol Browser API" [disabled]:
+        - option "OpenAI Chat Completions" [selected]
+        - option "OpenAI Responses"
+        - option "Anthropic Messages"
+      - button "Fetch models" [disabled]
+      - list:
+        - listitem:
+          - text: GPT 6.1 Sol
+          - code: gpt-6.1-sol
+          - text: Anthropic Messages
+          - button "Test model gpt-6.1-sol" [disabled]: Test model
+          - button "Set as default gpt-6.1-sol" [disabled]: Default
+        - listitem:
+          - text: Private model
+          - code: private-browser-model
+          - text: OpenAI Chat Completions
+          - button "Test model private-browser-model" [disabled]: Test model
+          - button "Set as default private-browser-model" [disabled]: Set as default
+  - text: Connection name
+  - textbox "Connection name": Browser API
+  - text: Base URL
+  - textbox "Base URL": https://llm-api.x-aio.com/v1
+  - text: API key
+  - textbox "API key":
+    - /placeholder: Leave blank to use saved credentials
+  - paragraph: The credential provider stores this key. Stored keys are never shown here; leave this field blank to keep an existing key.
+  - text: Enabled
+  - switch "Enabled" [checked]
+  - text: Add a bundled model
+  - combobox "Add a bundled model":
+    - option "Choose a model" [selected]
+    - option "Kimi K2.7 Code · kimi-k2.7-code"
+    - option "GPT 5.6 Terra · gpt-5.6-terra"
+    - option "GPT 5.6 Sol · gpt-5.6-sol"
+    - option "Codex Auto Review · codex-auto-review"
+    - option "Kimi K3 · kimi-k3"
+    - option "GLM 5.3 · glm-5.3"
+    - option "GLM 5.3 Flash · glm-5.3-flash"
+    - option "GPT 6 Astra · gpt-6-astra"
+    - option "DeepSeek V4.1 Flash · deepseek-v4.1-flash"
+    - option "GPT 6 Sol · gpt-6-sol"
+    - option "GPT 6 Luna · gpt-6-luna"
+    - option "GPT 6.1 Sol · gpt-6.1-sol" [disabled]
+  - paragraph: Automatic uses the bundled protocol for a known model ID and Chat Completions for an unknown ID.
+  - paragraph: Declare only inputs and reasoning levels supported by this API. The selected adapter determines their request format; model names do not determine capabilities.
+  - text: Model ID 1
+  - textbox "Model ID 1": gpt-6.1-sol
+  - text: Display name 1
+  - textbox "Display name 1": GPT 6.1 Sol
+  - text: API protocol 1
+  - combobox "API protocol 1":
+    - option "Automatic · OpenAI Responses"
+    - option "OpenAI Chat Completions"
+    - option "OpenAI Responses"
+    - option "Anthropic Messages" [selected]
+  - text: Context window 1
+  - textbox "Context window 1":
+    - /placeholder: Uses the provider default
+    - text: 128K
+  - text: Max output tokens 1
+  - textbox "Max output tokens 1":
+    - /placeholder: Uses the provider default
+    - text: 8K
+  - group "Input types 1":
+    - text: Input types
+    - checkbox "Text" [checked]
+    - text: Text
+    - checkbox "Image" [checked]
+    - text: Image
+  - group "Reasoning levels 1":
+    - text: Reasoning levels
+    - button "About reasoning levels": "?"
+    - switch "Reasoning levels 1" [checked]
+    - combobox "Level 1":
+      - option "off" [selected]
+      - option "minimal"
+      - option "xhigh"
+      - option "max"
+    - textbox "off API value" [disabled]:
+      - /placeholder: Turns reasoning off
+    - button "Delete level off"
+    - combobox "Level 2":
+      - option "minimal"
+      - option "low" [selected]
+      - option "xhigh"
+      - option "max"
+    - textbox "low API value":
+      - /placeholder: low
+      - text: low
+    - button "Delete level low"
+    - combobox "Level 3":
+      - option "minimal"
+      - option "medium" [selected]
+      - option "xhigh"
+      - option "max"
+    - textbox "medium API value":
+      - /placeholder: medium
+      - text: medium
+    - button "Delete level medium"
+    - combobox "Level 4":
+      - option "minimal"
+      - option "high" [selected]
+      - option "xhigh"
+      - option "max"
+    - textbox "high API value":
+      - /placeholder: high
+      - text: provider-high
+    - button "Delete level high"
+    - button "Add level"
+  - paragraph: Anthropic Messages uses DSH’s thinking-budget strategy by default. These levels select a budget; their API values are not sent verbatim as an effort parameter.
+  - button "Delete model 1": Delete model
+  - text: Model ID 2
+  - textbox "Model ID 2": private-browser-model
+  - text: Display name 2
+  - textbox "Display name 2": Private model
+  - text: API protocol 2
+  - combobox "API protocol 2":
+    - option "Automatic · OpenAI Chat Completions"
+    - option "OpenAI Chat Completions" [selected]
+    - option "OpenAI Responses"
+    - option "Anthropic Messages"
+  - text: Context window 2
+  - textbox "Context window 2":
+    - /placeholder: Uses the provider default
+  - text: Max output tokens 2
+  - textbox "Max output tokens 2":
+    - /placeholder: Uses the provider default
+  - group "Input types 2":
+    - text: Input types
+    - checkbox "Text" [checked] [disabled]
+    - text: Text
+    - checkbox "Image"
+    - text: Image
+  - group "Reasoning levels 2":
+    - text: Reasoning levels
+    - button "About reasoning levels": "?"
+    - switch "Reasoning levels 2"
+  - button "Delete model 2": Delete model
+  - button "Add model"
+  - button "Cancel"
+  - button "Save connection"

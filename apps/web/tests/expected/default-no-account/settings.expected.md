@@ -1,0 +1,17 @@
+- dialog "Settings":
+  - navigation:
+    - text: Settings
+    - button "General"
+    - button "Model connections"
+    - button "Models"
+    - button "Built-in plugins"
+    - button "Agent presets"
+  - button "Open configuration file"
+  - button "Close"
+  - region "Model connections":
+    - heading "Model connections" [level=2]
+    - button "Refresh connections"
+    - paragraph: Connect a model API, choose its models, and set the default for new conversations.
+    - paragraph: No model API is connected. Add a connection to get started.
+    - list
+    - button "Add connection"

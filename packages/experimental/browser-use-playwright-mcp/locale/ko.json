@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "브라우저 조작(Playwright)",
+    "description": "실행한 Chromium에서 Playwright MCP를 통해 모델이 웹 페이지를 탐색하고 조작합니다."
+  }
+}

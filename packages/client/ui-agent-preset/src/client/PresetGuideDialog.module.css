@@ -41,11 +41,11 @@
 }
 
 .guideClose {
-  width: 32px;
-  height: 32px;
-  min-height: 32px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
+  min-height: var(--dsw-control-height-compact);
   padding: 0;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
   color: var(--dsw-alias-label-tertiary);
 }
 

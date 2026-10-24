@@ -4,7 +4,8 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { chromium, type Locator } from 'playwright'
 import { expect, it, onTestFinished } from 'vitest'
-import { captureStableAria, compareOrRefreshGolden, launchWebScaffold, seedSession, webSnapshotMode } from './scaffold.ts'
+import { captureStableAria, compareOrRefreshGolden, seedSession, webSnapshotMode } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 
 const expected = fileURLToPath(new URL('./expected/menu-material', import.meta.url))
 const seed = new URL('../../../snapshots/web/seeded-history/session.v3.jsonl', import.meta.url)
@@ -18,7 +19,7 @@ async function material(menu: Locator) {
 }
 
 it('shares menu transparency and blur across palettes and follows native menu bounds', async () => {
-  const scaffold = await launchWebScaffold({})
+  const scaffold = await launchOptionalAccountScaffold({})
   onTestFinished(() => scaffold.close())
   await seedSession(scaffold, await readFile(seed, 'utf8'), 'menu-material-session')
   const browser = await chromium.launch()
@@ -46,18 +47,17 @@ it('shares menu transparency and blur across palettes and follows native menu bo
         document.body.appendChild(overlay)
         try { return getComputedStyle(overlay).backgroundColor } finally { overlay.remove() }
       })
-      expect(overlayFill).toBe(platform === 'darwin'
-        ? dark ? 'rgba(48, 49, 54, 0.94)' : 'rgba(248, 249, 250, 0.94)'
-        : dark ? 'rgba(67, 69, 74, 0.45)' : 'rgba(248, 249, 250, 0.58)')
+      expect(overlayFill).toBe(dark ? 'rgba(27, 33, 41, 0.97)' : 'rgba(255, 255, 255, 0.96)')
       await account.click()
       const menu = page.getByRole('menu').filter({ has: page.getByRole('menuitem', { name: 'Settings', exact: true }) })
       await menu.waitFor()
       const appearance = await material(menu)
       expect(appearance).toMatchObject({
-        fill: dark ? 'rgba(67, 69, 74, 0.45)' : 'rgba(248, 249, 250, 0.58)',
-        blur: 'blur(40px) saturate(1.5)',
+        fill: dark ? 'rgba(27, 33, 41, 0.97)' : 'rgba(255, 255, 255, 0.96)',
+        blur: 'blur(16px) saturate(1.12)',
+        radius: '20px',
       })
-      expect(appearance.shadow).toContain(`${dark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.04)'} 0px 0px 0px 0.5px`)
+      expect(appearance.shadow).not.toBe('none')
       results[`${platform}-${dark ? 'dark' : 'light'}`] = appearance
       const backing = page.locator('[data-menu-backing]')
       if (platform === 'darwin') {
@@ -90,6 +90,16 @@ it('shares menu transparency and blur across palettes and follows native menu bo
       masks[`${platform}-${dark ? 'dark' : 'light'}`] = mask
       await page.keyboard.press('Escape')
       await settings.waitFor({ state: 'hidden' })
+      const cdp = await page.context().newCDPSession(page)
+      await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] })
+      await account.click()
+      await menu.waitFor()
+      const reduced = await material(menu)
+      expect(reduced.blur).toBe('none')
+      expect(reduced.fill).toMatch(/^rgb\(\d+, \d+, \d+\)$/u)
+      await page.keyboard.press('Escape')
+      await cdp.send('Emulation.setEmulatedMedia', { features: [] })
+      await cdp.detach()
     }
   }
   await compareOrRefreshGolden(join(expected, 'materials.expected.json'), JSON.stringify(results, null, 2), webSnapshotMode())

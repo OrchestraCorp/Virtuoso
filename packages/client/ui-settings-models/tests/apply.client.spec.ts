@@ -94,8 +94,8 @@ describe('ui-settings-models apply', () => {
     }
   })
 
-  it('defaults to browser onboarding and rejects malformed bootstrap options', async () => {
-    expect(hostPlugin.Config({})).toEqual({ credentialOnboarding: true })
+  it('leaves credential onboarding opt-in and rejects malformed bootstrap options', async () => {
+    expect(hostPlugin.Config({})).toEqual({ credentialOnboarding: false })
     expect(hostPlugin.Config['~standard'].validate({ credentialOnboarding: 'false' })).toHaveProperty('issues')
     const { ctx } = await bench()
     try {

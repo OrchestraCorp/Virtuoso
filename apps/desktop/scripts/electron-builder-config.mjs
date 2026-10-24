@@ -135,13 +135,13 @@ export function createElectronBuilderConfig(
     },
     files: [
       'lib/main.js',
-      'lib/welcome/**/*',
       'lib/preload-app.cjs',
       'lib/preload-mandatory.cjs',
-      'lib/preload-platform-account.cjs',
       'lib/preload-update-dialog.cjs',
-      'lib/preload-welcome.cjs',
       'renderer/**/*',
+      '!renderer/welcome.html',
+      '!renderer/welcome.css',
+      '!renderer/assets/welcome-brand.svg',
       'package.json',
       '!node_modules/**/*.{js,cjs,mjs,ts,cts,mts,css}.map',
       '!node_modules/**/*.tsbuildinfo',
@@ -160,7 +160,7 @@ export function createElectronBuilderConfig(
       icon: fileURLToPath(new URL('../resources/icon-macos.png', import.meta.url)),
       category: 'public.app-category.developer-tools',
       // macOS matches the application locale against this bundle, not Electron Framework resources.
-      extendInfo: { CFBundleLocalizations: ['en', 'zh_CN'] },
+      extendInfo: { CFBundleLocalizations: ['en', 'zh_CN', 'zh_TW', 'ja', 'ko', 'de', 'fr', 'es', 'pt'] },
       // Ad-hoc signing keeps the modified Electron executable runnable without a Developer ID.
       identity: unsigned ? '-' : macOSSigning?.signingIdentity,
       forceCodeSigning: !unsigned,

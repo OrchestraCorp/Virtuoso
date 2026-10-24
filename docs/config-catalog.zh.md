@@ -41,15 +41,15 @@ export interface AcpConfig {
 ## `@deepseek-ai/dsh-agent-default-model`
 
 - `refs`: `Volatile` (`@deepseek-ai/cordis`)
-- `source`: [`packages/core/agent-default-model/src/index.ts:24`](../packages/core/agent-default-model/src/index.ts)
+- `source`: [`packages/core/agent-default-model/src/index.ts:25`](../packages/core/agent-default-model/src/index.ts)
 
 ```ts config-catalog
 /** Default model selection supplied by plugin configuration. */
 export interface Config {
   /** Registered provider route. */
-  provider: Volatile<string>
+  provider: Volatile<string | undefined>
   /** Provider-owned model id. */
-  model: Volatile<string>
+  model: Volatile<string | undefined>
   /** Adapter-owned reasoning effort; omission follows the provider default. */
   reasoningEffort: Volatile<string | undefined>
 }
@@ -498,7 +498,7 @@ export interface Config {
 
 ## `@deepseek-ai/dsh-client-product-analytics`
 
-- `inject`: `deepseekAccount` · `productTelemetry`
+- `inject`: `productTelemetry`
 - `refs`: `Volatile` (`@deepseek-ai/cordis`)
 - `source`: [`packages/client/product-analytics/src/index.ts:15`](../packages/client/product-analytics/src/index.ts)
 
@@ -613,7 +613,7 @@ export type OnboardingProcess = 'compact' | 'standard' | 'detailed'
 ```ts config-catalog
 /** Onboarding options after schema defaults are applied. */
 export interface Config {
-  /** Offer the browser API-key step when no native shell owns credential onboarding. */
+  /** Offer the browser API-key step only when explicitly enabled by the composition. */
   credentialOnboarding: boolean
 }
 ```
@@ -1799,9 +1799,9 @@ export interface PiAiProviderProfile {
   /** Name shown by configuration surfaces; defaults to the route key. */
   displayName?: string
   /**
-   * Wire protocol every model on this route speaks. Omission keeps each
-   * installed catalog model's own protocol, which is why a catalog route needs
-   * no protocol at all; a route the catalog does not ship must name one.
+   * Default wire protocol for models without an explicit `api`. Omission keeps
+   * each installed catalog model's protocol; an uncataloged model must obtain
+   * its protocol from either its own entry or this route.
    */
   api?: string
   /** Endpoint for this route's models; defaults to the installed catalog's endpoint. */
@@ -1890,6 +1890,8 @@ export interface PiAiProviderProfile {
 export interface PiAiModelProfile {
   /** Model id sent to the provider and accepted by {@link GenerateOptions.model}. */
   id: string
+  /** Explicit wire protocol for this model; wins over the route and installed catalog. */
+  api?: string
   /** Display name for selectors; defaults to the catalog name, then the id. */
   name?: string
   /** Maximum combined request and response context in tokens. */
@@ -2279,6 +2281,25 @@ export interface Config {
 }
 ```
 <!-- END GENERATED config-catalog:@deepseek-ai/dsh-message-feedback -->
+
+<!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-model-connections -->
+<a id="deepseek-aidsh-model-connections"></a>
+
+## `@deepseek-ai/dsh-model-connections`
+
+- `inject`: `storageDomain` · `credentials` · `llm` · `agentDefaultModel`
+- `source`: [`packages/llm/model-connections/src/index.ts:31`](../packages/llm/model-connections/src/index.ts)
+
+```ts config-catalog
+/** Bounds for explicit discovery and the billed text connectivity probe. */
+export interface Config {
+  /** Maximum duration of an explicit model discovery or text probe, in milliseconds. */
+  requestTimeoutMs: number
+  /** Maximum output tokens requested by an explicit text connectivity probe. */
+  probeMaxTokens: number
+}
+```
+<!-- END GENERATED config-catalog:@deepseek-ai/dsh-model-connections -->
 
 <!-- BEGIN GENERATED config-catalog:@deepseek-ai/dsh-office-to-pdf -->
 <a id="deepseek-aidsh-office-to-pdf"></a>

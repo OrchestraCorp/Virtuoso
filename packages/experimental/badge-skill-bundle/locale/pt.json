@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Habilidade de selo DSH",
+    "description": "Permite que agentes adicionem um selo “powered by dsh” a documentos, pull requests e outros resultados."
+  }
+}

@@ -9,6 +9,7 @@ import { join } from 'node:path'
 import type { Browser, Page, Request } from 'playwright'
 import { chromium, webkit } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed, onTestFinished } from 'vitest'
+import type {} from '@deepseek-ai/dsh-model-connections'
 import {
   assertFixtureInventory, captureStableAria, compareOrRefreshGolden,
   launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold,
@@ -104,14 +105,17 @@ describe.skipIf(MODE === 'record').each([
       { timeout: 10_000 },
     ).toBe(true)
 
-    // Settling with Tab is the same gesture that saves the default selection, so
-    // the effort lands in the Agent default Settings section beside provider/model.
+    // Settling with Tab persists the effort alongside the product's default model.
     await page.keyboard.press('Tab')
     await expect.poll(() => levels.count(), { timeout: 10_000 }).toBe(0)
     await expect.poll(
-      async () => readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8'),
+      async (): Promise<unknown> => JSON.parse(await readFile(join(scaffold.workspaceCwd, '.dsh-storages', 'model_connections.json'), 'utf8')),
       { timeout: 10_000 },
-    ).toContain('reasoningEffort: high')
+    ).toMatchObject({ global: { defaultSelection: { provider: 'acme-gateway', model: 'acme-think', reasoningEffort: 'high' } } })
+    expect((await scaffold.ctx.modelConnections.list()).defaultSelection)
+      .toEqual({ provider: 'acme-gateway', model: 'acme-think', reasoningEffort: 'high' })
+    expect(scaffold.ctx.agentDefaultModel.currentSelection())
+      .toEqual({ provider: 'acme-gateway', model: 'acme-think', reasoningEffort: 'high' })
     await expect.poll(() => trigger.getAttribute('aria-label'), { timeout: 10_000 })
       .toBe('选择模型，当前 Acme Think，推理等级 High')
 
@@ -205,7 +209,7 @@ describe.skipIf(MODE === 'record').each([
     await target.getByText('Acme Swift', { exact: true }).click()
     await menu.waitFor({ state: 'detached' })
     expect(selections).toBe(1)
-    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection().model, { timeout: 10_000 })
+    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection()?.model, { timeout: 10_000 })
       .toBe('acme-swift')
 
     await trigger.click()
@@ -213,7 +217,7 @@ describe.skipIf(MODE === 'record').each([
     await page.getByRole('menuitemradio', { name: 'Max', exact: true }).click()
     await menu.waitFor({ state: 'detached' })
     expect(selections).toBe(2)
-    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection().reasoningEffort, { timeout: 10_000 })
+    await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection()?.reasoningEffort, { timeout: 10_000 })
       .toBe('max')
 
     await page.route('**/api/session/selectModel', async (route) => {

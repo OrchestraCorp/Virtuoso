@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Git-Arbeitsverzeichnisse",
+    "description": "Der Agent kann einen neuen Git-Branch und ein Arbeitsverzeichnis erstellen und dort weiterarbeiten."
+  }
+}

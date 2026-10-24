@@ -24,6 +24,9 @@ import { WelcomeNotice } from './WelcomeNotice.tsx'
 import type { WelcomeNoticeInjected } from './WelcomeNotice.tsx'
 import { WelcomeNoticeStore } from './welcome-store.ts'
 import { ModelsSettingsStore } from './store.ts'
+import { MaasSection, type MaasSectionInjected } from './MaasSection.tsx'
+import { MaasSettingsStore } from './maas-store.ts'
+import { createMaasOperations } from './maas-operations.ts'
 import { createModelsOperations } from './operations.ts'
 import { createSettingsSchemaOperations } from './schema-operations.ts'
 import { en, zh, type ModelsKey } from './locales.ts'
@@ -90,6 +93,19 @@ export function apply(ctx: ClientContext): void {
   // Registration-time text (the nav label thunk) and the inject faces share
   // one bound translate; copy freshness rides the locale revision.
   const t = ctx.locale.bind(NS) as ModelsSectionInjected['t']
+  ctx.inject(['remote.modelConnections'], (connectionContext) => {
+    const connections = new MaasSettingsStore(createMaasOperations(connectionContext))
+    connectionContext.effect(() => () => { connections.dispose() }, 'ui-settings-models: connection lifetime')
+    connectionContext.remote.$on('model-connections/changed', () => {
+      const current = connections.store.getSnapshot()
+      if (current.status !== 'idle' && !current.busy) void connections.load()
+    })
+    connectionContext.slots.inject('settings.section', () => connectionContext.slots.register({
+      name: 'settings.section', id: 'maas', order: 9,
+      label: () => t('maasNav'),
+      inject: (): MaasSectionInjected => ({ controller: connections, hooks: { snapshot: connections.store }, t }),
+    }, MaasSection))
+  })
   const injected = (): ModelsSectionInjected => ({
     controller,
     hooks: { snapshot: controller.store },

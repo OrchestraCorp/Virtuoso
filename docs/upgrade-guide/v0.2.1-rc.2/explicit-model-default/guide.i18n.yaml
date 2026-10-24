@@ -1,0 +1,16 @@
+# Bilingual-pair consistency record for guide.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write docs/upgrade-guide/v0.2.1-rc.2/explicit-model-default/guide.md
+/:
+  en: 1daea27844e16d6b
+  zh: c28261add670007a
+/explicit-model-selection:
+  en: 6fabc741bda681d6
+  zh: 3a9dcfd53d14eda4
+/explicit-model-selection/change:
+  en: dc32fd0c74e9c3d2
+  zh: 80a4221eaf76d6bd
+/explicit-model-selection/migration:
+  en: 268ad4e8cc7198d3
+  zh: 986459a05acb51a2

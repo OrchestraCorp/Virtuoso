@@ -1,8 +1,11 @@
 /* Month calendar inside the shared picker card. */
 .calendar {
+  --calendar-cell-size: var(--dsw-control-height-compact);
+  box-sizing: border-box;
   flex-direction: column;
   gap: 4px;
-  width: 232px;
+  width: calc(7 * var(--calendar-cell-size) + 28px);
+  max-width: calc(100dvw - 32px);
   padding: 8px;
 }
 
@@ -26,18 +29,21 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
   cursor: pointer;
 }
 
-.nav:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .nav:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .nav:focus-visible {
@@ -49,11 +55,13 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  overflow-x: auto;
 }
 
 .week {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(var(--calendar-cell-size), 1fr));
+  min-width: calc(7 * var(--calendar-cell-size) + 12px);
   gap: 2px;
 }
 
@@ -72,8 +80,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 28px;
-  border-radius: 8px;
+  box-sizing: border-box;
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: var(--calendar-cell-size);
+  border-radius: var(--dsw-radius-sm);
   color: var(--dsw-alias-label-primary);
   font-size: 13px;
   font-variant-numeric: tabular-nums;
@@ -82,8 +93,10 @@
   outline: none;
 }
 
-.cell:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .cell:hover:not(.selected) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .cell:focus-visible {
@@ -91,17 +104,18 @@
   outline-offset: -2px;
 }
 
-/* Today keeps a hairline ring; the picked day takes the active chip fill. */
-.cell[aria-current='date'] {
+/* Today remains marked independently from the blue staged-date selection. */
+.cell[aria-current='date']:not(.selected) {
   box-shadow: inset 0 0 0 0.5px var(--dsw-alias-border-l3);
 }
 
 .selected {
-  color: var(--dsw-alias-label-primary);
-  background: var(--dsw-alias-button-ghost-active-fill);
-  box-shadow: inset 0 0 0 1px var(--dsw-alias-button-ghost-active-border);
+  color: var(--dsw-control-selected-label);
+  background: var(--dsw-control-selected-fill);
+  box-shadow: none;
 }
 
 .blank {
-  height: 28px;
+  aspect-ratio: 1;
+  min-height: var(--calendar-cell-size);
 }

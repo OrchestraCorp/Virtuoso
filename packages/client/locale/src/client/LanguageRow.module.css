@@ -30,11 +30,13 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  height: 36px;
+  height: var(--dsw-control-height-compact);
   padding: 0 14px;
   border: none;
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-module-platform);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-core-fill);
+  box-shadow: var(--dsw-control-core-shadow);
   font: inherit;
   font-size: 14px;
   line-height: 22px;
@@ -42,8 +44,21 @@
   cursor: pointer;
 }
 
-.selector:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .selector:hover {
+    background: var(--dsw-control-core-hover-fill);
+  }
+}
+
+.selector:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active), (prefers-contrast: more) {
+  .selector {
+    border: 1px solid var(--dsw-control-edge);
+  }
 }
 
 .chevron {

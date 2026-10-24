@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Sous-agent Codex",
+    "description": "Déléguer une tâche à Codex avec son authentification et ses paramètres natifs."
+  }
+}

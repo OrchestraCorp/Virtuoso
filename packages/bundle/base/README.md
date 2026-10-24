@@ -145,4 +145,4 @@ None.
 
 </details>
 
-The base composition mounts authorization and the platform account provider alongside credentials. The provider opens a callback listener only during an explicit login attempt.
+The base composition mounts authorization and credentials for API-key access. DeepSeek account authorization and the account-token model route are excluded; configured MaaS connections remain available.

@@ -2,35 +2,35 @@
   "card": {
     "radius": "20px",
     "border": "1px",
-    "stroke": "rgba(255, 255, 255, 0.2)",
-    "fill": "rgb(44, 44, 46)"
+    "stroke": "rgba(148, 163, 184, 0.3)",
+    "fill": "rgb(20, 27, 37)"
   },
   "selector": {
-    "radius": "12px",
+    "radius": "16px",
     "border": "0px",
-    "stroke": "rgb(249, 250, 251)",
+    "stroke": "rgb(244, 246, 250)",
     "fill": "rgb(53, 54, 56)",
     "height": 36
   },
   "usage": {
-    "radius": "12px",
+    "radius": "999px",
     "border": "1px",
-    "stroke": "rgba(255, 255, 255, 0.16)",
+    "stroke": "rgba(148, 163, 184, 0.24)",
     "fill": "rgba(0, 0, 0, 0)",
-    "height": 36
+    "height": 44
   },
   "topUp": {
-    "radius": "12px",
+    "radius": "999px",
     "border": "1px",
     "stroke": "rgba(0, 0, 0, 0)",
-    "fill": "rgb(249, 250, 251)",
-    "height": 36
+    "fill": "rgb(37, 99, 235)",
+    "height": 44
   },
   "save": {
-    "radius": "12px",
+    "radius": "999px",
     "border": "0px",
-    "stroke": "rgb(15, 17, 21)",
-    "fill": "rgb(249, 250, 251)",
+    "stroke": "rgb(255, 255, 255)",
+    "fill": "rgb(37, 99, 235)",
     "height": 36
   }
 }

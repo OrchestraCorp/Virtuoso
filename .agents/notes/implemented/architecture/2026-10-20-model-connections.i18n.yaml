@@ -1,0 +1,19 @@
+# Bilingual-pair consistency record for 2026-10-20-model-connections.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write .agents/notes/implemented/architecture/2026-10-20-model-connections.md
+/agent-note-product-model-connections:
+  en: 5bb2ee0f0b656a09
+  zh: 825c4c6d92f58899
+/agent-note-product-model-connections/problem:
+  en: 3cc025a19714bc2e
+  zh: 8949110634fb6b6d
+/agent-note-product-model-connections/decision:
+  en: 7334991ad529bafe
+  zh: 60bb6eba8fab2b78
+/agent-note-product-model-connections/alternatives-considered:
+  en: 7ecb99759fea0ac3
+  zh: 038ce1316929f367
+/agent-note-product-model-connections/consequences:
+  en: fd07c99f539a4f0b
+  zh: 4d413bbbb2fa9e7c

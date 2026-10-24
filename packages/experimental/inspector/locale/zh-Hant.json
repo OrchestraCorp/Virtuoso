@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "NodeJS 診斷",
+    "description": "按 Ctrl/Cmd+Shift+. 在底部面板開啟 Chrome DevTools 進行開發與除錯。"
+  }
+}

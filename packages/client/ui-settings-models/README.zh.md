@@ -27,6 +27,14 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
+提供方目录在首个 ready 快照之前显示居中的公共加载图标、已本地化的状态名称与忙碌状态。动作采用公共紧凑胶囊尺寸，键盘焦点使用分离的中性环，模型 ID 与 API 地址采用代码字体。
+
+提供方卡片与模型编辑器保持不透明的阅读面，增加的留白用于区分模型身份、能力与动作，不改变保存配置或写入语义。
+
+挂载 `modelConnections` Remote 后，**模型连接**会显示在模型页之前。该页面通过带版本校验的操作编辑领域连接，不写入 Cordis 提供方设置。新连接使用服务返回的默认地址；内置模型供用户选择，不会自动全部启用。每个模型可使用内置默认协议、未知 ID 的 Chat Completions 默认值，或显式指定协议。编辑器提供 token 容量、文本/图片输入类型，以及逐项对应 API 参数值的 DSH 推理档位。只有适配器和提供方支持 effort 参数时才使用这些参数值；Anthropic Messages 默认采用 DSH 的思考预算策略，不原样发送所填参数值。容量支持 K/M 后缀，换算后须为正整数 token 数。未声明的能力保持省略，不根据模型名称推断图片或推理支持。无关编辑会保留现有模型字段及显式的 `reasoningEfforts: false`。
+
+API Key 输入始终为空，保存由凭据提供方负责，留空会保留原密钥。获取模型前须单独选择发现协议，不根据已存模型顺序决定；候选携带该协议进入可编辑草稿，再经保存采用。测试已保存模型同样需用户主动操作。启用连接和设置默认模型是独立操作。默认选择包含显式推理档位时，可点击**重置默认推理档位**，保留提供方和模型并清除默认档位；现有会话选择不变。版本冲突会保留草稿，需刷新后重新打开连接。原模型页及可跳过的 DeepSeek 引导继续可用。
+
 保存凭据或自定义提供方时保留已选模型。用户可在 composer 中选择可用模型。
 
 提供方列表中 DeepSeek 账号排第一，DeepSeek 排第二；第三方提供方保留目录中的相对顺序。
@@ -37,7 +45,7 @@ kind: "package-reference"
 
 应用设置并关闭编辑器后，当前提供商、settings 与凭据快照就绪时才显示保存状态。打开任一行的编辑器、添加提供商和打开移除确认都会等待该刷新。新打开的 Models 区域或页面加载失败后的重试会等到 ready 快照后才挂载编辑器。后台刷新期间，只要编辑器仍挂载，已打开的草稿就会保留用户的修改；页面加载失败或提供商被移除可能关闭编辑器。
 
-Host 配置 `credentialOnboarding` 默认为 `true`。Electron preload 标记会抑制自动凭证引导和 Web 欢迎须知；模型设置页与显式 API Key 编辑仍然可用。[账号插件](../ui-settings-account/README.zh.md#desktop-onboarding)负责 Desktop 引导。其他原生壳可以通过 `credentialOnboarding: false` 仅禁用凭证步骤。Host 通过 `webserver/index-inject` 发布这个公开的布尔值，Client 在注册弹窗前校验它。它是页面初始化数据，不是持久化的完成标记。
+Host 配置 `credentialOnboarding` 默认为 `false`，无需自动弹出提供方凭据对话框即可使用模型连接和 API Key 设置。显式组合可以通过 `credentialOnboarding: true` 启用 API Key 步骤；Electron preload 标记会抑制自动凭证引导和 Web 欢迎须知。Host 通过 `webserver/index-inject` 发布这个公开的布尔值，Client 在注册弹窗前校验它。它是页面初始化数据，不是持久化的完成标记。
 
 ### API 密钥
 

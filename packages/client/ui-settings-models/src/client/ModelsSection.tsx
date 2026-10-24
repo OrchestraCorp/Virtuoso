@@ -23,7 +23,7 @@
 
 import { useId, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Button, IconPlusOutlineRegular, Modal, SegmentedControl } from '@deepseek-ai/dsh-client-ui-primitives'
+import { Button, IconPlusOutlineRegular, Modal, SegmentedControl, StateDot } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { InjectFace, PropsRenderSlots } from '@deepseek-ai/dsh-client-ui-slots'
 import type { LlmNativeAuth, SettingsNamespaceView } from '@deepseek-ai/dsh-api-remotes/client'
 // Type-only: pulls this package's SlotMap merge (the two Models child slots).
@@ -344,9 +344,12 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
   }
   if (!hasReadySnapshot && state.status !== 'ready') {
     return (
-      <div className={styles['section']}>
+      <div className={styles['section']} aria-busy="true">
         <h2 className={styles['title']}>{t('title')}</h2>
         <p className={styles['intro']}>{t('intro')}</p>
+        <div className={styles['loading']} role="status" aria-label={t('loading')}>
+          <StateDot state="ongoing" size={24} />
+        </div>
       </div>
     )
   }
@@ -411,7 +414,7 @@ function Loaded({ injected, renderSlot }: { injected: ModelsSectionFace; renderS
     : state.rows.find(row => row.entry.provider === draft.target.provider)
 
   return (
-    <div className={styles['section']}>
+    <div className={styles['section']} aria-busy={state.status === 'loading'}>
       <h2 className={styles['title']}>{t('title')}</h2>
       <p className={styles['intro']}>{t('intro')}</p>
       {!state.writable && state.status === 'ready' ? <p className={styles['notice']}>{t('readOnly')}</p> : null}

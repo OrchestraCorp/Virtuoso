@@ -109,19 +109,12 @@ describe('ui-settings-general shell', () => {
     off()
   })
 
-  it('shows Account first only while signed in and removes it on sign-out', async ({ start }) => {
+  it('uses the settings shell without an account launcher or section', async ({ start }) => {
     const c = await start()
     const { sections } = injectedOf(c).hooks
-    await c.mock.streams.opened('account/watch', 1)
     expect(sections.getSnapshot().map(row => row.id)).toEqual(PRODUCT_SECTIONS)
-    c.mock.streams.push('account/watch', { status: 'credential-stored', attempt: null })
-    await vi.waitFor(() => {
-      expect(sections.getSnapshot().map(row => row.id)).toEqual(['account', ...PRODUCT_SECTIONS])
-    })
-    c.mock.streams.push('account/watch', { status: 'credential-stored', attempt: null })
-    await vi.waitFor(() => { expect(sections.getSnapshot().filter(row => row.id === 'account')).toHaveLength(1) })
-    c.mock.streams.push('account/watch', { status: 'signed-out', attempt: null })
-    await vi.waitFor(() => { expect(sections.getSnapshot().map(row => row.id)).toEqual(PRODUCT_SECTIONS) })
+    expect(c.ctx.slots.entries('settings.launcher')).toEqual([])
+    expect(webApp.rows.some(row => row.name === '@deepseek-ai/dsh-client-ui-settings-account')).toBe(false)
   })
 
   it('projects the roster Connection control without copying its state; reconnect opens a new $events generation', async ({ start }) => {

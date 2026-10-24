@@ -4,7 +4,7 @@
   flex-direction: column;
   height: 100%;
   min-width: 0;
-  background: var(--dsw-alias-bg-base);
+  background: var(--dsw-content-panel-fill);
 }
 
 /* 76px with its rule: the height of the Sidebar's tab strip and header row
@@ -19,7 +19,7 @@
   box-sizing: border-box;
   min-height: 76px;
   padding: 10px 28px 0 20px;
-  border-bottom: 0.5px solid var(--dsw-alias-border-l3);
+  border-bottom: 0.5px solid var(--dsw-alias-border-l1);
 }
 
 .header:where(:not(:has(.tabs))) {
@@ -72,7 +72,7 @@
   display: flex;
   align-items: center;
   gap: 0;
-  min-height: 30px;
+  min-height: var(--dsw-control-height-compact);
   /* Clears the frame's window-chrome band (traffic lights + shell.leading
      controls, ui-layout AppFrame) when it is published; the header already
      pads 20px of it. Zero everywhere else (the fallback makes the max
@@ -143,8 +143,10 @@
   line-height: 18px;
 }
 
-button.crumb:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  button.crumb:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .crumbCurrent {
@@ -195,9 +197,9 @@ button.crumb:hover {
   position: relative;
   z-index: 1;
   display: flex;
-  gap: 36px;
+  gap: 6px;
   margin-top: 10px;
-  padding-left: 8px;
+  padding: 0 0 6px 4px;
 }
 
 /* figma .Tab 34:11442: 13/16 text (figma wt510, rendered 500). The 2px bar
@@ -205,7 +207,9 @@ button.crumb:hover {
    sitting over the rule. */
 .tab {
   position: relative;
-  padding: 0 0 9px;
+  padding: 4px 12px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   border: none;
   background: transparent;
   font-size: 13px;
@@ -213,10 +217,11 @@ button.crumb:hover {
   font-weight: 500;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
+  min-height: var(--dsw-control-height-compact);
 }
 
 .tab::after {
-  content: '';
+  content: none;
   position: absolute;
   right: 0;
   bottom: -1px;
@@ -230,11 +235,19 @@ button.crumb:hover {
    this token sheet, so the selected state rides the business blue — the
    nearest semantic token that stays blue in both themes. */
 .tabActive {
-  color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-alias-link);
+  background: var(--dsw-control-selected-fill);
 }
 
-.tabActive::after {
-  background: var(--dsw-alias-state-business-primary);
+@media (hover: hover) {
+  .tab:hover:not(.tabActive) {
+    background: var(--dsw-control-hover-fill);
+  }
+}
+
+.tab:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 .viewArea {
@@ -312,9 +325,14 @@ button.crumb:hover {
   left: 4px;
 }
 
-.widthHandle:hover::after,
 .widthHandle[data-dragging]::after {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  .widthHandle:hover::after {
+    opacity: 1;
+  }
 }
 
 /* A drag starts above the composer band. Pointer capture keeps it active when
@@ -557,3 +575,6 @@ button.crumb:hover {
 .embeddedBody[data-content-phase='settling'] .composerSeat {
   visibility: hidden;
 }
+
+button.crumb { display: inline-flex; align-items: center; min-height: var(--dsw-control-height-compact); }
+button.crumb:focus-visible, .tab:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -4px; }

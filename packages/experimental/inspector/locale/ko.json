@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "NodeJS 검사기",
+    "description": "Ctrl/Cmd+Shift+.을 누르면 개발 및 디버깅용 Chrome DevTools가 하단 패널에 열립니다."
+  }
+}

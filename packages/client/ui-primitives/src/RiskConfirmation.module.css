@@ -36,6 +36,7 @@
 }
 
 .acknowledgement {
+  min-height: var(--dsw-control-height-compact);
   display: flex;
   align-items: flex-start;
   gap: 10px;
@@ -48,8 +49,8 @@
 
 .acknowledgement input {
   flex: none;
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   margin: 3px 0 0;
   accent-color: var(--dsw-alias-button-primary-fill);
   cursor: pointer;

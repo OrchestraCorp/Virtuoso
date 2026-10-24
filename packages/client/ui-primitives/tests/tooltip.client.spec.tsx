@@ -434,6 +434,30 @@ describe('Tooltip', () => {
     }
   })
 
+  it.each(['hover', 'focus'] as const)('dismisses an ordinary %s tooltip with Escape until its trigger returns', (trigger) => {
+    const onKeyDown = vi.fn()
+    render(<div onKeyDown={onKeyDown}>
+      <Tooltip label="Refresh"><button>anchor</button></Tooltip>
+    </div>)
+    const anchor = screen.getByText('anchor')
+    const activate = () => {
+      if (trigger === 'hover') fireEvent.mouseEnter(anchor)
+      else { fireEvent.keyDown(anchor, { key: 'Tab' }); fireEvent.focus(anchor) }
+    }
+    activate()
+    expect(screen.getByRole('tooltip').textContent).toBe('Refresh')
+    onKeyDown.mockClear()
+    expect(fireEvent.keyDown(anchor, { key: 'Escape' })).toBe(false)
+    expect(onKeyDown).not.toHaveBeenCalled()
+    expect(screen.queryByRole('tooltip')).toBeNull()
+    expect(fireEvent.keyDown(anchor, { key: 'Escape' })).toBe(true)
+    expect(onKeyDown).toHaveBeenCalledOnce()
+    if (trigger === 'hover') fireEvent.mouseLeave(anchor)
+    else fireEvent.blur(anchor)
+    activate()
+    expect(screen.getByRole('tooltip').textContent).toBe('Refresh')
+  })
+
   it('pins an informational tooltip on click and preserves the anchor description', () => {
     const clicked = vi.fn()
     render(<>

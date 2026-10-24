@@ -33,6 +33,20 @@ async function setup(enabled: boolean) {
   return { ctx, fiber, getDeviceIdentity, emit }
 }
 
+it('reports without mounting a DeepSeek account provider', async () => {
+  const ctx = new Context()
+  cleanup.push(() => ctx.fiber.dispose())
+  const emit = vi.fn<(record: ProductTelemetryRecord) => void>()
+  ctx.provide('productTelemetry', { emit } as never)
+  await ctx.plugin(Analytics, { enabled: true })
+  expect(ctx.get('deepseekAccount')).toBeUndefined()
+  await ctx.productAnalytics.report({ eventName: 'desktop_app_launch', timestamp: 100, attributes: {} })
+  expect(emit).toHaveBeenCalledExactlyOnceWith({
+    eventName: 'desktop_app_launch', body: 'desktop_app_launch', timestamp: 100,
+    attributes: commonEnvironment,
+  })
+})
+
 it('disabled collection does not read identity or submit an event', async () => {
   const b = await setup(false)
   expect(b.ctx.productAnalytics.enabled()).toBe(false)

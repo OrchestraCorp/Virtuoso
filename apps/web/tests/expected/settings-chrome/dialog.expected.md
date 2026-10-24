@@ -2,6 +2,7 @@
   - navigation:
     - text: 设置
     - button "通用设置"
+    - button "模型连接"
     - button "模型"
     - button "内置插件"
     - button "Agent 预设"
@@ -10,7 +11,7 @@
   - text: 权限 选择新会话的默认权限模式
   - button "工作区内修改"
   - text: 语言
-  - button "中文"
+  - button "跟随系统（中文）"
   - text: 外观
   - button "浅色"
   - button "深色"

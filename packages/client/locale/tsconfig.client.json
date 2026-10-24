@@ -3,10 +3,12 @@
   "compilerOptions": {
     "rootDir": "src",
     "outDir": "lib/types",
-    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo"
+    "tsBuildInfoFile": "lib/tsconfig.client.tsbuildinfo",
+    "resolveJsonModule": true
   },
   "include": [
-    "src"
+    "src",
+    "src/**/*.json"
   ],
   "references": [
     {

@@ -2,6 +2,7 @@
   - navigation:
     - text: Settings
     - button "General"
+    - button "Model connections"
     - button "Models"
     - button "Built-in plugins"
     - button "Agent presets"
@@ -10,7 +11,7 @@
   - text: Permission Choose the default permission mode for new sessions
   - button "Workspace Write"
   - text: Language
-  - button "English"
+  - button "System (English)"
   - text: Appearance
   - button "Light"
   - button "Dark"

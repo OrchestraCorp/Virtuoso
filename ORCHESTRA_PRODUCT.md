@@ -22,7 +22,7 @@ Virtuoso 提供员工与 Agent 的工作体验，不保存公司的第二套任�
 
 当前已从核验过的上游提交建立独立本地 fork，拥有自己的 `.git`、`main`、上游引用和基线标签。原有职责与权限设计保存在本文件；根目录 `README.md` 与 `README.zh.md` 保留上游说明。
 
-当前运行时源码仍是上游基线，已加入产品 Profile/目标设计清单、校验器和只读构建计划；实际产品 Profile、Stage 登录、业务界面和企业连接器尚未实现，应用构建与运行尚未验证。产品 `origin` 指向 GitHub 私有仓库 `OrchestraCorp/Virtuoso`。
+当前基于上游运行时，已提供 [DSH 原生模型连接](ORCHESTRA_MAAS.md)；已加入产品 Profile/目标设计清单、校验器和只读构建计划。实际产品 Profile、Stage 登录、业务界面和企业连接器尚未实现，完整企业业务闭环尚未验证；模型接入代码不代表真实模型验证或产品发布已通过。产品 `origin` 指向 GitHub 私有仓库 `OrchestraCorp/Virtuoso`。
 
 [仓库维护说明](ORCHESTRA_FORK.md)记录来源、历史状态和独立同步规则。
 

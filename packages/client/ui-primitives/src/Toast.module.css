@@ -53,7 +53,11 @@
 }
 
 .action {
-  display: inline;
+  --dsw-focus-ring-color: var(--dsw-alias-toast-label);
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-radius-xs);
   padding: 0;
   border: 0;
   background: none;
@@ -69,8 +73,10 @@
   pointer-events: auto;
 }
 
-.action:hover {
-  opacity: 0.8;
+@media (hover: hover) {
+  .action:hover {
+    opacity: 0.8;
+  }
 }
 
 @keyframes dsh-toast-in {
@@ -98,4 +104,9 @@
   .toast {
     animation: dsh-toast-fade 1000ms ease var(--dsh-toast-hold, 3000ms) forwards;
   }
+}
+
+.action:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }

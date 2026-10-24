@@ -15,6 +15,21 @@ const OBJECT_PREVIEW_LIMIT = 4
 const ARRAY_PREVIEW_LIMIT = 5
 const PREVIEW_DEPTH_LIMIT = 2
 
+const COARSE_POINTER_QUERY = '(pointer: coarse)'
+
+function coarsePointerSnapshot(): boolean {
+  return typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    && window.matchMedia(COARSE_POINTER_QUERY).matches
+}
+
+function subscribeCoarsePointer(listener: () => void): () => void {
+  if (typeof window.matchMedia !== 'function') return () => { /* Older browsers keep the desktop affordance. */ }
+  const media = window.matchMedia(COARSE_POINTER_QUERY)
+  media.addEventListener('change', listener)
+  return () => { media.removeEventListener('change', listener) }
+}
+
+
 /**
  * Display copy for the tree's copy affordance; the owner passes localized
  * labels (this package is cordis-free, so copy arrives via props).
@@ -318,6 +333,7 @@ function NodeField({
 
 interface JsonTreeNodeProps {
   collapsedStringLines: number
+  coarsePointer: boolean
   stringWrapping: JsonTreeProps['stringWrapping']
   field?: string
   initialExpanded: boolean
@@ -333,6 +349,7 @@ interface JsonTreeNodeProps {
 
 function JsonString({
   collapsedStringLines,
+  coarsePointer,
   stringWrapping,
   field,
   labels,
@@ -341,6 +358,7 @@ function JsonString({
   value,
 }: {
   collapsedStringLines: number
+  coarsePointer: boolean
   stringWrapping: JsonTreeProps['stringWrapping']
   field: string | undefined
   labels: JsonTreeLabels
@@ -354,6 +372,10 @@ function JsonString({
   const [expanded, setExpanded] = useState(false)
   const [wrapped, setWrapped] = useState(false)
   const [truncated, setTruncated] = useState(false)
+  const expandString = () => {
+    setWrapped(stringWrapping?.getDefault() ?? false)
+    setExpanded(true)
+  }
 
   useLayoutEffect(() => {
     if (expanded) return
@@ -470,7 +492,7 @@ function JsonString({
       {renderCopy?.()}
       <span className={css.stringField} data-expanded={expanded}>
         <span ref={contentRef} id={contentsId} className={css.stringText}>
-          {truncated && (
+          {truncated && !coarsePointer && (
             <span className={css.stringToggleSlot}>
               <button
                 type="button"
@@ -478,10 +500,7 @@ function JsonString({
                 aria-label={labels.expandNode}
                 aria-expanded={false}
                 aria-controls={contentsId}
-                onClick={() => {
-                  setWrapped(stringWrapping?.getDefault() ?? false)
-                  setExpanded(true)
-                }}
+                onClick={expandString}
               >
                 <span aria-hidden="true">…</span>{labels.expandNode}
               </button>
@@ -491,6 +510,18 @@ function JsonString({
           {primitiveValue(value)}
           {!lastElement && <span className={css.punctuation}>,</span>}
         </span>
+        {truncated && coarsePointer && (
+          <button
+            type="button"
+            className={clsx(css.stringToggle, css.touchStringToggle)}
+            aria-label={labels.expandNode}
+            aria-expanded={false}
+            aria-controls={contentsId}
+            onClick={expandString}
+          >
+            <span aria-hidden="true">…</span>{labels.expandNode}
+          </button>
+        )}
       </span>
     </>
   )
@@ -498,6 +529,7 @@ function JsonString({
 
 function JsonTreeNode({
   collapsedStringLines,
+  coarsePointer,
   stringWrapping,
   field,
   initialExpanded,
@@ -524,6 +556,11 @@ function JsonTreeNode({
   }
 
   const onExpanderKeyDown = (event: ReactKeyboardEvent<HTMLSpanElement>) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault()
+      toggle()
+      return
+    }
     if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
       event.preventDefault()
       setExpanded(event.key === 'ArrowRight')
@@ -539,7 +576,12 @@ function JsonTreeNode({
     <div
       className={css.row}
       role="treeitem"
+      tabIndex={renderCopy !== undefined && !expandable ? 0 : undefined}
       aria-expanded={ariaExpanded}
+      onFocus={(event) => {
+        if (event.target.closest('[role="treeitem"]') !== event.currentTarget) return
+        onRowHover(event.currentTarget, { path, value })
+      }}
       onMouseOver={(event) => {
         event.stopPropagation()
         onRowHover(event.currentTarget, { path, value })
@@ -554,6 +596,7 @@ function JsonTreeNode({
     return row(
       <JsonString
         collapsedStringLines={collapsedStringLines}
+        coarsePointer={coarsePointer}
         stringWrapping={stringWrapping}
         field={field}
         value={value}
@@ -612,6 +655,7 @@ function JsonTreeNode({
             <JsonTreeNode
               key={key}
               collapsedStringLines={collapsedStringLines}
+              coarsePointer={coarsePointer}
               stringWrapping={stringWrapping}
               field={key}
               value={item}
@@ -694,6 +738,7 @@ export function JsonTree({
   expandTopLevel = true,
   labels,
 }: JsonTreeProps) {
+  const coarsePointer = useSyncExternalStore(subscribeCoarsePointer, coarsePointerSnapshot, () => false)
   const rootEntries = entriesOf(data)
   const firstExpandableIndex = rootEntries.findIndex(([, value]) => (
     isExpandableValue(value) && entriesOf(value).length > 0
@@ -773,7 +818,7 @@ export function JsonTree({
 
   const [rootOpen, rootClose] = bracketOf(data)
   const renderCopy = copyable ? (target: RowTarget, persistent = false) => (
-    <JsonCopyAction store={copyStore} target={target} persistent={persistent} labels={labels}
+    <JsonCopyAction store={copyStore} target={target} persistent={persistent || coarsePointer} labels={labels}
       onCopy={copy} onClose={clearCopyTarget} />
   ) : undefined
 
@@ -783,7 +828,10 @@ export function JsonTree({
       style={{ '--json-tree-collapsed-lines': collapsedStringLines } as CSSProperties}
       onMouseOver={handleRootMouseOver}
       onMouseLeave={() => {
-        if (!copyStore.get()?.menuOpen) clearCopyTarget()
+        if (!copyStore.get()?.menuOpen && !activeRowRef.current?.contains(document.activeElement)) clearCopyTarget()
+      }}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget) && !copyStore.get()?.menuOpen) clearCopyTarget()
       }}
     >
       {expandTopLevel
@@ -809,6 +857,7 @@ export function JsonTree({
                 <JsonTreeNode
                   key={key}
                   collapsedStringLines={collapsedStringLines}
+                  coarsePointer={coarsePointer}
                   stringWrapping={stringWrapping}
                   field={key}
                   value={value}
@@ -832,6 +881,7 @@ export function JsonTree({
           <div aria-label={label} className={css.container} role="tree">
             <JsonTreeNode
               collapsedStringLines={collapsedStringLines}
+              coarsePointer={coarsePointer}
               stringWrapping={stringWrapping}
               value={data}
               path={[]}

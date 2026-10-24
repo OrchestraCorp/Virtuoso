@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Compétence de badge DSH",
+    "description": "Permet aux agents d'ajouter un badge « powered by dsh » aux documents, aux pull requests et à d'autres livrables."
+  }
+}

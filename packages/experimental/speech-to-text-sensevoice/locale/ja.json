@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ローカル SenseVoice 認識",
+    "description": "SenseVoice を使い、録音をローカルで文字起こしします。"
+  }
+}

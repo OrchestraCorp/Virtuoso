@@ -87,13 +87,14 @@
   white-space: nowrap;
 }
 
-/* The Plugins toolbar's Add-plugin step: a 32px capsule with the 13px label. */
+/* The primary creation action uses the shared compact operation size. */
 .newButton {
-  height: 32px;
+  height: var(--dsw-control-height-compact);
   font-size: 13px;
   line-height: 20px;
   padding: 0 12px;
-  border-radius: 16px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
 }
 
 /* The mock's `.list-tools`: the one row of filter tabs, 8px between chips and
@@ -110,20 +111,26 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px 12px;
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
 }
 
-/* The mock's `.tab`: the filter chip's 28px box, 10px sides, 14px radius, and
-   the mock's 14px label. The selected chip takes the mock's `--hover` fill at
-   the chip's own weight instead of the atom's bordered capsule. */
+/* Filter choices share a glass rail and one blue selected fill. */
 .filterTab {
   display: inline-flex;
   flex: none;
   align-items: center;
-  height: 28px;
+  height: var(--dsw-control-height-compact);
   padding: 0 10px;
   border: 0;
-  border-radius: 14px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   font: inherit;
@@ -133,37 +140,40 @@
   cursor: pointer;
 }
 
-.filterTab:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .filterTab:hover:not(.filterTabActive) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .filterTabActive {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-primary);
+  background: var(--dsw-control-selected-fill);
+  color: var(--dsw-control-selected-label);
 }
 
-/* The mock's `.searchbox`: the 40px field on the mock's 4px/12px inset, the
-   neutral hairline, the 10px radius, and the mock's `--muted` leading icon. The
-   mock brightens the border on hover and takes the brand stroke on focus
-   rather than drawing a ring around the control. */
+/* The outer field owns search focus, including its icon and clear action. */
 .searchField {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  height: 36px;
+  height: var(--dsw-control-height-compact);
   margin: 0 0 16px;
   padding: 0 10px;
   border: 0.5px solid var(--dsw-alias-border-l3);
-  border-radius: 12px;
+  border-radius: var(--dsw-control-field-radius);
   color: var(--dsw-alias-label-tertiary);
-  transition: border-color 0.15s;
+  transition: border-color var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.searchField:hover {
-  border-color: var(--dsw-alias-border-l2);
+@media (hover: hover) {
+  .searchField:hover {
+    border-color: var(--dsw-alias-border-l2);
+  }
 }
 
-.searchField:focus-within {
-  border-color: var(--dsw-alias-state-business-primary);
+.searchField:has(:focus-visible) {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 /* The search atom's own box would double the field's hairline, so the wrapper
@@ -180,6 +190,13 @@
 
 .searchField > :first-child:focus-within {
   border-color: transparent;
+  outline: none;
+  box-shadow: none;
+}
+
+.searchField > :first-child:has(input:focus-visible) {
+  outline: none;
+  box-shadow: none;
 }
 
 .searchField > :first-child svg {
@@ -200,12 +217,11 @@
   display: none;
 }
 
-/* The mock's `.searchbox .icon-btn`: the inline clear control keeps the 28px
-   target and pulls back into the field's 12px inset. */
+/* Clearing remains a full compact target inside the search field. */
 .searchClear {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   margin-right: -6px;
   padding: 0;
   color: var(--dsw-alias-label-tertiary);
@@ -247,8 +263,10 @@
   white-space: normal;
 }
 
-.row:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .row:hover:not(.selectedRow) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .rowGlyph {
@@ -300,7 +318,19 @@
 }
 
 .selectedRow {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--dsw-control-selected-fill);
+}
+
+@media (hover: hover) {
+  .page .row.selectedRow:hover {
+    background: var(--dsw-control-selected-fill);
+  }
+}
+
+.row.selectedRow .rowTitle,
+.row.selectedRow .rowSummary,
+.row.selectedRow .rowGlyph {
+  color: var(--dsw-control-selected-label);
 }
 
 /* An ended task reads dimmer as a whole row — its status word is gone, so the
@@ -314,14 +344,24 @@
   color: var(--dsw-alias-label-caption);
 }
 
-.endedRow:hover .rowTitle,
 .endedRow.selectedRow .rowTitle {
   color: inherit;
 }
 
-.endedRow:hover .rowSummary,
+@media (hover: hover) {
+  .endedRow:hover .rowTitle {
+    color: inherit;
+  }
+}
+
 .endedRow.selectedRow .rowSummary {
   color: var(--dsw-alias-label-tertiary);
+}
+
+@media (hover: hover) {
+  .endedRow:hover .rowSummary {
+    color: var(--dsw-alias-label-tertiary);
+  }
 }
 
 /* The mock's `.notice`: the catalog loading and failure text keeps the caption
@@ -437,22 +477,13 @@
   justify-content: center;
 }
 
-/* In the right-panel task tab the pane's own chrome sits above this bar, so the
-   bar states the cross size that lands its rule on the conversation header's
-   rule; the Tasks page's own detail column keeps the mock's 44px without a pane
-   above it. */
+/* Both placements reserve the rail's full operation height and vertical inset. */
 .tabBody > .detail .detailTabsBar {
-  height: 37px;
-  min-height: 37px;
+  height: calc(var(--dsw-control-height-compact) + 8px);
+  min-height: calc(var(--dsw-control-height-compact) + 8px);
 }
 
-.tabBody > .detail .detailTab {
-  padding-bottom: 9px;
-}
-
-/* Centers the strip-end 28px icon controls on the pane strip's own controls
-   above: dockkit `.strip` keeps a 6px end inset, so the actions give back all
-   of the bar's stepped gutter beyond those 6px at every breakpoint. */
+/* The action cluster keeps dockkit's 6px end inset at each gutter breakpoint. */
 .tabBody > .detail .detailActions {
   margin-right: calc(6px - var(--detail-gutter));
 }
@@ -467,15 +498,16 @@
   margin-bottom: 4px;
 }
 
-/* The mock's `.edit-name`: the stored task name as one borderless line that
-   underlines only on hover and focus. The detail pane's primary text at 500 weight. */
+/* Task-name editing retains the full rounded field's neutral keyboard ring. */
 .editName {
   flex: 1;
   width: 100%;
   min-width: 0;
-  min-height: 32px;
-  padding: 0;
+  box-sizing: border-box;
+  min-height: var(--dsw-control-height-compact);
+  padding: 2px 6px;
   border: 0;
+  border-radius: var(--dsw-control-field-radius);
   outline: 0;
   background: transparent;
   color: var(--dsw-alias-label-primary);
@@ -484,16 +516,19 @@
   font-weight: 500;
 }
 
-.editName:hover {
-  box-shadow: 0 1px var(--dsw-alias-border-l3);
+@media (hover: hover) {
+  .editName:hover {
+    box-shadow: 0 1px var(--dsw-alias-border-l3);
+  }
 }
 
-.editName:focus {
-  box-shadow: 0 1px var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+.editName:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
-/* An ended task's stored name as plain text on the control's step, padded to
-   the control's 32px height so the header keeps one figure. */
+/* An ended task's stored name remains plain text on the heading's type scale. */
 .readonlyName {
   flex: 1;
   min-width: 0;
@@ -539,19 +574,16 @@
   color: var(--dsw-alias-label-secondary);
 }
 
-/* The panel's top strip is the mock's `.detail-titlebar`: the detail views on the
-   left, their actions at its right end, on the bar's 44px height, 20px gap, and
-   `--detail-gutter` inset; the right-panel placement below states 37px so its rule
-   meets the conversation header's. The actions' -8px inset matches
-   `.detail-actions`, and the rule's token and 0.5px width are the header's own. */
+/* The top strip reserves the compact rail height plus its 4px top and bottom
+   inset in both placements; actions remain beside the corresponding tabs. */
 .detailTabsBar {
   display: flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-  height: 44px;
-  min-height: 44px;
+  height: calc(var(--dsw-control-height-compact) + 8px);
+  min-height: calc(var(--dsw-control-height-compact) + 8px);
   padding: 0 var(--detail-gutter);
   border-bottom: 0.5px solid var(--dsw-alias-border-l3);
 }
@@ -559,14 +591,16 @@
 .detailTabs {
   display: flex;
   flex: 1 1 auto;
-  /* The conversation header's `.tabs` strip: the same 36px gap with the tabs
-     bottom-aligned, and the padding/margin pair reserving the selected tab's
-     1px underline overhang so `overflow-x` never reads it as a second axis. */
-  align-self: flex-end;
-  gap: 36px;
+  align-self: center;
+  gap: 4px;
   min-width: 0;
-  padding-bottom: 1px;
-  margin-bottom: -1px;
+  padding: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
   overflow-x: auto;
   /* A narrow strip still scrolls its tabs, without a visible bar (both engines). */
   scrollbar-width: none;
@@ -582,25 +616,24 @@
   margin-right: -8px;
 }
 
-/* The strip's icon controls are the 28px square targets other header icon
-   buttons use, not the sm capsule's 0 10px sides, on the header icon buttons'
-   quiet tertiary ink. */
+/* Utility controls retain the same target size as their neighbouring tabs. */
 .detailIconButton {
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* 13/16 text with 13px below it, the Tasks page's own 44px bar, so the label
-   reads vertically centered above the strip's 0.5px rule; the embedded task
-   tab's copy of this strip states its own step. */
+/* Tabs keep their measured boxes stable across hover, selection and focus. */
 .detailTab {
   flex: none;
-  position: relative;
-  padding: 0 0 13px;
+  box-sizing: border-box;
+  min-height: var(--dsw-control-height-compact);
+  padding: 0 12px;
   border: none;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   font-size: 13px;
   line-height: 16px;
@@ -609,23 +642,20 @@
   cursor: pointer;
 }
 
-.detailTab::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: transparent;
+@media (hover: hover) {
+  .detailTab:hover:not([aria-selected='true']) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .detailTab[aria-selected="true"] {
-  color: var(--dsw-alias-state-business-primary);
+  color: var(--dsw-control-selected-label);
+  background: var(--dsw-control-selected-fill);
 }
 
-.detailTab[aria-selected="true"]::after {
-  background: var(--dsw-alias-state-business-primary);
+.detailTabs .detailTab:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -2px;
 }
 
 /* The theme's WebKit bar takes layout space: the reservation keeps the content
@@ -682,18 +712,21 @@
   align-items: center;
   justify-content: center;
   flex: none;
-  width: 24px;
-  height: 24px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 5px;
   border: 0;
-  border-radius: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
 }
 
-.retentionInfo:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .retentionInfo:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .retentionInfo:focus-visible {
@@ -822,26 +855,27 @@
   cursor: pointer;
 }
 
-/* Every value control shares the interval stepper's capsule radius: 18px caps
-   at half of this 32px face, so hover fills read as one pill family. */
+/* Value controls share the compact operation height and capsule geometry. */
 .ruleValueFace {
   display: flex;
   flex: 0 1 auto;
   align-items: center;
   gap: 6px;
   min-width: 0;
-  min-height: 32px;
+  min-height: var(--dsw-control-height-compact);
   padding: 0 8px;
-  border-radius: 18px;
-  transition: background 0.15s;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  transition: background var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.ruleValue:not(:disabled):hover .ruleValueFace {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .ruleValue:not(:disabled):hover .ruleValueFace {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
-/* The trigger's own ring would box the row label as well; the value face
-   carries the mock's 1px-offset brand ring instead. */
+/* The keyboard ring follows the value face, separate from the row label. */
 .ruleRows .ruleValue:focus-visible {
   outline: none;
 }
@@ -874,9 +908,10 @@
 .zoneSearch {
   box-sizing: border-box;
   width: 100%;
+  min-height: var(--dsw-control-height-compact);
   padding: 6px 8px;
   border: 0.5px solid var(--dsw-alias-border-l2);
-  border-radius: 7px;
+  border-radius: var(--dsw-control-field-radius);
   outline: none;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-primary);
@@ -885,8 +920,9 @@
   line-height: 20px;
 }
 
-.zoneSearch:focus {
-  border-color: var(--dsw-alias-state-business-primary);
+.zoneSearch:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 .ruleWeekdays {
@@ -901,10 +937,13 @@
    weekday pills' 4px gap, right-aligned under the row like the weekday pills. */
 .ruleMonthDays {
   display: grid;
-  grid-template-columns: repeat(7, minmax(36px, max-content));
-  justify-content: flex-end;
+  grid-template-columns: repeat(7, var(--dsw-control-height-compact));
+  justify-content: start;
+  min-width: 0;
+  max-width: 100%;
   gap: 4px;
   padding: 6px 0;
+  overflow-x: auto;
 }
 
 /* Stretched pills would keep their day number on the left edge, so each
@@ -912,25 +951,34 @@
 .ruleMonthDays > * {
   justify-self: stretch;
   justify-content: center;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
+  padding: 0;
+  border-radius: var(--dsw-radius-sm);
 }
 
 .ruleInput {
+  box-sizing: border-box;
   flex: 0 1 58%;
   min-width: 0;
+  min-height: var(--dsw-control-height-compact);
   padding: 5px 8px;
   margin-right: 0;
   border: none;
-  border-radius: 18px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-primary);
   font: inherit;
   font-size: 14px;
   text-align: right;
-  transition: background 0.15s;
+  transition: background var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.ruleInput:not(:disabled):hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .ruleInput:not(:disabled):hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 /* An ended task keeps its values readable: tertiary rather than dimmed ink. */
@@ -938,11 +986,7 @@
   color: var(--dsw-alias-label-tertiary);
 }
 
-/* The elapsed-interval row keeps the quantity and its unit on one right-aligned
-   line, and the quantity sits in the settings font-size stepper pill
-   (ui-theme FontSizeRow.module.css `.stepper`): a 36px 18px-radius module-fill
-   pill whose right-edge arrow column shows on hover or focus, with the unit
-   word outside the pill. */
+/* The interval field groups its quantity and two full-size step actions. */
 .ruleInterval {
   display: flex;
   flex: none;
@@ -957,38 +1001,42 @@
   align-items: center;
   justify-content: center;
   min-width: 72px;
-  height: 36px;
-  border-radius: 18px;
+  height: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: var(--dsw-alias-bg-module-platform);
 }
 
-/* The input sizes the pill from its digit count (`--interval-digits`, set by
-   the component), and the 26px side padding keeps every digit clear of the
-   arrow column while the value stays pill-centered. */
+.ruleIntervalStepper:has(:focus-visible) {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
+}
+
+/* The quantity follows its digit count while reserving ordinary field padding. */
 .ruleIntervalInput {
   flex: 0 1 auto;
   box-sizing: border-box;
-  width: calc(var(--interval-digits, 1) * 1ch + 52px);
-  min-width: 72px;
+  width: calc(var(--interval-digits, 1) * 1ch + 24px);
+  min-width: var(--dsw-control-height-compact);
   height: 100%;
-  padding: 0 26px;
+  padding: 0 12px;
   appearance: textfield;
   border-radius: inherit;
   font-variant-numeric: tabular-nums;
   text-align: center;
 }
 
-/* The pill replaces the native field chrome: no spin buttons, no hover fill of
-   its own, and no focus ring — the caret and the revealed arrows mark focus,
-   as in the settings stepper. */
+/* The containing rounded field owns focus for both input and step actions. */
 .ruleIntervalInput::-webkit-outer-spin-button,
 .ruleIntervalInput::-webkit-inner-spin-button {
   margin: 0;
   appearance: none;
 }
 
-.ruleIntervalInput:not(:disabled):hover {
-  background: transparent;
+@media (hover: hover) {
+  .ruleIntervalInput:not(:disabled):hover {
+    background: transparent;
+  }
 }
 
 .ruleRows .ruleIntervalInput:focus-visible {
@@ -996,35 +1044,30 @@
 }
 
 .ruleIntervalArrows {
-  position: absolute;
-  right: 8px;
   display: flex;
-  flex-direction: column;
+  flex: none;
   gap: 2px;
-  opacity: 0;
-}
-
-.ruleIntervalStepper:hover .ruleIntervalArrows,
-.ruleIntervalStepper:focus-within .ruleIntervalArrows {
-  opacity: 1;
 }
 
 .ruleIntervalArrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 12px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   border: none;
-  border-radius: 3px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 75%, transparent);
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
 }
 
-.ruleIntervalArrow:hover:not(:disabled) {
-  background: var(--dsw-alias-bg-layer-1);
+@media (hover: hover) {
+  .ruleIntervalArrow:hover:not(:disabled) {
+    background: var(--dsw-alias-bg-layer-1);
+  }
 }
 
 .ruleIntervalArrow:disabled {
@@ -1099,7 +1142,7 @@
   font-size: 14px;
   line-height: 24px;
   resize: none;
-  transition: border-color 0.15s;
+  transition: border-color var(--ds-transition-duration) var(--ds-ease-in-out);
   /* The inset thumb and the vertical track margin keep the bar inside the
      box's rounded corners (rendered by ui-theme styles/scrollbar.css). */
   --dsh-scrollbar-width: 9px;
@@ -1107,12 +1150,15 @@
   --dsh-scrollbar-track-margin: 12px;
 }
 
-.instruction:hover {
-  border-color: var(--dsw-alias-border-l2);
+@media (hover: hover) {
+  .instruction:hover {
+    border-color: var(--dsw-alias-border-l2);
+  }
 }
 
-.instruction:focus {
-  border-color: var(--dsw-alias-state-business-primary);
+.instruction:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 /* An ended task's stored instruction reads as plain text: no box and no edit
@@ -1252,8 +1298,10 @@
   cursor: pointer;
 }
 
-.savedPromptToggle:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .savedPromptToggle:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .savedPromptToggle:focus-visible {
@@ -1307,7 +1355,7 @@
 }
 
 .saveFooter > button {
-  height: 32px;
+  height: var(--dsw-control-height-compact);
   font-size: 13px;
 }
 
@@ -1341,12 +1389,11 @@
   align-items: center;
   gap: 6px;
   min-width: 0;
-  height: 28px;
+  height: var(--dsw-control-height-compact);
   padding: 0 8px;
   border: 0;
-  /* The strip's icon buttons are 28px `sm` capsules (14px), so this pill keeps
-     the same corner. */
-  border-radius: 14px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   text-align: left;
 }
 
@@ -1421,14 +1468,6 @@
 .page :focus-visible {
   outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
   outline-offset: 2px;
-}
-
-/* Text fields match :focus-visible on pointer focus too, so the page ring
-   would flash on every click into them; their own underline and border cues
-   already mark focus, so they opt out of the ring. */
-.page .editName:focus-visible,
-.page .instruction:focus-visible {
-  outline: none;
 }
 
 /* The mock's `.automation-detail` gutter steps: 24px by default, 20px from the

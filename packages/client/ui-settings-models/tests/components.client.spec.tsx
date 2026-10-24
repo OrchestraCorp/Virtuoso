@@ -396,6 +396,9 @@ describe('ModelsSection', () => {
         t={t}
         renderSlot={() => null}
       />)
+      const loading = screen.getByRole('status', { name: en.loading })
+      expect(loading.querySelector('[data-state="ongoing"]')).toBeTruthy()
+      expect(loading.closest('[aria-busy="true"]')).toBeTruthy()
       expect(screen.getByRole('heading', { name: en.title })).toBeTruthy()
       expect(screen.queryByLabelText(en.keyInput)).toBeNull()
       expect(screen.queryByRole('button', { name: en.add })).toBeNull()
@@ -443,6 +446,9 @@ describe('ModelsSection', () => {
       expect(load).toHaveBeenCalledOnce()
       expect(controller.store.getSnapshot()).toMatchObject({ status: 'loading' })
       expect(controller.store.getSnapshot().namespaces.get('llm-deepseek')?.revision).toBe(0)
+      const loading = screen.getByRole('status', { name: en.loading })
+      expect(loading.querySelector('[data-state="ongoing"]')).toBeTruthy()
+      expect(loading.closest('[aria-busy="true"]')).toBeTruthy()
       expect(screen.getByRole('heading', { name: en.title })).toBeTruthy()
       expect(screen.queryByLabelText(en.keyInput)).toBeNull()
     } finally {

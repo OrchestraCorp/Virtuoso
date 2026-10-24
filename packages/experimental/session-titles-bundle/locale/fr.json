@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Titres suivant la conversation",
+    "description": "Actualiser les titres des sessions à l'arrivée de nouvelles demandes de l'utilisateur."
+  }
+}

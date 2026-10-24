@@ -6,7 +6,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  height: auto;
+  min-height: var(--dsw-control-height-compact);
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 
 /* The user clock keeps the secondary tier. */
@@ -34,6 +37,8 @@
   min-width: 0;
   margin-left: 8px;
   color: var(--dsw-alias-label-tertiary);
+  max-width: 100%;
+  flex-wrap: wrap;
 }
 
 /* Earlier user-authored flow rows and opted-in turn tails reveal the complete
@@ -64,14 +69,16 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(28px + var(--dsh-content-font-delta, 0px));
-  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 6px;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
+  box-sizing: border-box;
+  corner-shape: round;
 }
 
 /* Action glyphs follow the same px delta as the text they serve; the
@@ -86,9 +93,11 @@
   height: calc(17px + var(--dsh-content-font-delta, 0px));
 }
 
-.action:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-secondary);
+@media (hover: hover) {
+  .action:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 /* Unavailable stays focusable and hoverable so Tooltip can explain why. */
@@ -97,9 +106,11 @@
   opacity: 0.4;
 }
 
-.action[data-unavailable]:hover {
-  background: transparent;
-  color: var(--dsw-alias-label-tertiary);
+@media (hover: hover) {
+  .action[data-unavailable]:hover {
+    background: transparent;
+    color: var(--dsw-alias-label-tertiary);
+  }
 }
 
 .visuallyHidden {
@@ -110,3 +121,5 @@
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+.action:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

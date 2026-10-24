@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ui-secret-mask",
+    "description": "전송된 메시지에서 감지한 키, 토큰 및 비밀번호를 가립니다."
+  }
+}

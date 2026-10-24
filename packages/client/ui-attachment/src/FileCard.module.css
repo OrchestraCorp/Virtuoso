@@ -101,9 +101,14 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.card:hover .remove,
 .remove:focus-visible {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  .card:hover .remove {
+    opacity: 1;
+  }
 }
 
 @media (pointer: coarse) {
@@ -118,9 +123,14 @@
   }
 }
 
-.card:hover .name,
 .card:focus-within .name {
   padding-right: 18px;
+}
+
+@media (hover: hover) {
+  .card:hover .name {
+    padding-right: 18px;
+  }
 }
 
 .removeFailed {

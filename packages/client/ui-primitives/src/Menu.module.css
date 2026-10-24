@@ -93,36 +93,40 @@
 
 /* Menu cell: compact text, icon, and selection spacing. */
 .item {
+  box-sizing: border-box;
   display: flex;
   align-items: center;
   gap: 6px;
   width: 100%;
-  min-height: 34px;
+  min-height: var(--dsw-control-height-compact);
   padding: 6px 8px;
   border: none;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-radius-sm);
   background: transparent;
   cursor: pointer;
   font-size: 13px;
   line-height: 20px;
   color: var(--dsw-alias-label-primary);
   text-align: left;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out),
+    box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
-.item:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .item:hover:not(:disabled) {
+    background: var(--dsw-control-hover-fill);
+  }
 }
 
-/* Arrow navigation moves real focus, so the row the keyboard is on carries the
-   same fill the pointer gets: the fill is the row's focus indication, and the
-   browser's default ring would double it. */
+/* The inset keyboard ring remains visible inside clipped menu rows. */
 .item:focus-visible:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
-  outline: none;
+  background: var(--dsw-control-hover-fill);
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
 }
 
 .denseList .item {
-  min-height: 30px;
+  min-height: var(--dsw-control-height-compact);
   padding-block: 4px;
 }
 
@@ -137,10 +141,10 @@
 }
 
 .compactList .item {
-  min-height: 24px;
+  min-height: var(--dsw-control-height-compact);
   gap: 5px;
   padding: 2px 6px;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-radius-xs);
   font-size: 11px;
   line-height: 17px;
 }
@@ -219,7 +223,16 @@
 
 /* Fill-mode selection: the row holds the hover fill instead of a check. */
 .selectedFill {
-  background: var(--dsw-alias-interactive-bg-hover);
+  background: var(--dsw-control-selected-fill);
+  color: var(--dsw-control-selected-label);
+}
+
+.selectedFill:focus-visible:not(:disabled) {
+  background: var(--dsw-control-selected-fill);
+}
+
+.item:active:not(:disabled) {
+  box-shadow: var(--dsw-control-pressed-shadow);
 }
 
 /* Destructive row: error text/icon, danger hover fill. */
@@ -231,13 +244,20 @@
   color: var(--dsw-alias-state-error-primary);
 }
 
-.danger:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover-danger);
+@media (hover: hover) {
+  .danger:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover-danger);
+  }
 }
 
 .danger:focus-visible:not(:disabled) {
   background: var(--dsw-alias-interactive-bg-hover-danger);
-  outline: none;
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .item { transition: none; }
 }
 
 /* Heading row: non-interactive small grey text, padding aligned with items. */
@@ -283,3 +303,9 @@
   left: -10px;
   width: 10px;
 }
+
+@media (hover: hover) {
+  .selectedFill:hover:not(:disabled) { background: var(--dsw-control-selected-fill); }
+}
+
+.selectedFill .itemIcon { color: inherit; }

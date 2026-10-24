@@ -1,0 +1,22 @@
+{
+  "chat": {
+    "settings.performance.compact": {
+      "zh-Hant": "簡潔",
+      "ja": "コンパクト",
+      "ko": "간결하게",
+      "de": "Kompakt",
+      "fr": "Compact",
+      "es": "Compacto",
+      "pt": "Compacto"
+    },
+    "settings.transcript.compact": {
+      "zh-Hant": "簡潔",
+      "ja": "コンパクト",
+      "ko": "간결하게",
+      "de": "Kompakt",
+      "fr": "Compact",
+      "es": "Compacto",
+      "pt": "Compacto"
+    }
+  }
+}

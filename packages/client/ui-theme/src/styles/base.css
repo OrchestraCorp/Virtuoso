@@ -4,23 +4,23 @@
  * font stack deliberately omits a bare `monospace` tail (Windows CJK falls
  * back to SimSun otherwise). */
 :root {
-  --dsh-font-family-text-default: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+  --dsh-font-family-text-default: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   --dsw-font-family: var(--dsh-font-family-text-default);
-  --dsw-font-family-brand: 'Montserrat', var(--dsh-font-family-text-default);
-  --dsh-font-family-code-default: 'SF Mono', 'JetBrains Mono', 'Fira Code', Consolas,
+  --dsw-font-family-brand: var(--dsh-font-family-text-default);
+  --dsh-font-family-code-default: 'JetBrains Mono', 'SF Mono', 'Fira Code', Consolas,
     'Liberation Mono', Menlo, Courier, 'PingFang SC', 'Microsoft YaHei';
   --ds-font-family-code: var(--dsh-font-family-code-default);
-  --ds-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ds-transition-duration: 0.2s;
-  --ds-transition-duration-fast: 0.1s;
-  --ds-transition-duration-slow: 0.3s;
-  --dsw-radius-xs: 4px;
-  --dsw-radius-sm: 8px;
-  --dsw-radius-md: 12px;
-  --dsw-radius-lg: 16px;
+  --ds-ease-in-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ds-transition-duration: 140ms;
+  --ds-transition-duration-fast: 90ms;
+  --ds-transition-duration-slow: 240ms;
+  --dsw-radius-xs: 6px;
+  --dsw-radius-sm: 12px;
+  --dsw-radius-md: 16px;
+  --dsw-radius-lg: 20px;
   --dsw-radius-xl: 20px;
-  --dsw-radius-panel: 28px;
+  --dsw-radius-panel: 20px;
 }
 
 /* User font lists (--dsh-font-family-text/-code, written on body by the theme

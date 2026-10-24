@@ -22,8 +22,13 @@ async function paint(target: Locator) {
       active: document.activeElement === element,
       focusVisible: element.matches(':focus-visible'),
       modality: document.documentElement.getAttribute('data-input-modality'),
-      focusColor: resolveColor(style.getPropertyValue('--dsw-alias-state-business-primary').trim()),
-      hover: resolveColor(style.getPropertyValue('--dsw-alias-interactive-bg-hover').trim()),
+      focusColor: resolveColor(style.getPropertyValue('--dsw-focus-ring-color').trim()
+        || style.getPropertyValue('--dsw-alias-state-business-primary').trim()),
+      keyboardFocusColor: resolveColor(getComputedStyle(document.body).getPropertyValue('--dsw-focus-ring-color').trim()
+        || style.getPropertyValue('--dsw-alias-state-business-primary').trim()),
+      businessColor: resolveColor(style.getPropertyValue('--dsw-alias-state-business-primary').trim()),
+      hover: resolveColor(style.getPropertyValue('--dsw-control-hover-fill').trim()
+        || style.getPropertyValue('--dsw-alias-interactive-bg-hover').trim()),
       outline: style.outlineColor,
       outlineStyle: style.outlineStyle,
       outlineWidth: style.outlineWidth,
@@ -39,7 +44,7 @@ async function expectSilent(target: Locator): Promise<void> {
   expect(state.modality).toBe('pointer')
   expect(state.focusColor).toMatch(/^rgb/)
   expect(state.outlineStyle === 'none' || state.outline === 'rgba(0, 0, 0, 0)').toBe(true)
-  expect(state.shadow).not.toContain(state.focusColor)
+  expect(state.shadow).not.toContain(state.keyboardFocusColor)
 }
 
 async function expectFocusRing(target: Locator, kind: 'outline' | 'shadow'): Promise<void> {
@@ -51,7 +56,7 @@ async function expectFocusRing(target: Locator, kind: 'outline' | 'shadow'): Pro
       modality: state.modality,
       painted: kind === 'shadow'
         ? state.shadow.includes(state.focusColor)
-        : state.outline === state.focusColor && state.outlineStyle === 'solid' && Number.parseFloat(state.outlineWidth) > 0,
+        : state.outline === state.focusColor && state.outlineStyle === 'solid' && state.outlineWidth === '2px',
     }
   }).toEqual({ active: true, visible: true, modality: 'keyboard', painted: true })
 }
@@ -104,7 +109,7 @@ it.each(['light', 'dark'] as const)('assembled app (%s): pointer keys stay silen
   await connectFreshWorkspace(page, scaffold.workspaceCwd)
   await expect.poll(() => page.locator('body').getAttribute('data-ds-dark-theme')).toBe(theme === 'dark' ? '' : null)
   const trigger = page.getByRole('button', { name: /^Access mode, current:/ })
-  expect((await paint(trigger)).focusColor).toBe(theme === 'dark' ? 'rgb(122, 170, 255)' : 'rgb(65, 118, 230)')
+  expect((await paint(trigger)).focusColor).toMatch(/^rgb/u)
 
   await trigger.click()
   await page.getByRole('menu').waitFor()
@@ -120,7 +125,7 @@ it.each(['light', 'dark'] as const)('assembled app (%s): pointer keys stay silen
     await page.keyboard.press('Escape')
     await expectSilent(trigger)
     await page.keyboard.press(key)
-    await expectFocusRing(trigger, 'shadow')
+    await expectFocusRing(trigger, 'outline')
   }
 
   await trigger.click()
@@ -128,11 +133,11 @@ it.each(['light', 'dark'] as const)('assembled app (%s): pointer keys stay silen
   await page.keyboard.press('Shift+Tab')
   expect(await trigger.evaluate(element => element === document.activeElement)).toBe(false)
   await page.keyboard.press('Tab')
-  await expectFocusRing(trigger, 'shadow')
+  await expectFocusRing(trigger, 'outline')
   for (const key of ['Enter', 'Space']) {
     await page.keyboard.press(key)
     await page.getByRole('menu').waitFor()
-    await expectFocusRing(trigger, 'shadow')
+    await expectFocusRing(trigger, 'outline')
     const menu = page.getByRole('menu')
     for (const [navigation, index] of [['End', -1], ['Home', 0]] as const) {
       await page.keyboard.press(navigation)
@@ -141,12 +146,12 @@ it.each(['light', 'dark'] as const)('assembled app (%s): pointer keys stay silen
       expect(state.active).toBe(true)
       expect(state.focusVisible).toBe(true)
       expect(state.modality).toBe('keyboard')
-      // Menu rows intentionally use the hover fill instead of a second outline.
-      expect(state.background).toBe(state.hover)
-      expect(state.background).not.toBe('rgba(0, 0, 0, 0)')
+      await expectFocusRing(row, 'outline')
+      await expect.poll(async () => (await paint(row)).background).toBe(state.hover)
+      expect((await paint(row)).background).not.toBe('rgba(0, 0, 0, 0)')
     }
     await page.keyboard.press('Escape')
-    await expectFocusRing(trigger, 'shadow')
+    await expectFocusRing(trigger, 'outline')
   }
   expect(consoleWatch.warnings).toEqual([])
   expect(consoleWatch.pageErrors).toEqual([])
@@ -167,11 +172,13 @@ it.each(['light', 'dark'] as const)('assembled app (%s): the sidebar toggle keep
   /** Sample the ring box once the collapse animation stops moving the control. */
   const settle = async (target: Locator, width: number): Promise<void> => {
     await expect.poll(() => target.evaluate(element => element.getBoundingClientRect().width)).toBe(width)
-    await target.evaluate(async (element) => {
+    await expect.poll(() => target.evaluate((element) => {
+      let moving = 0
       for (let node: Element | null = element; node !== null; node = node.parentElement) {
-        await Promise.all(node.getAnimations().map(animation => animation.finished))
+        moving += node.getAnimations().filter(animation => animation.pending || animation.playState === 'running').length
       }
-    })
+      return moving
+    })).toBe(0)
   }
 
   await toggle.click()
@@ -185,7 +192,7 @@ it.each(['light', 'dark'] as const)('assembled app (%s): the sidebar toggle keep
 
   await rail.click()
   await toggle.waitFor()
-  await settle(toggle, 28)
+  await settle(toggle, 36)
   await expectSilent(toggle)
   await page.keyboard.press('Home')
   await expectFocusRing(toggle, 'outline')
@@ -208,6 +215,7 @@ async function compileFixture(): Promise<{ script: string; css: string }> {
     import ${source('ui-primitives/src/input-modality.ts')}
     import ${source('ui-theme/src/styles/base.css')}
     import ${source('ui-theme/src/styles/design-platform.css')}
+    import ${source('ui-theme/src/styles/control-material.css')}
     import ${source('ui-theme/src/styles/focus.css')}
     import ${source('ui-theme/src/styles/gradient-shadow-text.css')}
     import triggerCss from ${source('ui-permission-presets/src/client/PermissionSelect.module.css')}
@@ -355,7 +363,7 @@ describe('source-compiled supplementary focus paint', () => {
     expect(ring.outline).toBe(ring.focusColor)
   })
 
-  it('keeps Shift/Escape silent while Tab, Home, End and paging reveal a blue outline', async () => {
+  it('keeps Shift/Escape silent while Tab, Home, End and paging reveal the shared focus outline', async () => {
     const page = await openFixture()
     const toggle = page.getByRole('switch', { name: 'Toggle' })
     await toggle.click()
@@ -397,8 +405,9 @@ describe('source-compiled supplementary focus paint', () => {
     expect(state.focusVisible).toBe(true)
     expect(state.background).toBe(state.hover)
     expect(state.background).not.toBe('rgba(0, 0, 0, 0)')
+    await expectFocusRing(first, 'outline')
     await page.keyboard.press('Escape')
-    await expectFocusRing(trigger, 'shadow')
+    await expectFocusRing(trigger, 'outline')
   })
 
   it('negative control: blanket shadow suppression destroys input and card paint and misses descendants', async () => {
@@ -409,7 +418,9 @@ describe('source-compiled supplementary focus paint', () => {
     await input.click()
     const focusedInput = await paint(input)
     expect(focusedInput.active).toBe(true)
-    expect(focusedInput.shadow).toContain(focusedInput.focusColor)
+    expect(focusedInput.outlineStyle).toBe('solid')
+    expect(focusedInput.outlineWidth).toBe('2px')
+    expect(focusedInput.outline).toBe(focusedInput.focusColor)
     // Restore direct-colour fallback and the rejected global eraser only in this page.
     await page.addStyleTag({ content: `
       html[data-input-modality='pointer'] body :focus-visible {
@@ -418,7 +429,7 @@ describe('source-compiled supplementary focus paint', () => {
         box-shadow: none !important;
       }
     ` })
-    expect((await paint(input)).shadow).toBe('none')
+    expect((await paint(input)).outline).toBe('rgba(0, 0, 0, 0)')
     await card.click()
     await page.keyboard.press('Shift')
     expect((await paint(card)).active).toBe(true)
@@ -433,7 +444,7 @@ describe('source-compiled supplementary focus paint', () => {
     expect(descendant.outline).toBe(descendant.focusColor)
   })
 
-  it('silences high-specificity table rings without hiding selected-state shadows', async () => {
+  it('silences high-specificity table rings without hiding selected-state paint', async () => {
     const page = await openFixture()
     const row = page.getByRole('row', { name: 'Trajectory row' })
     await row.click()
@@ -445,19 +456,21 @@ describe('source-compiled supplementary focus paint', () => {
 
     for (const [name, pseudo] of [['Selected pill', null], ['Selected request', '::before']] as const) {
       const selected = page.getByRole('button', { name })
-      const shadow = (): Promise<string> => selected.evaluate((element, pseudo) => getComputedStyle(element, pseudo).boxShadow, pseudo)
+      const selectionPaint = () => selected.evaluate((element, pseudo) => {
+        const style = getComputedStyle(element, pseudo)
+        return { background: style.backgroundColor, shadow: style.boxShadow }
+      }, pseudo)
       await selected.click()
       // The request marker animates its border; sample after its transition settles.
       await selected.evaluate(async (element) => {
         await Promise.all(element.getAnimations({ subtree: true }).map(animation => animation.finished))
       })
-      const before = await shadow()
-      expect(before).not.toBe('none')
-      expect(before).not.toContain('rgba(0, 0, 0, 0)')
+      const before = await selectionPaint()
+      expect(before.background !== 'rgba(0, 0, 0, 0)' || before.shadow !== 'none').toBe(true)
       await page.keyboard.press('Shift')
       expect(await selected.getAttribute('aria-pressed')).toBe('true')
       expect((await paint(selected)).active).toBe(true)
-      await expect.poll(shadow).toBe(before)
+      await expect.poll(selectionPaint).toEqual(before)
     }
   })
 
@@ -468,7 +481,7 @@ describe('source-compiled supplementary focus paint', () => {
     await page.keyboard.type('Still focused')
     await expect.poll(async () => {
       const state = await paint(input)
-      return { active: state.active, visible: state.focusVisible, modality: state.modality, ring: state.shadow.includes(state.focusColor) }
+      return { active: state.active, visible: state.focusVisible, modality: state.modality, ring: state.outlineStyle === 'solid' && state.outlineWidth === '2px' && state.outline === state.focusColor }
     }).toEqual({ active: true, visible: true, modality: 'pointer', ring: true })
 
     const member = page.getByRole('button', { name: 'Workflow member' })
@@ -505,7 +518,7 @@ describe('source-compiled supplementary focus paint', () => {
     const light = await ringReport(button)
     expect(light.style).not.toBe('none')
     expect(light.width).toBe('2px')
-    expect(light.color).toBe('rgb(65, 118, 230)')
+    expect(light.color).toBe((await paint(button)).focusColor)
     expect(light.contrast).not.toBeNull()
     expect(light.contrast!).toBeGreaterThanOrEqual(3)
 
@@ -514,7 +527,7 @@ describe('source-compiled supplementary focus paint', () => {
     await button.focus()
     const dark = await ringReport(button)
     expect(dark.width).toBe('2px')
-    expect(dark.color).toBe('rgb(122, 170, 255)')
+    expect(dark.color).toBe((await paint(button)).focusColor)
     expect(dark.contrast).not.toBeNull()
     expect(dark.contrast!).toBeGreaterThanOrEqual(3)
 

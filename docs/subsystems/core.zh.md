@@ -52,6 +52,12 @@ interface AgentHandle {
 
 `AgentFactory` 是注册表背后的创建接口：循环经 `ctx.agents.setFactory()` 注册其工厂，因此消费方使用 `ctx.agents` 时无需依赖具体循环包。运行时子 Agent 的创建方设置 `options.parentAgent`；注册表把 options 与调用方 Context 传给工厂，不从其中一项推导另一项。确切的 `create`/`resume` 签名及回滚约定见下方[生成区块](#ctxagents--agentregistry)。
 
+<a id="default-model-sources"></a>
+
+## 默认模型来源
+
+[`agent-default-model`](../../packages/core/agent-default-model/README.zh.md) 接受一个 `DefaultModelSource`：其 `currentSelection()` 提供产品默认模型，`saveSelection()` 拥有该选择的持久化。来源未返回选择时继承插件 Config；释放其注册会恢复 Config 行为。来源声明位于 [`src/index.ts`](../../packages/core/agent-default-model/src/index.ts)，会话专属的模型选择仍由调用入口拥有。
+
 <a id="the-agent-handle"></a>
 
 ## Agent 句柄
@@ -433,23 +439,38 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 
 ### `ctx.agentDefaultModel` — `AgentDefaultModelConfig`
 
-Owns the default model selection independently of any Host or transport. Each operation reads the owning Config references.
+Owns the default model selection independently of any Host or transport. A registered product source owns persistence; absent a selection, reads inherit Config.
 
 ```ts cordis-catalog
 /**
  * Read the current default model selection.
- * @returns a detached provider, model, and optional reasoning selection.
+ * @returns a detached selection, or undefined until a model is explicitly configured.
  */
-currentSelection(): ModelSelection
+currentSelection(): ModelSelection | undefined
 
 /**
- * Save the complete default model selection. A deployment without a configuration
- * editor keeps its composition entry. Saves commit in submission order; a failed
+ * Resolve the explicit default before a model request starts.
+ * @returns the configured model selection.
+ * @throws LlmError MODEL_NOT_CONFIGURED until a default has been selected.
+ */
+requireSelection(): ModelSelection
+
+/**
+ * Save the complete default through the registered source or profile editor.
+ * A non-owner Remote caller cannot persist a registered product default;
+ * its entry point may still keep the selected model on that caller's Session.
+ * Without either, the deployment keeps its composition entry. Saves commit in submission order; a failed
  * save rejects its caller without blocking later saves.
  * @param next - resolved selection accepted by an entry point.
  * @returns fulfillment after the optional profile write settles.
  */
 async saveSelection(next: ModelSelection): Promise<void>
+
+/** Register one product-owned default; unloading the registration restores Config behavior.
+ * @param source Product persistence owner. A second simultaneous source is refused.
+ * @returns the caller-owned disposer.
+ */
+registerSource(source: DefaultModelSource): () => void
 ```
 
 Source: [`packages/core/agent-default-model/src/index.ts`](../../packages/core/agent-default-model/src/index.ts)

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ui-secret-mask",
+    "description": "Erkannte Schlüssel, Tokens und Passwörter in gesendeten Nachrichten maskieren."
+  }
+}

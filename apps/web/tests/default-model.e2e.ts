@@ -1,5 +1,5 @@
 // Web e2e scenario: switching models in the composer is how this deployment's
-// default is chosen. The gesture writes the shared `agent-default-model` settings section, a
+// default is chosen. The gesture persists the model-connections default, a
 // session created afterwards starts from it, and a session that already logged
 // a route keeps deriving from its own log — the tier order the gateway
 // resolves on every read.
@@ -15,8 +15,10 @@ import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import type { Browser, Locator, Page } from 'playwright'
 import { chromium } from 'playwright'
-import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it, onTestFailed, vi } from 'vitest'
 import { SessionId } from '@deepseek-ai/dsh-session'
+import type {} from '@deepseek-ai/dsh-model-connections'
+import type {} from '@deepseek-ai/dsh-storage-domain'
 import { launchWebScaffold, watchConsole, captureStableAria, compareOrRefreshGolden, webSnapshotMode, type WebScaffold } from './scaffold.ts'
 import { ZH_BROWSER_LOCALE, connectFreshWorkspaceZh, saveFailureShot } from './support.ts'
 
@@ -492,12 +494,15 @@ describe('web e2e: the composer model switch is the default for later sessions',
     )
     const entered = Promise.withResolvers<undefined>()
     const release = Promise.withResolvers<undefined>()
-    const blocked = scaffold.ctx.hmr.runExclusive(async () => {
+    const domain = scaffold.ctx.storageDomain.get('model_connections')
+    if (domain === undefined) throw new Error('model connections domain is not open')
+    const write = domain.global.set.bind(domain.global)
+    const blocked = vi.spyOn(domain.global, 'set').mockImplementationOnce(async (value) => {
       entered.resolve(undefined)
       await release.promise
+      await write(value)
     })
     try {
-      await entered.promise
       await search.press('ArrowDown')
       await expect.poll(() => search.evaluate(input => input === input.ownerDocument.activeElement)).toBe(true)
       expect(await search.getAttribute('aria-activedescendant'))
@@ -507,23 +512,21 @@ describe('web e2e: the composer model switch is the default for later sessions',
       await expect.poll(() => trigger.textContent()).toContain('Acme Large')
       await expect.poll(() => trigger.evaluate(element => element === element.ownerDocument.activeElement)).toBe(true)
       expect(await trigger.evaluate(element => getComputedStyle(element).boxShadow)).toBe('none')
+      await entered.promise
       expect(scaffold.ctx.agentDefaultModel.currentSelection()).toEqual({ provider: START_ROUTE, model: START_MODEL })
       const aria = await captureStableAria(page, '[data-composer-card]', scaffold.workspaceCwd)
       await compareOrRefreshGolden(fileURLToPath(new URL('./expected/default-model/background-save.expected.md', import.meta.url)), aria, webSnapshotMode())
     } finally {
       release.resolve(undefined)
-      await blocked
+      blocked.mockRestore()
     }
 
-    // The switch is what sets the default: the shared Agent-route settings section
-    // now names it, beside the provider profiles the Models page writes.
+    // The product default is durable in the connections KV aggregate.
     await expect.poll(
-      async () => readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8'),
+      async (): Promise<unknown> => JSON.parse(await readFile(join(scaffold.workspaceCwd, '.dsh-storages', 'model_connections.json'), 'utf8')),
       { timeout: 10_000 },
-    ).toContain('id: agent-default-model')
-    const document = await readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8')
-    expect(document).toContain(`provider: ${ROUTE}`)
-    expect(document).toContain(`model: ${MODEL}`)
+    ).toMatchObject({ global: { defaultSelection: { provider: ROUTE, model: MODEL } } })
+    expect((await scaffold.ctx.modelConnections.list()).defaultSelection).toEqual({ provider: ROUTE, model: MODEL })
 
     await expect.poll(() => scaffold.ctx.agentDefaultModel.currentSelection())
       .toEqual({ provider: ROUTE, model: MODEL })

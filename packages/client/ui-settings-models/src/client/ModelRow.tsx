@@ -52,7 +52,7 @@ export function ModelRow(props: ModelRowProps): ReactNode {
         {(['id', 'name'] as const).map(field => (
           <input
             key={field}
-            className={styles['input']}
+            className={`${styles['input']} ${field === 'id' ? styles['technicalInput'] : ''}`}
             type="text"
             value={typeof model[field] === 'string' ? model[field] : ''}
             placeholder={t(field === 'id' ? 'modelId' : 'modelName')}

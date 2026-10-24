@@ -1,18 +1,22 @@
-/* Button sizes share the global control-radius scale. */
+/* Labeled actions are capsules; icon-only actions keep the same size as a circle. */
 .button {
+  --dsl-button-height: var(--dsw-control-height);
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  border: none;
-  border-radius: var(--dsw-radius-md);
+  gap: 6px;
+  border: 0;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   cursor: pointer;
   font-size: 14px;
   line-height: 22px;
   color: var(--dsw-alias-label-primary);
   background: transparent;
-  padding: 0 14px;
+  padding: 0 18px;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out),
+    box-shadow var(--ds-transition-duration-fast) var(--ds-ease-in-out);
 }
 
 .button:disabled {
@@ -21,51 +25,82 @@
 }
 
 .md {
-  height: 36px;
+  height: var(--dsl-button-height);
 }
 
 /* Compact controls retain their dimensions across filled and outlined variants. */
 .sm {
-  height: 28px;
+  --dsl-button-height: var(--dsw-control-height-compact);
+  height: var(--dsl-button-height);
   font-size: 12px;
   line-height: 18px;
   padding: 0 10px;
-  border-radius: var(--dsw-radius-sm);
+}
+
+.iconOnly {
+  width: var(--dsl-button-height);
+  padding: 0;
+  flex: none;
+}
+
+.button:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 3px;
 }
 
 .primary {
   background: var(--dsw-alias-button-primary-fill);
+  box-shadow: var(--dsw-control-core-shadow);
   color: var(--dsw-alias-label-primary-foreground);
 }
 
-.primary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-primary-hover);
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    background: var(--dsw-alias-button-primary-hover);
+  }
 }
 
-.ghost:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .ghost:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .ghost:active:not(:disabled) {
   background: var(--dsw-alias-interactive-bg-active);
 }
 
-/* Outlined actions use the same neutral stroke as settings links. */
+/* Control shadows own the neutral edge, including the quiet outline family. */
 .outline {
-  border: 0.5px solid var(--dsw-alias-border-l3);
-  background: transparent;
+  background: var(--dsw-control-core-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-core-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
 }
 
-.outline:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .outline:hover:not(:disabled) {
+    background-color: var(--dsw-control-core-hover-fill);
+    box-shadow: var(--dsw-control-hover-shadow);
+  }
 }
 
 .toolbar {
-  background: var(--dsw-alias-button-tool-bar-fill);
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
 }
 
-.toolbar:hover:not(:disabled) {
-  background: var(--dsw-alias-button-tool-bar-hover);
+@media (hover: hover) {
+  .toolbar:hover:not(:disabled) {
+    background-color: var(--dsw-control-glass-hover-fill);
+    box-shadow: var(--dsw-control-hover-shadow);
+  }
+}
+
+.button:active:not(:disabled) {
+  box-shadow: var(--dsw-control-pressed-shadow);
 }
 
 .icon {
@@ -74,4 +109,33 @@
   height: 16px;
   align-items: center;
   justify-content: center;
+  flex: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button { transition: none; }
+}
+
+@media (prefers-contrast: more) {
+  .outline, .toolbar { border: 1px solid var(--dsw-control-edge); }
+}
+
+@media (forced-colors: active) {
+  .button {
+    border: 1px solid ButtonText;
+    background: Canvas;
+    color: ButtonText;
+  }
+
+  .primary {
+    border-color: Highlight;
+    background: Highlight;
+    color: HighlightText;
+  }
+
+  .button:disabled {
+    border-color: GrayText;
+    color: GrayText;
+    opacity: 1;
+  }
 }

@@ -50,9 +50,14 @@
   transition: opacity 0.2s ease-in-out;
 }
 
-.imageItem:hover .remove,
 .remove:focus-visible {
   opacity: 1;
+}
+
+@media (hover: hover) {
+  .imageItem:hover .remove {
+    opacity: 1;
+  }
 }
 
 @media (pointer: coarse) {

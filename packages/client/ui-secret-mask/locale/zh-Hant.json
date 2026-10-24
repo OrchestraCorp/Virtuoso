@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ui-secret-mask",
+    "description": "遮蔽已傳送訊息中辨識出的金鑰、權杖與密碼。"
+  }
+}

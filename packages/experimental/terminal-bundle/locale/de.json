@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Dauerhafte Terminals",
+    "description": "Shell-Prozesse über mehrere Werkzeugaufrufe hinweg weiterlaufen lassen."
+  }
+}

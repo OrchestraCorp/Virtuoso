@@ -136,6 +136,70 @@ function fireDrag(row: HTMLElement, kind: 'dragOver' | 'drop', clientY: number):
 }
 
 describe('workspace browser rows', () => {
+  it.each(['Enter', ' '])('activates focused workspace, session, and search rows with %s', (key) => {
+    const onToggle = vi.fn()
+    const onOpen = vi.fn()
+    const onSearchOpen = vi.fn()
+    const group: GroupNode = {
+      key: 'keyboard', workspaceId: wid('keyboard'), cwd: '/projects/keyboard', createdAt: 0, label: 'Keyboard workspace',
+      sessionCount: 0, expanded: false, containsCurrent: false, sessions: [],
+    }
+    const session: SessionNode = {
+      id: sid('keyboard-session'), title: 'Keyboard session', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, updatedAt: 0, pinned: false, archived: false,
+    }
+    const result: SearchResultNode = {
+      id: sid('keyboard-result'), title: 'Keyboard result', workspace: 'Keyboard workspace',
+      running: false, runningSubagentCount: 0, completed: false, archived: false,
+    }
+    render(<>
+      <ProjectRowItem group={group} onToggle={onToggle} onCreate={vi.fn()} t={t} />
+      <SessionNodeItem node={session} currentId={undefined} now={0} onOpen={onOpen} t={t} />
+      <SearchResultItem result={result} currentId={undefined} onOpen={onSearchOpen} onUnarchive={vi.fn()} t={t} />
+    </>)
+    for (const row of screen.getAllByRole('treeitem')) {
+      expect(row.tabIndex).toBe(0)
+      act(() => { row.focus() })
+      expect(document.activeElement).toBe(row)
+      const event = createEvent.keyDown(row, { key })
+      fireEvent(row, event)
+      expect(event.defaultPrevented).toBe(true)
+    }
+    expect(onToggle).toHaveBeenCalledOnce()
+    expect(onOpen).toHaveBeenCalledExactlyOnceWith(session.id)
+    expect(onSearchOpen).toHaveBeenCalledExactlyOnceWith(result.id)
+  })
+
+  it('leaves nested row controls and modified or composing keys to their own handlers', () => {
+    const onOpen = vi.fn()
+    const onAction = vi.fn()
+    const session: SessionNode = {
+      id: sid('keyboard-controls'), title: 'Keyboard controls', blank: false, running: false,
+      runningSubagentCount: 0, completed: false, updatedAt: 0, pinned: false, archived: false,
+    }
+    const renderSlot: RowRenderSlot = (name: RowSlotName) => name === 'sidebar.workspaces.session.row.action'
+      ? <button type="button" onClick={onAction}>Nested action</button>
+      : null
+    render(<SessionNodeItem node={session} currentId={undefined} now={0} onOpen={onOpen} renderSlot={renderSlot} t={t} />)
+    const row = screen.getByRole('treeitem')
+    const action = screen.getByRole('button', { name: 'Nested action' })
+    const childKey = createEvent.keyDown(action, { key: 'Enter' })
+    fireEvent(action, childKey)
+    expect(childKey.defaultPrevented).toBe(false)
+    fireEvent.click(action)
+    expect(onAction).toHaveBeenCalledOnce()
+    for (const options of [
+      { key: 'ArrowDown' }, { key: 'Enter', ctrlKey: true }, { key: 'Enter', altKey: true },
+      { key: 'Enter', metaKey: true }, { key: 'Enter', shiftKey: true },
+      { key: 'Enter', isComposing: true }, { key: ' ', repeat: true },
+    ]) {
+      const event = createEvent.keyDown(row, options)
+      fireEvent(row, event)
+      expect(event.defaultPrevented).toBe(false)
+    }
+    expect(onOpen).not.toHaveBeenCalled()
+  })
+
   it('keeps the leading status cell in the hierarchy-free flat list', () => {
     const idle: SessionNode = {
       id: sid('flat'), title: 'Flat Session', blank: false, running: false,

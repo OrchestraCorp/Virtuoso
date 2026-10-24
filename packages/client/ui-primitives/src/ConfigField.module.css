@@ -4,8 +4,13 @@
 .head label { color: var(--dsw-alias-label-primary); font-size: 13px; font-weight: 500; }
 .head button { border: none; background: none; color: var(--dsw-alias-label-secondary); font: inherit; cursor: pointer; }
 .field input, .field select, .field textarea {
-  padding: 6px 12px; border: 0.5px solid var(--dsw-alias-border-l4); border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-3); color: var(--dsw-alias-label-primary); font: inherit;
+  box-sizing: border-box; min-height: var(--dsw-control-height);
+  padding: 6px 12px; border: 0.5px solid var(--dsw-control-edge); border-radius: var(--dsw-control-field-radius);
+  background: var(--dsw-content-panel-fill); color: var(--dsw-alias-label-primary); font: inherit;
+}
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 .field textarea { resize: vertical; }
 .field [aria-invalid='true'] { border-color: var(--dsw-alias-state-error-primary); }

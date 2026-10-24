@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-为会话未指定模型的新 agent 提供共享默认 provider 和模型。Provider、模型和推理强度都是即时 Config 字段。保存的选择更新当前 profile patch，并用于后续读取；会话级选择仍由入口负责。
+为会话未指定模型的新 agent 提供共享默认 provider 和模型。Provider、模型和推理强度都是即时 Config 字段。保存的选择使用已注册的产品来源或当前 profile patch，并用于后续读取；会话级选择仍由入口负责。
 
 ## 目录
 
@@ -29,7 +29,7 @@ kind: "package-reference"
 
 ### 配置默认值
 
-组合要求提供 provider 和模型。即使没有挂载配置编辑器，消费者也可读取即时引用。
+组合可以同时省略 provider 和模型，直到用户显式选择；指定部署默认值时需同时填写两者。即使没有挂载配置编辑器，消费者也可读取即时引用。
 
 ```yaml
 - name: '@deepseek-ai/dsh-agent-default-model'
@@ -40,21 +40,23 @@ kind: "package-reference"
 
 | 字段 | 默认值 | 含义 |
 |---|---|---|
-| `provider` | 必填 | 新 agent 使用的已注册提供方路由 |
-| `model` | 必填 | 新 agent 使用的、由提供方持有的模型 id |
+| `provider` | 未设置 | 新 agent 使用的已注册提供方路由 |
+| `model` | 未设置 | 新 agent 使用的、由提供方持有的模型 id |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-agent-default-model) 列出所有接受的字段。`reasoningEffort` 是可选的；保存不含此字段的选择，会从 profile 的完整配置覆盖中移除此字段。
 
 ### 读取与更改默认值
 
-`currentSelection()` 为新创建的 agent 返回一份独立的 `{ provider, model, reasoningEffort? }`；`saveSelection()` 为后续 agent 保存完整选择。
+`currentSelection()` 返回一份独立的 `{ provider, model, reasoningEffort? }`，尚未配置默认值时返回 `undefined`。`requireSelection()` 以 `MODEL_NOT_CONFIGURED` 拒绝未配置的请求。`saveSelection()` 为后续读取保存完整选择；不会自动选用任何提供方。
 
 ```text
 const selection = ctx.agentDefaultModel.currentSelection()
 await ctx.agentDefaultModel.saveSelection({ provider, model, reasoningEffort: 'high' })
 ```
 
-没有配置编辑器时，`saveSelection()` 不执行写入。此服务不验证目录成员资格；发起模型请求的消费者负责可用性诊断。
+`registerSource(source)` 允许一个产品负责默认值持久化。其 `currentSelection()` 返回 `undefined` 时继承 Config；`saveSelection(next)` 持久化选择，不写 profile。重复注册来源会被拒绝，注销后恢复 Config 行为。没有来源或配置编辑器时，`saveSelection()` 不执行写入。此服务不验证目录成员资格；发起模型请求的消费者负责可用性诊断。
+
+注册产品来源后，仅 owner Remote 调用者或可信进程内代码可持久化全局默认值。非 owner 的 `saveSelection()` 正常完成但不改变默认值，已授权入口仍可将模型选择保留在当前会话。调用者身份来自当前 invocation，不能通过模型选择参数自报。
 
 -----
 
@@ -78,7 +80,7 @@ await ctx.agentDefaultModel.saveSelection({ provider, model, reasoningEffort: 'h
 
 ### 行为说明
 
-`currentSelection()` 返回分离的选择值。已捕获的选择保持稳定，后续操作则读取更新后的 Config 引用。
+未配置的运行实例仍可展示模型目录和空会话。请求入口在调用模型前要求显式选择。已捕获的选择保持稳定，后续操作则读取更新后的 Config 引用。
 
 </details>
 
@@ -113,7 +115,7 @@ await ctx.agentDefaultModel.saveSelection({ provider, model, reasoningEffort: 'h
 这些限制界定该服务的范围。它们是当前包约束，不是任务积压。
 
 - **单一的进程级默认值**——该服务只拥有一个默认值；按会话的模型选择仍由入口负责。
-- **持久化需要 profile 配置编辑器**——没有编辑器时，保存默认值不会保留选择。
+- **持久化需要明确的负责方**——没有注册来源或 profile 配置编辑器时，保存默认值不会保留选择。
 
 <a id="dev-note"></a>
 ### 开发备注

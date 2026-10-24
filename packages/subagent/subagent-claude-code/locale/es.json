@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Subagente de Claude Code",
+    "description": "Delega una tarea a Claude Code mediante su autenticación y configuración nativas."
+  }
+}

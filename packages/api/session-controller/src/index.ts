@@ -309,7 +309,7 @@ export class SessionController extends TypertRemoteService {
    */
   @Remote('selectModel')
   selectModel(request: SessionSelectModelRequest): Promise<SessionSelectModelValue> {
-    return this.commands.selectModel(request)
+    return this.commands.selectModel(request, this.ctx)
   }
 
   /**

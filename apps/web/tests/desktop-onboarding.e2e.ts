@@ -1,4 +1,4 @@
-// Shipped Loader composition, real account/settings APIs, and an isolated external Platform fixture.
+// Optional upstream account composition, real settings APIs, and an isolated external Platform fixture.
 import { createServer, type Server } from 'node:http'
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -11,8 +11,9 @@ import { credentialKey, credentialRef } from '@deepseek-ai/dsh-credentials'
 import type {} from '@deepseek-ai/dsh-settings'
 import {
   acknowledgeReloadConnectionLoss, captureStableAria, compareOrRefreshGolden,
-  launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold,
+  watchConsole, webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 import { REPO_ROOT, saveFailureShot, ZH_BROWSER_LOCALE } from './support.ts'
 
 const MODE = webSnapshotMode()
@@ -83,7 +84,7 @@ describe.skipIf(MODE === 'record')('web e2e: App-only desktop onboarding', () =>
     origin = `http://127.0.0.1:${address.port}`
     const overlay = join(root, 'account.patch.yml')
     await writeFile(overlay, `- id: deepseek-account\n  config:\n    platformOrigin: ${origin}\n    allowLoopbackHttp: true\n`)
-    scaffold = await launchWebScaffold({ deepSeekMissingCredential: true, extraOverlayPath: overlay })
+    scaffold = await launchOptionalAccountScaffold({ deepSeekMissingCredential: true, extraOverlayPath: overlay })
     await scaffold.ctx.credentials.modifyRecord(credentialKey('deepseek-account-platform', 'default'), async () => ({
       kind: 'grant', payload: { version: 1, issuer: origin, token: 'onboarding-fixture-token' },
     }))

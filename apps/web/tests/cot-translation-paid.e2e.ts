@@ -13,8 +13,9 @@ import { chromium, type Browser } from 'playwright'
 import { expect, it, onTestFailed, onTestFinished, vi } from 'vitest'
 import {
   acknowledgeReloadConnectionLoss, assertFixtureInventory, captureStableAria, compareOrRefreshGolden, fixtureUserPrompts,
-  launchWebScaffold, readPersistedEvents, watchConsole, webSnapshotMode, type WebScaffold,
+  readPersistedEvents, watchConsole, webSnapshotMode, type WebScaffold,
 } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 import {
   connectFreshWorkspaceZh, expandOwningTurnProcess, PLUGIN_TOGGLE_SETTLE_MS, saveFailureShot, ZH_BROWSER_LOCALE,
 } from './support.ts'
@@ -136,11 +137,11 @@ it.skipIf(MODE === 'record')('reuses saved native Account Flash translations acr
     { id: 'translator', config: { bingEndpoint: `${origin}/unexpected-free`, googleEndpoint: `${origin}/unexpected-free`,
       deepseekTimeoutMs: 120_000 } },
   ]))
-  const scaffold = await launchWebScaffold({ profile: { packages: [{ dir: BUNDLE }] }, extraOverlayPath: overlay,
+  const scaffold = await launchOptionalAccountScaffold({ profile: { packages: [{ dir: BUNDLE }] }, extraOverlayPath: overlay,
     replayFixture: FIXTURE, compareReplaySession: false })
   resources.scaffold = scaffold
   const account = scaffold.ctx.get('deepseekAccount')
-  if (account === undefined) throw new Error('Shipped native Account service is absent')
+  if (account === undefined) throw new Error('Optional Account service is absent')
   // Only credential acquisition is nondeterministic; the Loader-owned native route and wire remain real.
   const auth = vi.spyOn(account, 'resolveToken').mockImplementation(async (url: string) =>
     new URL(url).origin === origin ? 'paid-browser-fixture-token' : undefined)

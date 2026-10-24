@@ -15,6 +15,8 @@ import css from './LanguageRow.module.css'
 export interface LanguageRowInjected {
   /** Switch the active locale (a registered locale id). */
   setLocale: (id: string) => void
+  /** Clear the explicit preference and follow the browser or native system. */
+  useSystemLocale: () => void
 }
 
 /** Full component props: runtime share + store share + locale seat + injected face. */
@@ -27,9 +29,10 @@ export type LanguageRowComponentProps =
  * @param props - composed slot props.
  * @returns the row element tree.
  */
-export function LanguageRow({ t, setLocale, useStore }: LanguageRowComponentProps) {
+export function LanguageRow({ t, setLocale, useSystemLocale, useStore }: LanguageRowComponentProps) {
   const active = useStore(s => s.active)
   const options = useStore(s => s.options)
+  const automatic = useStore(s => s.automatic)
   const [open, setOpen] = useState(false)
   const activeLabel = options.find(o => o.id === active)?.label ?? active
 
@@ -41,10 +44,11 @@ export function LanguageRow({ t, setLocale, useStore }: LanguageRowComponentProp
       <Menu
         open={open}
         onClose={() => { setOpen(false) }}
-        items={options.map(o => ({ id: o.id, label: o.label }))}
-        selectedId={active}
+        items={[{ id: '', label: t('language.system') }, ...options.map(o => ({ id: o.id, label: o.label }))]}
+        selectedId={automatic ? '' : active}
         onSelect={(id) => {
-          setLocale(id)
+          if (id === '') useSystemLocale()
+          else setLocale(id)
           setOpen(false)
         }}
         align="end"
@@ -57,7 +61,7 @@ export function LanguageRow({ t, setLocale, useStore }: LanguageRowComponentProp
             aria-expanded={open}
             onClick={() => { setOpen(v => !v) }}
           >
-            {activeLabel}
+            {automatic ? t('language.systemWithValue', { language: activeLabel }) : activeLabel}
             <IconChevronDownOutlineRegular className={css.chevron} />
           </button>
         )}

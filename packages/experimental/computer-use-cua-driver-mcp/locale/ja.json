@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "コンピューター操作（Cua Driver MCP）",
+    "description": "別途インストールした cua-driver 実行ファイルを通じて、モデルがデスクトップを操作します。"
+  }
+}

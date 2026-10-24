@@ -301,7 +301,7 @@ export class ApiSessionAgentController {
       get current(): AgentModelSelection {
         if (picked !== undefined) return picked
         const loggedHeader = agent.session.requestHeader()
-        if (loggedHeader === undefined) return defaultModel.currentSelection()
+        if (loggedHeader === undefined) return defaultModel.requireSelection()
         const logged = loggedHeader.config
         return {
           provider: logged.provider,
@@ -578,8 +578,8 @@ export class ApiSessionAgentController {
   }
 
   private agentOptions(): AgentOptions {
-    const { provider, model } = this.ctx.agentDefaultModel.currentSelection()
-    return { provider, model }
+    const selected = this.ctx.agentDefaultModel.currentSelection()
+    return selected === undefined ? {} : { provider: selected.provider, model: selected.model }
   }
 
   private installSelection(agent: Agent): void {

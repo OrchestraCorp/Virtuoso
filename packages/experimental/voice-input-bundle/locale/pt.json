@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Entrada de voz",
+    "description": "Transcreve gravações localmente com SenseVoice; o primeiro uso exige a instalação de dependências"
+  }
+}

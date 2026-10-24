@@ -5,7 +5,7 @@
 
 .root:not([data-expanded]) {
   contain: size layout;
-  height: calc(24px + var(--dsh-content-font-delta, 0px));
+  height: max(var(--dsw-control-height-compact), calc(24px + var(--dsh-content-font-delta, 0px)));
 }
 
 .row {

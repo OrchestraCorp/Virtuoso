@@ -9,6 +9,9 @@
   ],
   "references": [
     {
+      "path": "../../llm/model-connections"
+    },
+    {
       "path": "../../host/webserver"
     },
     {

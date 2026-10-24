@@ -62,6 +62,7 @@ export function ArchiveSessionRowButton({
       <button
         type="button"
         className={css.iconButton}
+        data-workspace-row-action="archive"
         aria-label={t(archived ? 'menu.unarchiveSession' : 'menu.archiveSession')}
         onClick={() => { (archived ? unarchiveSession : archiveSession)(sessionId) }}
       >

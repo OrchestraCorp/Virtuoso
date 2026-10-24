@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Control del equipo (Cua Driver)",
+    "description": "Permite al modelo manejar el escritorio con el entorno Cua Driver incluido; la aplicación que inicia dsh necesita permisos de acceso al escritorio."
+  }
+}

@@ -13,15 +13,24 @@
   height: calc(24px + var(--dsh-content-font-delta, 0px));
   min-width: 0;
   color: var(--dsw-alias-label-tertiary);
-  transition: color 100ms ease;
+  transition: color var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.row:hover {
-  color: var(--dsw-alias-label-secondary);
+@media (hover: hover) {
+  .row:hover {
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 .row[data-expandable] {
   cursor: pointer;
+  min-height: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-radius-sm);
+}
+
+.row[data-expandable]:focus-visible {
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -2px;
 }
 
 .leading {
@@ -48,7 +57,7 @@
 .iconIdle {
   display: inline-flex;
   opacity: 1;
-  transition: opacity 100ms ease;
+  transition: opacity var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
 .chevronHover {
@@ -56,15 +65,19 @@
   inset: 0;
   margin: auto;
   opacity: 0;
-  transition: opacity 100ms ease;
+  transition: opacity var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.row:hover .iconIdle {
-  opacity: 0;
+@media (hover: hover) {
+  .row:hover .iconIdle {
+    opacity: 0;
+  }
 }
 
-.row:hover .chevronHover {
-  opacity: 1;
+@media (hover: hover) {
+  .row:hover .chevronHover {
+    opacity: 1;
+  }
 }
 
 .title {
@@ -121,12 +134,10 @@
   padding: 8px 12px;
   border-bottom: 0.5px solid var(--dsw-alias-border-l2);
   background: var(--dsw-alias-markdown-code-block-banner);
-  font-size: 11px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 16px;
-  color: var(--dsw-alias-label-caption);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  line-height: 20px;
+  color: var(--dsw-alias-label-secondary);
 }
 
 .instructions {
@@ -159,6 +170,7 @@
   align-self: flex-start;
   align-items: center;
   gap: 4px;
+  min-height: var(--dsw-control-height-compact);
   margin: 4px 0 2px 4px;
   padding: 2px 8px;
   border: 0.5px solid var(--dsw-alias-border-l4);
@@ -166,21 +178,28 @@
   corner-shape: round;
   background: var(--dsw-alias-bg-base);
   color: var(--dsw-alias-label-secondary);
-  font-size: 11px;
-  line-height: 16px;
+  font-size: 13px;
+  line-height: 20px;
   cursor: pointer;
   opacity: 0;
-  transition: opacity 100ms ease;
+  transition: opacity var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.card:hover .inspectButton,
 .inspectButton:focus-visible {
   opacity: 1;
 }
 
-.inspectButton:hover {
-  background: var(--dsw-alias-interactive-bg-hover-solid);
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .card:hover .inspectButton {
+    opacity: 1;
+  }
+}
+
+@media (hover: hover) {
+  .inspectButton:hover {
+    background: var(--dsw-alias-interactive-bg-hover-solid);
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .visuallyHidden {

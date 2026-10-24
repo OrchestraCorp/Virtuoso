@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Arbres de travail Git",
+    "description": "Permet à l'agent de créer une nouvelle branche Git et un arbre de travail, puis d'y poursuivre son travail."
+  }
+}

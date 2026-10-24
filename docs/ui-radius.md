@@ -29,18 +29,16 @@ H means designed outer height in CSS pixels, including borders. R means CSS `bor
 
 | Role | Typical dimensions or examples | Radius | Shared token |
 |---|---|---|---|
-| Small detail | Below H20; keycaps, inline code, tiny controls | R4 | `--dsw-radius-xs` |
-| Compact control | H20–28; small buttons, compact icon buttons, compact menu items | R8 | `--dsw-radius-sm` |
-| Standard control or single-line cell | H32–40; buttons, inputs, selects, navigation rows | R12 | `--dsw-radius-md` |
-| Large control or grouped content | Large buttons, deliberately multiline cells, nested form groups | R16 | `--dsw-radius-lg` |
-| Independent content card | Settings cards, message bubbles, guide entry cards | R20 | `--dsw-radius-xl` |
-| Main enclosing surface | Composer, dialogs, main or floating panels | R28 | `--dsw-radius-panel` |
+| Small detail | Keycaps, checkbox marks and tiny controls | R6 | `--dsw-radius-xs` |
+| Compact inset | Small rows, code surfaces and inline controls | R12 | `--dsw-radius-sm` |
+| Field or nested editor | Standard form fields and inset content | R16 | `--dsw-radius-md` |
+| Independent panel | Cards, popovers and dialogs | R20 | `--dsw-radius-lg`, `--dsw-radius-xl`, `--dsw-radius-panel` |
+| Main action | H44 labeled actions, icon actions and navigation rails | Capsule or circle | `--dsw-control-radius` |
 
-Prefer an existing shared size variant when a proposed control falls between these bands. A taller card remains a card: do not promote it to R28 merely because it exceeds a button's height. A multiline cell intentionally designed for multiple lines uses R16; an ordinary button whose label wraps retains its button variant.
+`Button` uses H44 for `md` and uses H36 for compact actions, expanding to H44 on coarse pointers. Labeled actions are capsules; icon-only actions are circles. Standard form fields use H44/R16. Segmented controls use H36 and tabs H44 with one shared glass layer and a plain selected indicator. Cards, dialogs and reading panels remain opaque; glass is reserved for operation surfaces.
 
-Concrete defaults: `Button` uses H28/R8 for `sm` and H36/R12 for `md`, including outline variants. Standard H32 inputs and H36 selectors use R12. The Workspace files and New terminal guide entries both use R20, including title-only and described variants. Reserve R28 for their enclosing panel or dialog, not those entries. Composer statistics and the context-occupancy trigger use compact-control R8 with the theme curve, including hover, expanded, and focus states.
+Code, preview and delivered-file cards keep their existing semantic radius tokens; the theme now resolves them to the product scale. Existing miniature drawings and explicitly recorded package geometry remain deliberate exceptions. Runtime content and document previews retain their established behavior.
 
-Code blocks, diffs, and preview cards share R16: changed-file entry cards, delivered-file cards, submitted-plan cards, created-task cards, generic file attachment cards before and after sending, and hover preview panels. The 40px icon tiles inside changed-file, delivery, submitted-plan, and created-task cards use R10 on all four corners as a component-specific exception and share the same neutral tile fill and border in both themes. Their hover fills keep the same contour.
 
 <a id="shapes"></a>
 ## Reuse tokens and preserve deliberate shapes
@@ -51,7 +49,7 @@ Consume the named tokens instead of introducing local values such as 10px, 14px,
 
 Ordinary rounded surfaces use the theme's `superellipse(1.5)` curve where supported. `corner-shape` is not inherited: the theme applies it to elements and their `::before`/`::after`. Unsupported engines retain ordinary circular corners. Do not introduce component-specific smoothing that makes a fill and its outline curve differently.
 
-Preserve intentional circles and capsules: avatars and status dots use `50%`; explicit pills and full-round tracks may use `999px`. Pair every such full-round declaration with `corner-shape: round` in the same rule. Do not turn every button into a capsule just because its height is small. Tiny drawing details, such as glyph marks or miniature tracks, may retain their established local geometry; they do not justify arbitrary radii on surrounding controls.
+Preserve intentional circles and capsules: avatars and status dots use `50%`; explicit pills and full-round tracks may use `999px`. Pair every such full-round declaration with `corner-shape: round` in the same rule. Ordinary action buttons follow the capsule language; embedded miniature controls retain their explicit component geometry. Tiny drawing details, such as glyph marks or miniature tracks, may retain their established local geometry; they do not justify arbitrary radii on surrounding controls.
 
 Both the avatar container and its `img` must remain circular; an image that inherits only `border-radius` still needs an explicit `corner-shape: round` or must inherit the curve from its circular container. Keep equal width and height on both. See [Account settings](../packages/client/ui-settings-account/README.md#use-this-package) for account avatar sizes.
 
@@ -68,7 +66,7 @@ Distinguish these three arrangements before changing a child radius:
 | Fill flush against an enclosing edge | The enclosure owns the visible corner; clip the fill or inherit the matching corner | A split-button card with two independent hover regions |
 | Separate card or form group inside another surface | Choose the child's semantic tier; do not subtract all parent padding mechanically | R16 editor within an R20 settings card |
 
-Standard menus use outer R16, 4px padding, and R12 items, including command selection, task menus, and the exposed highlights in subagent and background-job menus. Tree disclosure gutters retain their indentation; controls inside a filled job row keep their own compact geometry. Compact menus use outer R12, 4px padding, and R8 items. Shared `SegmentedControl` uses outer R12, 4px inset, and R8 segments/indicator; `SegmentedTabs` uses outer R16, 4px inset, and R12 segments/indicator. Keep indicator offsets, width calculations, submenu alignment, and pointer bridges consistent when changing padding.
+Standard menus use outer R20, 4px padding, and R16 items, including command selection, task menus, and the exposed highlights in subagent and background-job menus. Tree disclosure gutters retain their indentation; controls inside a filled job row keep their own compact geometry. Compact menus use outer R16, 4px padding, and R12 items. Shared `SegmentedControl` and `SegmentedTabs` use capsule containers, 4px inset and capsule segments and indicators. Keep indicator offsets, width calculations, submenu alignment, and pointer bridges consistent when changing padding.
 
 The radius subtraction is also the nominal sizing rule for nested superellipses. Equal exponents do not make them exact offset curves, so their diagonal gap may differ from the side inset. Keep the shared superellipse menu and segmented-control treatments; use circular arcs when strict equal radial spacing is required.
 
@@ -103,7 +101,7 @@ Account profile, balance, model-provider, preset, and plugin cards share this de
 }
 ```
 
-The theme resolves the card fill to `--dsw-alias-bg-layer-2` and the stroke to `--dsw-alias-border-l4` on `body`, where palette aliases exist. Feature styles consume these aliases in both palettes. Nested editors use R16 and the existing module fill. Account usage/top-up links follow H36/R12 Button geometry; authorization buttons use the shared Button.
+The theme resolves the card fill to `--dsw-alias-bg-layer-2` and the stroke to `--dsw-alias-border-l4` on `body`, where palette aliases exist. Feature styles consume these aliases in both palettes. Nested editors use R16 and the existing module fill. Account usage/top-up links follow the shared H44 capsule Button geometry; authorization buttons use the shared Button.
 
 Flat neutral borders use the shared 0.5px hairline. Elevated menus, popovers, dialogs, and panels use `border: 0` with the existing `--dsw-elevation-*` material, whose shadow includes the hairline. Do not add a second neutral border over that stroke or add a shadow to an ordinary settings card merely to distinguish its tab. Preserve semantic state-colored borders and the existing translucent-menu backdrop behavior.
 

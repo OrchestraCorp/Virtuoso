@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ブラウザー操作（Chrome DevTools）",
+    "description": "起動した Chrome で Chrome DevTools MCP を通じて、モデルがウェブページを調査・操作します。"
+  }
+}

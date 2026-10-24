@@ -2,6 +2,8 @@
 export const onboardingCopy = {
   onboardingArtworkLocale: 'zh',
   onboardingWelcome: '欢迎使用',
+  onboardingWelcomeTitle: '欢迎使用 {brand}',
+  onboardingPurposeTitle: '你希望 {brand} 帮你做什么？',
   onboardingBrand: 'DeepSeek Harness',
   onboardingIntroduction: 'DeepSeek Harness 会以本地文件夹作为工作区，通过调用各种工具，读写本机文件，完成搜索整理资料、制作文档表格、编写代码、排查问题等各种任务。',
   onboardingStart: '开始设置',
@@ -45,6 +47,8 @@ export const onboardingCopy = {
 export const onboardingEnglishCopy: Record<keyof typeof onboardingCopy, string> = {
   onboardingArtworkLocale: 'en',
   onboardingWelcome: 'Welcome to',
+  onboardingWelcomeTitle: 'Welcome to {brand}',
+  onboardingPurposeTitle: 'What would you like {brand} to help with?',
   onboardingBrand: 'DeepSeek Harness',
   onboardingIntroduction: 'DeepSeek Harness works in a local folder and uses tools to read and write files on your computer. It can help you research and organize information, create documents and spreadsheets, write code, troubleshoot issues, and more.',
   onboardingStart: 'Get started',

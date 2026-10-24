@@ -64,8 +64,8 @@
 
 .infoButton {
   flex: none;
-  width: 20px;
-  height: 20px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   color: var(--dsw-alias-label-caption);
 }
@@ -162,9 +162,14 @@
   color: color-mix(in srgb, var(--dsw-alias-label-secondary) 60%, var(--dsw-alias-label-tertiary));
 }
 
-.groupMore:hover,
 .groupMore:focus-visible {
   color: var(--dsw-alias-label-secondary);
+}
+
+@media (hover: hover) {
+  .groupMore:hover {
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 .moreHead {
@@ -173,7 +178,7 @@
 }
 
 .moreBack {
-  width: 28px;
+  width: var(--dsw-control-height-compact);
   padding: 0;
   color: var(--dsw-alias-label-secondary);
 }
@@ -186,9 +191,14 @@
   color: var(--dsw-alias-label-caption);
 }
 
-.groupInfo:hover,
 .groupInfo:focus-visible {
   color: var(--dsw-alias-label-secondary);
+}
+
+@media (hover: hover) {
+  .groupInfo:hover {
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 /* Center the status label geometrically: beside larger titles the capsule's line-box offset shows. */
@@ -309,8 +319,10 @@
   position: relative;
 }
 
-.cardLink:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .cardLink:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .cardOpen {
@@ -408,18 +420,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: 0;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: transparent;
   color: var(--dsw-alias-label-caption);
   cursor: pointer;
 }
 
-.iconButton:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-secondary);
+@media (hover: hover) {
+  .iconButton:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 .iconButton:disabled {
@@ -427,15 +441,15 @@
   cursor: default;
 }
 
-/* The toolbar's Add plugin action, one step up from the 28px sm capsule. */
+/* Add controls share the compact action size. */
 .addButton,
 .addPrimary,
 .addMore {
-  height: 32px;
+  height: var(--dsw-control-height-compact);
   font-size: 13px;
   line-height: 20px;
   padding: 0 12px;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
 }
 
 .addGroup {
@@ -450,7 +464,7 @@
 }
 
 .addMore {
-  width: 32px;
+  width: var(--dsw-control-height-compact);
   padding: 0;
   border-left: 0.5px solid color-mix(in srgb, var(--dsw-alias-label-primary-foreground) 30%, transparent);
   border-top-left-radius: 0;
@@ -488,17 +502,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: 0;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: transparent;
   color: var(--dsw-alias-state-error-primary);
   cursor: pointer;
 }
 
-.deleteButton:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover-danger, var(--dsw-alias-interactive-bg-hover));
+@media (hover: hover) {
+  .deleteButton:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover-danger, var(--dsw-alias-interactive-bg-hover));
+  }
 }
 
 .deleteButton:disabled {
@@ -588,7 +604,7 @@
 }
 
 .installField input[type='text'] {
-  height: 40px;
+  height: var(--dsw-control-height);
   padding: 0 14px;
   border: 0.5px solid var(--dsw-alias-border-l4);
   border-radius: var(--dsw-radius-md);
@@ -599,21 +615,16 @@
   color: var(--dsw-alias-label-primary);
 }
 
-.installField input[type='text']:focus,
-.registryCustomField:focus {
-  border-color: var(--dsw-alias-state-business-primary);
-  box-shadow: inset 0 0 0 0.5px var(--dsw-alias-state-business-primary);
+.installField input[type='text']:focus-visible,
+.registryCustomField:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 .installField input[type='text'][aria-invalid='true'],
 .registryCustomField[aria-invalid='true'] {
   border-color: var(--dsw-alias-state-error-primary);
   box-shadow: none;
-}
-
-.installField input[type='text'][aria-invalid='true']:focus,
-.registryCustomField[aria-invalid='true']:focus {
-  box-shadow: inset 0 0 0 0.5px var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
 }
 
 /* The guide under the field: opened by a text button, it names the npm package name and shows its example. */
@@ -632,8 +643,10 @@
   cursor: pointer;
 }
 
-.guideToggle:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .guideToggle:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .guideChevron {
@@ -752,10 +765,10 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 28px;
+  height: var(--dsw-control-height-compact);
   padding: 0 8px 0 10px;
   border: 0.5px solid var(--dsw-alias-border-l4);
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
   background: var(--dsw-alias-bg-layer-2);
   font: inherit;
   font-size: 12.5px;
@@ -763,8 +776,10 @@
   cursor: pointer;
 }
 
-.registryToggle:hover:not(:disabled) {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .registryToggle:hover:not(:disabled) {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .registryToggle:disabled {
@@ -817,8 +832,10 @@
   cursor: pointer;
 }
 
-.registryOption:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .registryOption:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 /* An offered registry is one row: the radio beside its title and the line under it. */
@@ -862,7 +879,7 @@ label.registryOption {
 
 .registryCustomField {
   outline: none;
-  height: 32px;
+  height: var(--dsw-control-height-compact);
   margin-left: 26px;
   padding: 0 10px;
   border: 0.5px solid var(--dsw-alias-border-l4);
@@ -890,9 +907,9 @@ label.registryOption {
 /* The footer's only action spans the dialog, as the primary action of a short form does. */
 .wide {
   width: 100%;
-  height: 40px;
+  height: var(--dsw-control-height);
   justify-content: center;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
 }
 
 /* The installing, installed, and failed screens: a head row, the centred
@@ -946,15 +963,17 @@ label.registryOption {
   height: 24px;
   padding: 0;
   border: 0;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: none;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
 }
 
-.wizardClose:hover {
-  background: var(--dsw-alias-bg-layer-3);
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .wizardClose:hover {
+    background: var(--dsw-alias-bg-layer-3);
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .wizardHero {
@@ -1043,8 +1062,8 @@ label.registryOption {
 }
 
 .footAction {
-  height: 32px;
-  border-radius: var(--dsw-radius-md);
+  height: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-control-radius);
 }
 
 .detailsToggle {
@@ -1094,7 +1113,7 @@ label.registryOption {
   align-self: flex-start;
   margin: 0;
   padding: 0 6px;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: var(--dsw-alias-bg-layer-3);
   font-size: 11px;
   line-height: 18px;
@@ -1167,7 +1186,7 @@ label.registryOption {
 .approvalList code {
   display: inline-block;
   padding: 2px 8px;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: var(--dsw-alias-bg-layer-3);
   font-family: var(--ds-font-family-code);
   font-size: 12px;
@@ -1238,8 +1257,10 @@ label.registryOption {
   cursor: pointer;
 }
 
-.crumb:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .crumb:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .crumb:focus-visible {
@@ -1427,7 +1448,7 @@ label.registryOption {
   align-items: center;
   justify-content: center;
   width: 40px;
-  height: 40px;
+  height: var(--dsw-control-height);
   border: 0.5px solid var(--dsw-alias-border-l3);
   border-radius: var(--dsw-radius-md);
   color: var(--dsw-alias-label-secondary);
@@ -1475,9 +1496,11 @@ label.registryOption {
   cursor: pointer;
 }
 
-.rowOpen:hover .rowId {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+@media (hover: hover) {
+  .rowOpen:hover .rowId {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 
 .rowOpenIcon {
@@ -1485,8 +1508,10 @@ label.registryOption {
   color: var(--dsw-alias-label-tertiary);
 }
 
-.rowOpen:hover .rowOpenIcon {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .rowOpen:hover .rowOpenIcon {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .rowState {

@@ -185,4 +185,4 @@ None.
 
 </details>
 
-The Web composition includes the account Remote controller and Account settings section.
+The Web composition opens settings through the settings shell and excludes DeepSeek login, account balance, and recharge UI. Model connections and API-key settings remain available without a provider account.

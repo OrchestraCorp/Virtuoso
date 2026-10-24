@@ -8,6 +8,7 @@ import { usePointerGrace } from './pointer-grace.ts'
 import { isBehindModal } from './useModalLayer.ts'
 import { observeComposition } from './keyboard-composition.ts'
 import { focusWithoutRing } from './focus.ts'
+import { pointerModality } from './input-modality.ts'
 import { ShortcutKeys } from './ShortcutKeys.tsx'
 import { MenuSurface } from './MenuSurface.tsx'
 import css from './Menu.module.css'
@@ -211,7 +212,7 @@ export function Menu({ open, anchor, items = [], children, selectedId, selectedI
     const target = trigger !== null && document.contains(trigger) && !(trigger as HTMLButtonElement).disabled
       ? trigger : rootRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')
     if (target == null) return
-    if (navigation) target.focus()
+    if (navigation || !pointerModality()) target.focus()
     else focusWithoutRing(target)
   }
 
@@ -313,7 +314,10 @@ export function Menu({ open, anchor, items = [], children, selectedId, selectedI
     if (!open || !autoFocus) return
     const first = listRef.current?.querySelector<HTMLButtonElement>('button:not(:disabled)')
     walkIndex.current = first === undefined || first === null ? null : 0
-    if (first != null) focusWithoutRing(first)
+    if (first != null) {
+      if (pointerModality()) focusWithoutRing(first)
+      else first.focus()
+    }
   }, [open, autoFocus])
 
   useEffect(() => {

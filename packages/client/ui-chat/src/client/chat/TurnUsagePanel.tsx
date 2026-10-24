@@ -42,6 +42,7 @@ export function TurnUsagePanel({ usage, t }: TurnUsagePanelProps) {
       <button
         type="button"
         className={css.trigger}
+        aria-label={t('message.turnUsage.consumed', { total })}
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => { setOpen(!open) }}

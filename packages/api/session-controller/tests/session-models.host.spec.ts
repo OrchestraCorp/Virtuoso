@@ -8,7 +8,9 @@
 import { describe, expect, it, vi, onTestFinished } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import AgentRegistry, { agentEvents } from '@deepseek-ai/dsh-agent'
-import type { Agent } from '@deepseek-ai/dsh-agent'
+import type { Agent, ModelSelection } from '@deepseek-ai/dsh-agent'
+import DefaultModel from '@deepseek-ai/dsh-agent-default-model'
+import { Peer } from '@deepseek-ai/dsh-client-connection'
 import AttachmentStore from '@deepseek-ai/dsh-attachment'
 import LlmRuntime, { LlmAdapter, ReasoningEffortId } from '@deepseek-ai/dsh-llm'
 import type {
@@ -23,7 +25,28 @@ import { ApiSessionAgentController } from '../src/agent.ts'
 import { buildModelCatalog, hasProviderApiKey } from '../src/catalog.ts'
 import SystemPrompt from '@deepseek-ai/dsh-system-prompt'
 import { RemoteError } from '@deepseek-ai/dsh-typert-protocol'
+import type { Principal, RemoteInvocation } from '@deepseek-ai/dsh-typert-protocol'
 import { createSessionTestController, createSessionTestRemote } from './test-remote.ts'
+
+declare module '@deepseek-ai/dsh-typert-protocol' {
+  interface PrincipalMap {
+    /** Session model selection may not persist a guest's global default. */
+    'test-model-default-guest': { readonly kind: 'test-model-default-guest' }
+  }
+}
+
+function modelCaller(ctx: Context, principal: Principal): Context {
+  const invocation: RemoteInvocation = {
+    request: { namespace: 'session', method: 'selectModel', args: {} },
+    service: 'sessionController',
+    peer: new Peer(ctx, { principal }),
+    signal: new AbortController().signal,
+    uplink: <In>(): AsyncIterable<In> => ({
+      [Symbol.asyncIterator]: () => ({ next: async () => ({ done: true, value: undefined }) }),
+    }),
+  }
+  return ctx.extend({ invocation })
+}
 
 function request<P>(payload: P): P {
   return payload
@@ -157,6 +180,36 @@ function currentSelection(ctx: Context, sessionId: SessionId) {
 }
 
 describe('Web session model selection', () => {
+  it('preserves the Remote caller while a guest changes only its Session model', async () => {
+    const { ctx, sessionId } = await harness()
+    onTestFinished(() => ctx.fiber.dispose())
+    await ctx.plugin(DefaultModel, { provider: 'deepseek-official', model: 'deepseek-chat' })
+    let saved: ModelSelection = { provider: 'deepseek-official', model: 'deepseek-chat' }
+    ctx.agentDefaultModel.registerSource({
+      currentSelection: () => saved,
+      saveSelection: async (next) => { saved = { ...next } },
+    })
+    createSessionTestController(ctx, { defaultModelSelection: () => saved, cwd: '/tmp' })
+
+    const guest = modelCaller(ctx, { kind: 'test-model-default-guest' })
+    const selected = await guest.sessionController.selectModel({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'max',
+    })
+    expect(selected.selected).toEqual({ provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'max' })
+    expect(currentSelection(ctx, sessionId)).toEqual(selected.selected)
+    expect(saved).toEqual({ provider: 'deepseek-official', model: 'deepseek-chat' })
+
+    const owner = modelCaller(ctx, { kind: 'owner' })
+    const ownerSelected = await owner.sessionController.selectModel({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-chat', reasoningEffort: 'off',
+    })
+    await vi.waitFor(() => { expect(saved).toEqual(ownerSelected.selected) })
+    const internalSelected = await ctx.sessionController.selectModel({
+      sessionId, provider: 'deepseek-official', model: 'deepseek-reasoner', reasoningEffort: 'high',
+    })
+    await vi.waitFor(() => { expect(saved).toEqual(internalSelected.selected) })
+  })
+
   it('validates an ordered image batch before persisting any member', async () => {
     const { ctx, agent, sessionId } = await harness()
     const validateImage = vi.fn((_input: { data: Uint8Array }) => Promise.resolve())
@@ -395,7 +448,7 @@ describe('Web session model selection', () => {
     }])
     await ctx.agentDefaultModel.saveSelection({ provider: 'removed', model: 'saved' })
     const controller = createSessionTestController(ctx, {
-      defaultModelSelection: () => ctx.agentDefaultModel.currentSelection(), cwd: '/tmp',
+      defaultModelSelection: () => ctx.agentDefaultModel.requireSelection(), cwd: '/tmp',
     })
     await controller.initializeDefaultModel()
     expect(describe).toHaveBeenCalledWith('CUSTOM_API_KEY')
@@ -741,7 +794,7 @@ describe('Web session model selection', () => {
     expect(admitted).toMatchObject({ ok: true, value: { accepted: true } })
     expect(followup).toHaveBeenCalledOnce()
     const unavailableCatalog = await buildModelCatalog(ctx)
-    expect(unavailableCatalog.routableProviders.includes(currentSelection(ctx, sessionId).provider)).toBe(false)
+    expect(unavailableCatalog.routableProviders.includes(currentSelection(ctx, sessionId)?.provider ?? '')).toBe(false)
 
     expect(await remote.selectModel(request({
       sessionId, provider: 'deepseek-official', model: 'unlisted-but-served',
@@ -888,7 +941,7 @@ it('initializes the account model without reasoning metadata and rejects an empt
     { provider: 'deepseek-account', id: 'basic', name: 'Basic' },
   ]))
   const controller = createSessionTestController(ctx, {
-    defaultModelSelection: () => ctx.agentDefaultModel.currentSelection(), cwd: '/tmp',
+    defaultModelSelection: () => ctx.agentDefaultModel.requireSelection(), cwd: '/tmp',
   })
   await controller.initializeDefaultModel()
   expect(ctx.agentDefaultModel.currentSelection()).toEqual({ provider: 'deepseek-account', model: 'basic' })
@@ -906,4 +959,18 @@ it.each([new Error('catalog disconnected'), 'catalog disconnected'])('reports ca
     await expect(modelAvailable(ctx, { provider: 'deepseek-official', model: 'deepseek-chat' }))
       .rejects.toMatchObject({ code: 'session/model-unavailable', message: 'catalog disconnected' })
   } finally { read.mockRestore(); await ctx.fiber.dispose() }
+})
+
+it('advertises no default without selecting an arbitrary provider from the catalog', async () => {
+  const ctx = new Context()
+  onTestFinished(() => ctx.fiber.dispose())
+  await ctx.plugin(LlmRuntime)
+  await ctx.plugin(DefaultModel, {})
+  ctx.llm.registerAdapter(['configured-provider'], new CatalogAdapter('Configured', [
+    { provider: 'configured-provider', id: 'available', name: 'Available' },
+  ]))
+  const catalog = await buildModelCatalog(ctx)
+  expect(catalog.default).toBeNull()
+  expect(catalog.groups[0]?.models[0]?.id).toBe('available')
+  expect(ctx.agentDefaultModel.currentSelection()).toBeUndefined()
 })

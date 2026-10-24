@@ -155,7 +155,7 @@ describe('locale apply', () => {
     const { entry, instance, face } = faceOf(b.slots)
     // The inject-time re-sync sealed the init window: the mirror is current.
     expect(instance.getSnapshot().active).toBe('en')
-    expect(instance.getSnapshot().options.map(o => o.id)).toEqual(['zh', 'en'])
+    expect(instance.getSnapshot().options.map(o => o.id)).toEqual(['zh', 'en', 'zh-Hant', 'ja', 'ko', 'de', 'fr', 'es', 'pt'])
     // Copy rides the standard locale seat: the entry declares the namespace.
     expect(entry.locale).toBe(SETTINGS_NS)
     expect(locale.bind(SETTINGS_NS)('language.title')).toBe('Language')
@@ -176,19 +176,16 @@ describe('locale apply', () => {
     const languagePack = b.ctx.plugin({
       inject: ['locale'],
       apply: packCtx => packCtx.effect(
-        () => packCtx.locale.addLanguage({ id: 'ja', label: '日本語', fallback: 'en' }),
+        () => packCtx.locale.addLanguage({ id: 'it', label: 'Italiano', fallback: 'en' }),
         'test language pack registration',
       ),
     })
     await languagePack.await()
-    expect(instance.getSnapshot().options).toEqual([
-      { id: 'zh', label: '中文' },
-      { id: 'en', label: 'English' },
-      { id: 'ja', label: '日本語' },
-    ])
+    expect(instance.getSnapshot().options).toHaveLength(10)
+    expect(instance.getSnapshot().options.at(-1)).toEqual({ id: 'it', label: 'Italiano' })
 
     await languagePack.dispose()
-    expect(instance.getSnapshot().options.map(option => option.id)).toEqual(['zh', 'en'])
+    expect(instance.getSnapshot().options.map(option => option.id)).toEqual(['zh', 'en', 'zh-Hant', 'ja', 'ko', 'de', 'fr', 'es', 'pt'])
   })
 
   it('loads and refreshes the explicit Host preference after nonblocking activation', async () => {

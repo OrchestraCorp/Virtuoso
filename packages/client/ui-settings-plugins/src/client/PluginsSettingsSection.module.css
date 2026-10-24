@@ -21,47 +21,56 @@
 }
 
 .tabs {
+  box-sizing: border-box;
   display: flex;
-  align-items: flex-end;
-  gap: 22px;
-  border-bottom: 0.5px solid var(--dsw-alias-border-l2);
+  align-self: flex-start;
+  align-items: stretch;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
+  overflow-x: auto;
   margin-top: 2px;
 }
 
 .tab {
-  position: relative;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  min-height: var(--dsw-control-height-compact);
   border: 0;
-  padding: 7px 1px 9px;
+  padding: 7px 14px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   font: inherit;
   font-size: 13px;
   line-height: 20px;
   cursor: pointer;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out),
+    color var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.tab:hover,
-.tab[data-active='true'] {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .tab:hover:not([aria-selected='true']) {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
-.tab[data-active='true']::after,
-.tab:focus-visible::after {
-  position: absolute;
-  right: 0;
-  bottom: -1px;
-  left: 0;
-  height: 2px;
-  border-radius: 2px 2px 0 0;
-  background: var(--dsw-alias-label-primary);
-  content: '';
+.tab[aria-selected='true'] {
+  background: var(--dsw-control-selected-fill);
+  color: var(--dsw-control-selected-label);
 }
 
 .tab:focus-visible {
-  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
-  outline-offset: 2px;
-  border-radius: 2px;
-  color: var(--dsw-alias-label-primary);
+  outline: 2px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -2px;
 }
 
 .panel {
@@ -105,4 +114,10 @@
   font-size: 15px;
   line-height: 22px;
   font-weight: 600;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab {
+    transition: none;
+  }
 }

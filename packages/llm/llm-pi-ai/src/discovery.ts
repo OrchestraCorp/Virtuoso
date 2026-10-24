@@ -10,8 +10,8 @@
  *
  * Neither path is a catalog refresh. Nothing here is stored: the request
  * carries a draft the user is still editing, and the reply is candidate
- * metadata the surface offers for adoption. `cordis.patch.yml` remains the only
- * thing that decides what a route serves.
+ * metadata the surface offers for adoption. The owning configuration or
+ * connection service decides what a route serves.
  *
  * OpenAI-compatible and Anthropic Messages protocols are interrogated through
  * their native model-listing endpoints. The parser accepts the standard
@@ -26,6 +26,7 @@ import { INVALID_CREDENTIAL_CODE, LlmError, normalizeApiKey } from '@deepseek-ai
 import type { LlmDiscoveredModel, LlmModelDiscoveryOperation } from '@deepseek-ai/dsh-llm'
 import { attributionHeaders } from '@deepseek-ai/dsh-llm'
 import { catalogModels } from './catalog.ts'
+import { anthropicApiRoot } from './endpoint.ts'
 
 /**
  * Protocols whose model listing this module can read. OpenAI protocols use
@@ -110,14 +111,13 @@ function label(...candidates: readonly unknown[]): string | undefined {
  * of losing them to `URL` resolution. OpenAI protocols list at
  * `{baseURL}/models`. Anthropic lists at `{root}/v1/models`, where the root is
  * the base without trailing slashes and without one trailing `/v1` segment:
- * gateway documentation publishes both spellings of the same root. Only this
- * listing URL normalizes that segment; model requests receive the configured
- * `baseURL` unchanged.
+ * gateway documentation publishes both spellings of the same root. Explicit
+ * Anthropic inference routes use the same root normalization.
  */
 function listingUrl(baseURL: string, api: string): string {
   const base = baseURL.replace(/\/+$/, '')
   if (api !== 'anthropic-messages') return `${base}/models`
-  const root = base.endsWith('/v1') ? base.slice(0, -3) : base
+  const root = anthropicApiRoot(baseURL)
   return `${root}/v1/models?limit=${String(ANTHROPIC_MODEL_LIMIT)}`
 }
 

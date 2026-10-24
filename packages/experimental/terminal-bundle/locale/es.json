@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Terminales persistentes",
+    "description": "Mantiene los procesos de shell activos entre llamadas a herramientas."
+  }
+}

@@ -1,5 +1,5 @@
 // Real-composition acceptance for the user-side bonus notice. The scaffold boots the
-// shipped Web Loader tree, so the real account provider issues the bonus HTTP requests
+// explicitly opted-in account Loader tree, so the account provider issues the bonus HTTP requests
 // and the real client renders the card in a real Chromium. The loopback Platform double
 // is the observation point: the scenario asserts what the product sent and what the user
 // could read on screen.
@@ -11,9 +11,10 @@ import { fileURLToPath } from 'node:url'
 import { chromium, type Browser, type Locator, type Page } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed } from 'vitest'
 import {
-  assertFixtureInventory, compareOrRefreshGolden, launchWebScaffold, watchConsole, webSnapshotMode,
+  assertFixtureInventory, compareOrRefreshGolden, watchConsole, webSnapshotMode,
   type WebScaffold,
 } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 import { openSettings, saveFailureShot } from './support.ts'
 
 const SNAPSHOT_DIR = fileURLToPath(new URL('./expected/bonus-notice', import.meta.url))
@@ -257,7 +258,7 @@ describe.skipIf(MODE === 'record')('web e2e: bonus notice', () => {
       { mode: 0o600 })
     const overlay = join(root, 'bonus-notice.overlay.yml')
     await writeFile(overlay, (await readFile(OVERLAY_TEMPLATE, 'utf8')).replaceAll('{{origin}}', platform.origin))
-    scaffold = await launchWebScaffold({ harnessHome: home, extraOverlayPath: overlay })
+    scaffold = await launchOptionalAccountScaffold({ harnessHome: home, extraOverlayPath: overlay })
     // Resolve the signed-in identity before opening the renderer. First profile discovery
     // emits another account frame, which would supersede the held startup bonus read.
     expect(await scaffold.ctx.deepseekAccount.getProfile({

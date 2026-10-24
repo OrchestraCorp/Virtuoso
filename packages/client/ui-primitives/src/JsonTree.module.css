@@ -43,9 +43,14 @@
   padding: 6px 8px 8px 14px;
 }
 
-.expandedTopLevel:has(> .topLevelBracket[data-json-root-row]:hover),
 .expandedTopLevel:has(> .topLevelBracket[data-json-root-row][data-json-copy-active]) {
   background: var(--json-tree-hover);
+}
+
+@media (hover: hover) {
+  .expandedTopLevel:has(> .topLevelBracket[data-json-root-row]:hover) {
+    background: var(--json-tree-hover);
+  }
 }
 
 .expandedTopLevelContainer {
@@ -75,7 +80,6 @@
   white-space: pre-wrap;
 }
 
-.row:not(.topLevelBracket):hover:not(:has(.row:hover))::after,
 .row:not(.topLevelBracket)[data-json-copy-active]::after,
 .row:has(> .expander:focus-visible)::after {
   position: absolute;
@@ -87,6 +91,20 @@
   background: var(--json-tree-hover);
   content: '';
   pointer-events: none;
+}
+
+@media (hover: hover) {
+  .row:not(.topLevelBracket):hover:not(:has(.row:hover))::after {
+    position: absolute;
+    z-index: 0;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: var(--json-tree-row-height, 16px);
+    background: var(--json-tree-hover);
+    content: '';
+    pointer-events: none;
+  }
 }
 
 .row > span:not(.expander, .copySlot) {
@@ -175,20 +193,22 @@
   border: 0;
   color: var(--dsw-alias-label-secondary);
   background: transparent;
-  font: inherit;
+  font: 12px/16px var(--dsw-font-family);
   text-indent: 0;
   white-space: nowrap;
   cursor: pointer;
   pointer-events: auto;
 }
 
-.stringToggle:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .stringToggle:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .stringToggle:focus-visible {
-  outline: 1px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
-  outline-offset: 1px;
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
 }
 
 .row:has(> .stringField) {
@@ -254,11 +274,17 @@
   padding-right: 24px;
 }
 
-.row:hover:not(:has(.row:hover)) > .copySlot,
 .row[data-json-copy-active] > .copySlot,
 .copySlot:focus-within {
   opacity: 1;
   pointer-events: auto;
+}
+
+@media (hover: hover) {
+  .row:hover:not(:has(.row:hover)) > .copySlot {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 .actionButton {
@@ -277,8 +303,10 @@
   cursor: pointer;
 }
 
-.actionButton:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .actionButton:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .actionButton[aria-pressed='true'] {
@@ -286,8 +314,8 @@
 }
 
 .actionButton:focus-visible {
-  outline: 1px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
-  outline-offset: -1px;
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
 }
 
 .actionButton[data-state='failed'] {
@@ -326,8 +354,10 @@
   transform: rotate(90deg) scale(0.75);
 }
 
-.expander:hover {
-  color: var(--dsw-alias-label-primary);
+@media (hover: hover) {
+  .expander:hover {
+    color: var(--dsw-alias-label-primary);
+  }
 }
 
 .expander:focus-visible {
@@ -342,4 +372,55 @@
 
 .collapsedContent::after {
   content: '…';
+}
+
+.row:has(> .expander:focus-visible)::after {
+  border-radius: var(--dsw-radius-xs);
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);
+  outline-offset: -4px;
+}
+
+@media (pointer: coarse) {
+  .root { --json-tree-row-height: 44px; }
+
+  .row {
+    min-height: 44px;
+    padding-inline-start: 44px;
+  }
+
+  .row:not(.topLevelBracket) { padding-inline-end: 44px; }
+  .row > .children { margin-inline: -34px -44px; }
+
+  .row > span:not(.expander, .copySlot, .stringField) { line-height: 44px; }
+  .copySlot, .actionButton { width: 44px; height: 44px; }
+  .copySlot { opacity: 1; pointer-events: auto; }
+  .actionButton { border-radius: var(--dsw-radius-sm); }
+  .expander { width: 44px; height: 44px; justify-content: center; }
+  .stringField { padding-block: 14px; }
+  .stringField[data-expanded] { padding-block: 0; }
+  .stringField[data-expanded] > .label { display: block; line-height: 44px; }
+
+  .stringToggleSlot { display: none; }
+  .touchStringToggle { display: flex; margin-top: 8px; }
+  .row:has(> .stringField) > .copySlot { top: 0; bottom: auto; }
+
+  .row:has(> .copySlot) > .stringField .stringToggleSlot { padding-inline-end: 0; }
+  .stringToggle { min-height: 44px; align-items: center; }
+  .stringActions { position: static; height: auto; min-height: 44px; margin-top: 8px; justify-content: flex-start; }
+}
+
+@media (forced-colors: active) {
+  .actionButton, .stringToggle { border: 1px solid ButtonText; }
+}
+
+/* The focused row mounts its copy action even when the pointer has never hovered it. */
+.row:focus-within > .copySlot {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.row:focus-visible {
+  border-radius: var(--dsw-radius-xs);
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
 }

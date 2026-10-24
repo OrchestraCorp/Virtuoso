@@ -72,6 +72,25 @@ function finish(animation: Animation): void {
 }
 
 describe('AnimatedRows', () => {
+  it('uses measured touch row heights for movement and exit overlays', () => {
+    measure.mockImplementation(function (this: HTMLElement) {
+      if (this.dataset.rowKey === undefined) return new DOMRect(0, 0, 240, 200)
+      const tree = this.closest('[role="tree"]') as HTMLElement
+      const index = Array.from(tree.querySelectorAll('[data-row-key]')).indexOf(this)
+      return new DOMRect(0, index * 46, 240, 44)
+    })
+    const view = render(rows(['a', 'b', 'c']))
+    arm()
+    view.rerender(rows(['b', 'c']))
+    expect(animations.find(call => call.element.textContent === 'b')?.keyframes).toEqual([
+      { transform: 'translate(0px, 46px)', opacity: 1 },
+      { transform: 'translate(0, 0)', opacity: 1 },
+    ])
+    const exit = animations.find(call => call.element.textContent === 'a')
+    expect(exit?.element.style.height).toBe('44px')
+    expect(exit?.element.style.width).toBe('240px')
+  })
+
   it('settles initial arrivals and glides a subsequent pin reorder', () => {
     const view = render(rows(['a']))
     view.rerender(rows(['a', 'b']))

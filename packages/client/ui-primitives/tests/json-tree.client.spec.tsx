@@ -45,6 +45,69 @@ function stubStringLayout(scrollHeight = 200): void {
 }
 
 describe('JsonTree', () => {
+  it('reveals the focused leaf copy action without pointer hover', async () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+    const view = render(<><JsonTree data={{ answer: 42 }} /><button type="button">Outside tree</button></>)
+    expect(screen.queryByRole('button', { name: 'Copy value' })).toBeNull()
+    const row = screen.getByRole('treeitem')
+    expect(row.tabIndex).toBe(0)
+    act(() => { row.focus() })
+    const copy = screen.getByRole('button', { name: 'Copy value' })
+    expect(row.contains(copy)).toBe(true)
+    expect(row.hasAttribute('data-json-copy-active')).toBe(true)
+    act(() => { copy.focus() })
+    expect(document.activeElement).toBe(copy)
+    fireEvent.mouseLeave(row.closest('[class*="root"]') as HTMLElement)
+    expect(document.activeElement).toBe(copy)
+    expect(screen.getByRole('button', { name: 'Copy value' })).toBe(copy)
+    fireEvent.click(copy)
+    await waitFor(() => { expect(writeText).toHaveBeenCalledWith('42') })
+    act(() => { view.getByRole('button', { name: 'Outside tree' }).focus() })
+    expect(screen.queryByRole('button', { name: 'Copied' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Copy value' })).toBeNull()
+  })
+
+  it('reveals container copy on expander focus and keeps nested focus on the child value', async () => {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+    render(<JsonTree data={{ object: { nested: 7 } }} />)
+    const expander = screen.getByRole('button', { name: 'Expand JSON node' })
+    act(() => { expander.focus() })
+    const containerCopy = screen.getByRole('button', { name: 'Copy pretty JSON' })
+    expect(expander.closest('[role="treeitem"]')?.contains(containerCopy)).toBe(true)
+    fireEvent.keyDown(expander, { key: 'ArrowRight' })
+    const child = screen.getAllByRole('treeitem').find(row => row.textContent?.startsWith('nested:'))
+    expect(child).toBeDefined()
+    act(() => { child!.focus() })
+    expect(screen.queryByRole('button', { name: 'Copy pretty JSON' })).toBeNull()
+    const childCopy = screen.getByRole('button', { name: 'Copy value' })
+    expect(child!.contains(childCopy)).toBe(true)
+    fireEvent.click(childCopy)
+    await waitFor(() => { expect(writeText).toHaveBeenCalledWith('7') })
+  })
+
+  it('exposes touch copy actions without hover and follows pointer changes', async () => {
+    let matches = true
+    const listeners = new Set<() => void>()
+    const remove = vi.fn((listener: () => void) => { listeners.delete(listener) })
+    vi.stubGlobal('matchMedia', vi.fn(() => ({
+      get matches() { return matches },
+      addEventListener: (_event: string, listener: () => void) => { listeners.add(listener) },
+      removeEventListener: (_event: string, listener: () => void) => { remove(listener) },
+    })))
+    const view = render(<JsonTree data={{ first: 1, second: 2 }} />)
+    const actions = within(screen.getByRole('tree')).getAllByRole('button', { name: 'Copy value' })
+    expect(actions).toHaveLength(2)
+    fireEvent.click(actions[0] as HTMLElement)
+    await waitFor(() => { expect(writeText).toHaveBeenCalledWith('1') })
+    act(() => { matches = false; for (const notify of listeners) notify() })
+    expect(within(screen.getByRole('tree')).queryByRole('button', { name: 'Copy value' })).toBeNull()
+    act(() => { matches = true; for (const notify of listeners) notify() })
+    expect(within(screen.getByRole('tree')).getAllByRole('button')).toHaveLength(2)
+    view.unmount()
+    expect(remove).toHaveBeenCalledOnce()
+    expect(listeners.size).toBe(0)
+  })
+
   it('ignores clipboard settlement after the row changes or the tree unmounts', async () => {
     vi.useFakeTimers()
     const pending: (() => void)[] = []
@@ -236,6 +299,9 @@ describe('JsonTree', () => {
     fireEvent.keyDown(children[0] as HTMLElement, { key: 'ArrowLeft' })
     expect(children[0]?.getAttribute('aria-expanded')).toBe('false')
     fireEvent.keyDown(children[0] as HTMLElement, { key: 'Enter' })
+    expect(children[0]?.getAttribute('aria-expanded')).toBe('true')
+    fireEvent.keyDown(children[0] as HTMLElement, { key: ' ' })
+    expect(children[0]?.getAttribute('aria-expanded')).toBe('false')
 
     fireEvent.keyDown(children[0] as HTMLElement, { key: 'ArrowUp' })
     expect(document.activeElement).toBe(root)

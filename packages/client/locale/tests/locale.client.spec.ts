@@ -177,6 +177,24 @@ describe('LocaleRuntime', () => {
     expect(events).toHaveLength(1)
   })
 
+  it('clears the override to follow browser language changes and preserves explicit picks', () => {
+    const host = stubConfigForm<LocaleSettings>()
+    const { svc } = make(host)
+    svc.setLocale('en')
+    expect(svc.getPreference()).toBe('en')
+    svc.useSystemLocale()
+    expect(host.unset).toHaveBeenCalledWith('preference')
+    expect(svc.getPreference()).toBeUndefined()
+    expect(svc.getLocale().active).toBe('zh')
+    stubLanguages('en-US')
+    window.dispatchEvent(new Event('languagechange'))
+    expect(svc.getLocale().active).toBe('en')
+    svc.setLocale('zh')
+    window.dispatchEvent(new Event('languagechange'))
+    expect(svc.getLocale().active).toBe('zh')
+    expect(svc.getPreference()).toBe('zh')
+  })
+
   it('throws on unknown locale ids', () => {
     const { svc } = make()
     expect(() => { svc.setLocale('fr') }).toThrow('not registered')

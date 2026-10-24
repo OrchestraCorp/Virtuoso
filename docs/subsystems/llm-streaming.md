@@ -6,6 +6,12 @@ The conversation and streaming types from [`packages/llm`](../../packages/llm/RE
 
 Source: [`packages/llm/llm/src/types.ts`](../../packages/llm/llm/src/types.ts)
 
+<a id="model-connections"></a>
+
+## Model connections
+
+[`model-connections`](../../packages/llm/model-connections/README.md) stores user-owned connection records and publishes their live provider routes through the adapter registry. `ConnectionDraft` describes editable connection settings; `ConnectionsSnapshot` returns the saved revision, public connection metadata, and activation diagnostics. `DiscoveredModel` describes an unsaved candidate, and `ConnectionTestResult` reports the outcome of an explicit text connectivity probe. Their client-safe declarations are owned by [`src/types.ts`](../../packages/llm/model-connections/src/types.ts); credentials remain behind the separate credential provider.
+
 <a id="content-blocks-and-messages"></a>
 
 ## Content blocks and messages
@@ -1145,6 +1151,60 @@ Types: [FileAttachmentRef](attachment.md) · [ImageAttachmentRef](attachment.md)
 
 Source: [`packages/llm/llm/src/index.ts`](../../packages/llm/llm/src/index.ts)
 
+<a id="ctxmodelconnections--modelconnections"></a>
+
+### `ctx.modelConnections` — `ModelConnections`
+
+Host-owned connection state and its pi-ai route projection.
+
+```ts cordis-catalog
+/** Read saved configuration and activation status without secrets.
+ * @returns the current durable revision and public connection metadata.
+ */
+@Remote async list(): Promise<ConnectionsSnapshot>
+
+/** Save a complete draft and optionally rotate its key. Credential failure leaves the record unchanged.
+ * @param draft Complete connection configuration; no id creates a new route.
+ * @param expectedRevision Last revision observed by the editor.
+ * @param apiKey New non-empty key; omission retains the current credential.
+ * @returns committed configuration with unavailable default reasoning removed and any route activation failure displayed.
+ */
+@Remote async save(draft: ConnectionDraft, expectedRevision: number, apiKey?: string): Promise<ConnectionsSnapshot>
+
+/** Remove a saved connection; a default must be changed first.
+ * @param id Stable connection/provider id.
+ * @param expectedRevision Last revision observed by the editor.
+ * @returns committed configuration after route removal.
+ */
+@Remote async deleteConnection(id: string, expectedRevision: number): Promise<ConnectionsSnapshot>
+
+/** Persist a model for newly created Agents without changing existing Sessions.
+ * @param connectionId Enabled connection route.
+ * @param modelId Saved model id.
+ * @param expectedRevision Last revision observed by the editor.
+ * @returns committed default and public connections.
+ */
+@Remote async setDefault(connectionId: string, modelId: string, expectedRevision: number): Promise<ConnectionsSnapshot>
+
+/** Fetch model candidates from a saved endpoint; nothing is adopted automatically.
+ * @param id Saved connection id.
+ * @param protocol Listing protocol; omission consistently uses OpenAI Chat Completions.
+ * @param signal Remote caller lifetime.
+ * @returns the endpoint's candidate model metadata.
+ */
+@Remote async discover(id: string, protocol?: ConnectionProtocol, signal?: AbortSignal): Promise<DiscoveredModel[]>
+
+/** Send one bounded text probe through the enabled saved model route. This may consume provider credits.
+ * @param id Saved, enabled connection id.
+ * @param modelId Saved model id to probe.
+ * @param signal Remote caller lifetime.
+ * @returns a sanitized success or failure diagnostic.
+ */
+@Remote async test(id: string, modelId: string, signal?: AbortSignal): Promise<ConnectionTestResult>
+```
+
+Source: [`packages/llm/model-connections/src/index.ts`](../../packages/llm/model-connections/src/index.ts)
+
 <a id="llm-events"></a>
 
 ### `llm/*` events
@@ -1193,4 +1253,25 @@ Waterfall around every streaming model call (retry, replay, routing). Bound to t
 ```
 
 Source: [`packages/llm/llm/src/index.ts`](../../packages/llm/llm/src/index.ts)
+
+<a id="model-connections-events"></a>
+
+### `model-connections/*` events
+
+<a id="model-connectionschanged--emit"></a>
+
+#### `model-connections/changed` — emit
+
+Saved connections or their default changed after runtime activation. Readers reload their authorized state; the notification carries no data.
+
+```ts cordis-catalog
+/**
+ * Saved connections or their default changed after runtime activation.
+ * Readers reload their authorized state; the notification carries no data.
+ * @mode emit
+ */
+'model-connections/changed'(): void
+```
+
+Source: [`packages/llm/model-connections/src/types.ts`](../../packages/llm/model-connections/src/types.ts)
 <!-- END GENERATED cordis-surface -->

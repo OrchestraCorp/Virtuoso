@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "瀏覽器操作（Playwright）",
+    "description": "讓模型透過 Playwright MCP，在新啟動的 Chromium 中瀏覽及操作網頁。"
+  }
+}

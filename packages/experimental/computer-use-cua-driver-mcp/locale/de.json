@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Computersteuerung (Cua Driver MCP)",
+    "description": "Das Modell bedient den Desktop über eine separat installierte cua-driver-Programmdatei."
+  }
+}

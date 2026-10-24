@@ -1,6 +1,4 @@
-# The replay catalog supplies the account route without account authentication or network I/O.
-- id: llm-deepseek-account
-  disabled: true
+# The replay catalog supplies the optional account route without authentication or network I/O.
 - id: agent-default-model
   config:
     provider: deepseek-official

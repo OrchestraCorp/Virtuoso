@@ -2,13 +2,13 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
+  min-width: var(--dsw-control-height-compact);
   max-width: 220px;
-  height: 28px;
+  height: var(--dsw-control-height-compact);
   padding: 0 4px 0 8px;
   border: none;
   /* Rounded chip chrome, matching the sibling model trigger. */
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   outline: none;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
@@ -16,10 +16,14 @@
   line-height: 20px;
   font-weight: 500;
   cursor: pointer;
+  box-sizing: border-box;
+  corner-shape: round;
 }
 
-.trigger:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .trigger:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .trigger:focus-visible {
@@ -98,3 +102,5 @@
 .chevronOpen {
   transform: rotate(180deg);
 }
+
+.trigger:focus-visible { box-shadow: none; outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

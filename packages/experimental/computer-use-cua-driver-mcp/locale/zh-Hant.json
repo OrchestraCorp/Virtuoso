@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "電腦操作（Cua Driver MCP）",
+    "description": "讓模型透過另行安裝的 cua-driver 執行檔操作桌面。"
+  }
+}

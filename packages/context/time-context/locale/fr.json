@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Repères temporels",
+    "description": "Indiquer au modèle, à chaque étape, l'heure actuelle, le fuseau horaire du navigateur et le temps écoulé depuis le message précédent."
+  }
+}

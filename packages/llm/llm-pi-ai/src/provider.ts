@@ -8,8 +8,8 @@
  * package cannot reconstruct (Bedrock loads its Smithy module through a
  * separate entry point), so rebuilding it from parts would silently narrow
  * which providers work. Every other route — one pi-ai has never heard of, or a
- * catalog route pointed at a different protocol — is built by `createProvider`
- * over the protocol table below.
+ * catalog route with explicit protocol overrides — is built by `createProvider`
+ * over the protocol table below, retaining native-only catalog transports.
  *
  * Credentials never reach this module's storage: the harness resolves a route's
  * key through `ctx.credentials` before the request enters pi-ai and hands it
@@ -23,7 +23,7 @@ import type { Api, ApiKeyAuth, Model, Provider, ProviderStreams } from '@earendi
 import { anthropicMessagesApi } from '@earendil-works/pi-ai/api/anthropic-messages.lazy'
 import { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
 import { openAIResponsesApi } from '@earendil-works/pi-ai/api/openai-responses.lazy'
-import { catalogProvider, PiAiCatalogError } from './catalog.ts'
+import { catalogProvider, CONFIGURABLE_PROTOCOLS, PiAiCatalogError } from './catalog.ts'
 import { createProvider } from './models.ts'
 
 /**
@@ -44,11 +44,11 @@ import { createProvider } from './models.ts'
  * still reach every protocol through their own provider; only an explicit
  * override is refused.
  */
-const PROTOCOLS: Readonly<Record<string, () => ProviderStreams>> = {
+const PROTOCOLS: Readonly<Record<string, (() => ProviderStreams) | undefined>> = {
   'openai-completions': openAICompletionsApi,
   'openai-responses': openAIResponsesApi,
   'anthropic-messages': anthropicMessagesApi,
-}
+} satisfies Record<(typeof CONFIGURABLE_PROTOCOLS)[number], () => ProviderStreams>
 
 /**
  * Every wire protocol a configured route may name, most-reached first. The
@@ -90,8 +90,10 @@ export interface ProviderSpec {
   provider: string
   /** Display name for selectors and status labels. */
   displayName: string
-  /** Wire protocol override; absent means each model keeps its catalog protocol. */
+  /** Route protocol default; materialized models already carry their resolved API. */
   api?: string
+  /** Whether a model explicitly selects a protocol, requiring custom dispatch. */
+  modelApiOverrides?: boolean
   /** Endpoint override already applied to {@link models}; kept for provider-level display. */
   baseURL?: string
   /** The route's materialized models, in configuration order. */
@@ -169,17 +171,39 @@ export function buildProvider(spec: ProviderSpec): Provider {
   // A catalog route keeping its catalog protocol reuses the catalog provider;
   // an explicit protocol means the deployment is repointing the route at a
   // different wire format, which only the protocol table can serve.
-  if (catalog !== undefined && spec.api === undefined) return reuseCatalogProvider(catalog, spec)
+  if (catalog !== undefined && spec.api === undefined && !spec.modelApiOverrides) return reuseCatalogProvider(catalog, spec)
 
-  // Every model on this path carries the route's protocol: model resolution
-  // requires one for a route the catalog cannot default, and an explicit one
-  // replaces each catalog model's own. So the route has a single API.
-  const factory = spec.api === undefined ? undefined : PROTOCOLS[spec.api]
-  if (factory === undefined) {
-    throw new PiAiCatalogError(
-      `llm-pi-ai: provider "${spec.provider}" names api "${spec.api}", which this build cannot serve;`
-      + ` supported protocols are ${supportedProtocols().join(', ')}`,
-    )
+  const protocols = new Map<string, ProviderStreams>()
+  const native: ProviderStreams | undefined = catalog !== undefined && spec.api === undefined
+    ? {
+      stream: (model, context, options) => catalog.stream(model, context, options),
+      streamSimple: (model, context, options) => catalog.streamSimple(model, context, options),
+    }
+    : undefined
+  const protocol = (api: string): ProviderStreams => {
+    const existing = protocols.get(api)
+    if (existing !== undefined) return existing
+    const factory = PROTOCOLS[api]
+    if (factory === undefined) {
+      // Untouched catalog models may require native transports such as Bedrock.
+      // Explicit model and route APIs were validated during materialization.
+      if (native !== undefined) return native
+      throw new PiAiCatalogError(
+        `llm-pi-ai: provider "${spec.provider}" names api "${api}", which this build cannot serve;`
+        + ` supported protocols are ${supportedProtocols().join(', ')}`,
+      )
+    }
+    const resolved = factory()
+    protocols.set(api, resolved)
+    return resolved
+  }
+  // Validate every configured API before publishing the provider, including a
+  // route default superseded by every model's explicit choice.
+  if (spec.api !== undefined || spec.models.length === 0) protocol(String(spec.api))
+  for (const model of spec.models) protocol(model.api)
+  const dispatch: ProviderStreams = {
+    stream: (model, context, options) => protocol(model.api).stream(model, context, options),
+    streamSimple: (model, context, options) => protocol(model.api).streamSimple(model, context, options),
   }
   return createProvider({
     id: spec.provider,
@@ -187,6 +211,6 @@ export function buildProvider(spec: ProviderSpec): Provider {
     ...spec.baseURL === undefined ? {} : { baseUrl: spec.baseURL },
     auth: routeAuth(spec, catalog),
     models: spec.models,
-    api: factory(),
+    api: dispatch,
   })
 }

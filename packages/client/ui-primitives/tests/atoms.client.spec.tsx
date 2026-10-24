@@ -38,6 +38,25 @@ describe('Button', () => {
     render(<Button variant="outline">Cancel</Button>)
     expect(screen.getByRole('button', { name: 'Cancel' })).toBeDefined()
   })
+
+  it.each(['md', 'sm'] as const)('keeps an icon-only %s action named, pressable, and natively disabled', (size) => {
+    const onClick = vi.fn()
+    const { rerender } = render(<Button size={size} icon={<svg role="img" aria-label="decorative mark" />}
+      aria-label="Refresh models" aria-pressed={false} onClick={onClick} />)
+    const action = screen.getByRole<HTMLButtonElement>('button', { name: 'Refresh models' })
+    expect(screen.queryByRole('img')).toBeNull()
+    expect(action.type).toBe('button')
+    expect(action.getAttribute('aria-pressed')).toBe('false')
+    action.focus()
+    expect(document.activeElement).toBe(action)
+    fireEvent.click(action)
+    expect(onClick).toHaveBeenCalledOnce()
+    rerender(<Button size={size} icon={<svg />} aria-label="Refresh models" aria-pressed disabled onClick={onClick} />)
+    expect(action.disabled).toBe(true)
+    expect(action.getAttribute('aria-pressed')).toBe('true')
+    fireEvent.click(action)
+    expect(onClick).toHaveBeenCalledOnce()
+  })
 })
 
 describe('Pill', () => {
@@ -77,6 +96,14 @@ describe('Input', () => {
     fireEvent.change(input, { target: { value: 'qq' } })
     expect(onChange).toHaveBeenCalled()
     expect(screen.getByTestId('ic')).toBeDefined()
+  })
+
+  it('retains native field sizing, disabled state, and validation semantics inside its decorated frame', () => {
+    render(<Input aria-label="Endpoint" aria-invalid size={32} disabled icon={<svg />} />)
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'Endpoint' })
+    expect(input.size).toBe(32)
+    expect(input.disabled).toBe(true)
+    expect(input.getAttribute('aria-invalid')).toBe('true')
   })
 })
 
@@ -238,6 +265,7 @@ describe('Menu', () => {
   it('Tab settles the focused row; Shift+Tab closes back to the anchor', () => {
     const onSelect = vi.fn()
     const onClose = vi.fn()
+    fireEvent.pointerDown(document.body)
     render(
       <Menu open autoFocus anchor={<button type="button">trigger</button>} items={items} onSelect={onSelect} onClose={onClose} />)
     // autoFocus parks the keyboard on the first row; Tab settles it like Enter.
@@ -252,6 +280,21 @@ describe('Menu', () => {
     fireEvent.keyDown(alpha, { key: 'Tab', shiftKey: true })
     expect(onClose).toHaveBeenCalledTimes(1)
     expect(document.activeElement).toBe(screen.getByRole('button', { name: 'trigger' }))
+  })
+
+  it.each(['pointer', 'keyboard'] as const)('keeps %s menu entry and keyboard return focus distinct', (modality) => {
+    if (modality === 'pointer') fireEvent.pointerDown(document.body)
+    else fireEvent.keyDown(document.body, { key: 'Tab' })
+    const onClose = vi.fn()
+    render(<Menu open autoFocus anchor={<button type="button">trigger</button>} items={items} onClose={onClose} />)
+    const first = screen.getByRole('menuitem', { name: 'Alpha' })
+    expect(document.activeElement).toBe(first)
+    expect(first.getAttribute('data-dsh-automatic-focus')).toBe(modality === 'pointer' ? '' : null)
+    fireEvent.keyDown(first, { key: 'Escape' })
+    const trigger = screen.getByRole('button', { name: 'trigger' })
+    expect(document.activeElement).toBe(trigger)
+    expect(trigger.getAttribute('data-dsh-automatic-focus')).toBeNull()
+    expect(onClose).toHaveBeenCalledOnce()
   })
 
   it('Tab from the trigger enters the open list, and elsewhere on the page stays native', () => {

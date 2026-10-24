@@ -37,12 +37,22 @@
    the static span form keeps the resting tertiary reading. */
 button.pill {
   cursor: pointer;
+  min-height: var(--dsw-control-height-compact);
+  min-width: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
 }
 
-button.pill:hover,
 button.pill[aria-expanded='true'] {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-secondary);
+}
+
+@media (hover: hover) {
+  button.pill:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 .label {
@@ -55,3 +65,5 @@ button.pill[aria-expanded='true'] {
   color: var(--dsw-alias-separator-primary);
   margin: 0 6px;
 }
+
+button.pill:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

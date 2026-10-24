@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Browsersteuerung (Playwright)",
+    "description": "Das Modell durchsucht und bedient Webseiten über Playwright MCP in einem gestarteten Chromium."
+  }
+}

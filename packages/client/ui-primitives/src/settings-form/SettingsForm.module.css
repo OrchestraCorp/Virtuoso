@@ -28,26 +28,3 @@
   line-height: 1.5;
   color: var(--dsw-alias-label-error);
 }
-
-.save {
-  appearance: none;
-  border: 1px solid transparent;
-  border-radius: var(--dsw-radius-md);
-  padding: 5px 14px;
-  font: inherit;
-  font-size: 13px;
-  line-height: 1.5;
-  cursor: pointer;
-  background: var(--dsw-alias-label-primary);
-  color: var(--dsw-alias-bg-layer-3);
-}
-
-.save:disabled {
-  opacity: 0.4;
-  cursor: default;
-}
-
-.save:focus-visible {
-  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
-  outline-offset: 1px;
-}

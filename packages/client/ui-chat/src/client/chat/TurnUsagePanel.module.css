@@ -18,11 +18,11 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
-  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  min-width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 6px 8px;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   font-size: calc(var(--dsh-content-font-size-secondary, 13px) - 1px);
@@ -30,6 +30,8 @@
   line-height: calc(24px + var(--dsh-content-font-delta, 0px));
   white-space: nowrap;
   cursor: pointer;
+  box-sizing: border-box;
+  corner-shape: round;
 }
 
 /* A narrow column trims the label to an ellipsis instead of overflowing the
@@ -46,10 +48,16 @@
   flex: none;
 }
 
-.trigger:hover,
 .trigger[aria-expanded='true'] {
   background: var(--dsw-alias-interactive-bg-hover);
   color: var(--dsw-alias-label-tertiary);
+}
+
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-tertiary);
+  }
 }
 
 /* Narrow viewport: the pills collapse to bare icons with the sibling
@@ -59,8 +67,13 @@
 @media (max-width: 480px) {
   .trigger {
     justify-content: center;
-    width: calc(28px + var(--dsh-content-font-delta, 0px));
+    width: var(--dsw-control-height-compact);
     padding: 6px;
+    height: var(--dsw-control-height-compact);
+    min-width: var(--dsw-control-height-compact);
+    box-sizing: border-box;
+    border-radius: var(--dsw-control-radius);
+    corner-shape: round;
   }
 
   .trigger .label {
@@ -71,3 +84,5 @@
     margin-left: 0;
   }
 }
+
+.trigger:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

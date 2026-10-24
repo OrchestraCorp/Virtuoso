@@ -10,25 +10,29 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  height: 28px;
-  min-width: 34px;
+  height: var(--dsw-control-height-compact);
+  min-width: var(--dsw-control-height-compact);
   padding: 0 8px;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: var(--dsw-alias-state-business-tertiary);
   color: var(--dsw-alias-state-business-primary);
   font-size: 13px;
   font-weight: 500;
   line-height: 20px;
   cursor: pointer;
+  box-sizing: border-box;
+  corner-shape: round;
 }
 
-.chip:hover:not(:disabled) {
-  background: color-mix(
+@media (hover: hover) {
+  .chip:hover:not(:disabled) {
+    background: color-mix(
     in srgb,
     var(--dsw-alias-state-business-tertiary),
     var(--dsw-alias-state-business-primary) 6%
   );
+  }
 }
 
 .chip:focus-visible {
@@ -53,14 +57,24 @@
 }
 
 .hoverGlyph,
-.chip:hover:not(:disabled) .restGlyph,
 .chip:focus-visible .restGlyph {
   display: none;
 }
 
-.chip:hover:not(:disabled) .hoverGlyph,
+@media (hover: hover) {
+  .chip:hover:not(:disabled) .restGlyph {
+    display: none;
+  }
+}
+
 .chip:focus-visible .hoverGlyph {
   display: block;
+}
+
+@media (hover: hover) {
+  .chip:hover:not(:disabled) .hoverGlyph {
+    display: block;
+  }
 }
 
 .error {

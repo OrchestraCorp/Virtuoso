@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Navigation web (Playwright)",
+    "description": "Permet au modèle de parcourir et d'utiliser des pages web via Playwright MCP dans une instance de Chromium lancée."
+  }
+}

@@ -128,9 +128,7 @@
   background: var(--dsw-alias-label-primary);
 }
 
-/* Keyboard focus outranks both resting states: the tick takes the brand color
-   the rest of the rail never uses, and a hairline ring keeps it legible
-   against a busy transcript. */
+/* Keyboard focus keeps a full tick and a separate neutral ring inside the clipped rail. */
 .mark:focus-visible::before {
   transform: translateY(-50%) scaleX(1);
   background: var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
@@ -145,9 +143,9 @@
   inset: 0 0 0 auto;
   width: 20px;
   border-radius: inherit;
-  outline: 1px solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);
   /* The scroller clips the right edge; keep the marker's ring inside it. */
-  outline-offset: -1px;
+  outline-offset: -2px;
   content: '';
 }
 
@@ -205,6 +203,12 @@
 }
 
 @container (max-width: 900px) {
+  .frame {
+    display: none;
+  }
+}
+
+@media (pointer: coarse) {
   .frame {
     display: none;
   }

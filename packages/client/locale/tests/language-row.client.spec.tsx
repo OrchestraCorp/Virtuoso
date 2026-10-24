@@ -39,6 +39,7 @@ function mount(active = 'en') {
   const store = createLanguageRowStore().create()
   store.actions.sync(active, OPTIONS, 0)
   const setLocale = vi.fn()
+  const useSystemLocale = vi.fn()
   const props: LanguageRowComponentProps = {
     useSessions: emptySessions(),
     useSessionStatus,
@@ -47,11 +48,11 @@ function mount(active = 'en') {
     ...allowAllAccess,
     useStore: bindSnapshotSelector(store),
     actions: store.actions,
-    t: (key: string) => key === 'language.title' ? 'Language' : key,
-    setLocale,
+    t: (key: string) => key === 'language.title' ? 'Language' : key === 'language.system' ? 'System' : key,
+    setLocale, useSystemLocale,
   }
   render(<LanguageRow {...props} />)
-  return { store, setLocale }
+  return { store, setLocale, useSystemLocale }
 }
 
 describe('LanguageRow', () => {
@@ -71,6 +72,15 @@ describe('LanguageRow', () => {
     expect(b.setLocale).toHaveBeenCalledWith('zh')
     expect(trigger.getAttribute('aria-expanded')).toBe('false')
     expect(screen.queryByRole('menuitem', { name: '中文' })).toBeNull()
+  })
+
+  it('offers a separate System choice without persisting a synthetic locale id', () => {
+    const b = mount('en')
+    fireEvent.click(screen.getByRole('button', { name: /English/ }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'System' }))
+    expect(b.useSystemLocale).toHaveBeenCalledOnce()
+    expect(b.setLocale).not.toHaveBeenCalled()
+    expect(screen.queryByRole('menuitem', { name: 'System' })).toBeNull()
   })
 
   it('closes on outside pointerdown without selecting', () => {

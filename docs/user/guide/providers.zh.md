@@ -114,18 +114,7 @@ DeepSeek 将省略的 `inputModalities` 视为纯文本，并拒绝空列表。�
 
 ### DeepSeek 账号的模型
 
-已登录 DeepSeek 账号的模型列表来自账号服务，因此模型页不为它提供模型编辑器。要调整单个模型，在 `$DSH_HOME/profiles/<profile>/cordis.patch.yml` 中使用 `modelOverrides`；字段与 DeepSeek 的 `models` 条目相同，未设置的字段沿用列表中的值：
-
-```yaml
-- id: llm-deepseek-account
-  config:
-    modelOverrides:
-      deepseek-flash:
-        contextWindow: 524288
-        maxTokens: 131072
-```
-
-需要更新版 DeepSeek Harness 的模型会以 `CLIENT_UPGRADE_REQUIRED` 失败，并写明需要安装的版本。列表、兜底和门控规则见[账号提供方参考](../../../packages/llm/llm-deepseek-account/README.zh.md)。
+Maestro 和 Virtuoso 不加载 DeepSeek 账号授权或账号令牌模型路由。通过**设置 → 模型连接**或**设置 → 模型**配置 API Key。已有会话如果选择了 `deepseek-account`，请在继续前显式改选可用的已配置模型；参见[升级说明](../../upgrade-guide/v0.2.1-rc.2/deepseek-account-removed/guide.zh.md)。
 
 ### 推理等级
 

@@ -89,4 +89,4 @@ None.
 
 </details>
 
-The Client assembly includes the account namespace for login commands and reconnectable account snapshots.
+The product Client assembly excludes the DeepSeek account namespace; API-key credentials and model connections remain available.

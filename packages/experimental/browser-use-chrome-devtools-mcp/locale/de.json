@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Browsersteuerung (Chrome DevTools)",
+    "description": "Das Modell prüft und bedient Webseiten über Chrome DevTools MCP in einem gestarteten Chrome."
+  }
+}

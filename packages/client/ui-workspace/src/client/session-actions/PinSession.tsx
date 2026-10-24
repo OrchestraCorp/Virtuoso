@@ -59,6 +59,7 @@ export function PinSessionRowButton(props: SessionRowActionProps<PinSessionInjec
       <button
         type="button"
         className={css.iconButton}
+        data-workspace-row-action="pin"
         aria-label={t(pinned ? 'menu.unpinSession' : 'menu.pinSession')}
         onClick={() => { (pinned ? unpinSession : pinSession)(sessionId) }}
       >

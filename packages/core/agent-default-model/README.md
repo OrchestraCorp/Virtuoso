@@ -9,7 +9,7 @@ English | [中文](README.zh.md)
 
 ## Summary
 
-Give newly created agents a shared default provider and model when their sessions do not specify one. Provider, model, and reasoning effort are live Config fields. Saved selections update the active profile patch and apply to subsequent reads; per-session selection remains owned by the entry point.
+Give newly created agents a shared default provider and model when their sessions do not specify one. Provider, model, and reasoning effort are live Config fields. Saved selections use a registered product source or the active profile patch and apply to subsequent reads; per-session selection remains owned by the entry point.
 
 ## Table of Contents
 
@@ -29,7 +29,7 @@ Mount this package wherever agents are created without an explicit model route. 
 
 ### Configure the default
 
-The composition requires a provider and model. Consumers read the live references even when no configuration editor is mounted.
+A composition may omit both provider and model until the user explicitly selects one. Set both to supply a deployment default. Consumers read the live references even when no configuration editor is mounted.
 
 ```yaml
 - name: '@deepseek-ai/dsh-agent-default-model'
@@ -40,21 +40,23 @@ The composition requires a provider and model. Consumers read the live reference
 
 | Field | Default | Meaning |
 |---|---|---|
-| `provider` | required | Registered provider route for fresh agents |
-| `model` | required | Provider-owned model id for fresh agents |
+| `provider` | unset | Registered provider route for fresh agents |
+| `model` | unset | Provider-owned model id for fresh agents |
 
 The generated [configuration catalog](../../../docs/config-catalog.md#deepseek-aidsh-agent-default-model) lists every accepted field. `reasoningEffort` is optional; saving a selection without it removes that field from the profile’s complete config override.
 
 ### Read and change the default
 
-`currentSelection()` returns a detached `{ provider, model, reasoningEffort? }` for a newly created agent; `saveSelection()` stores the complete selection for later agents.
+`currentSelection()` returns a detached `{ provider, model, reasoningEffort? }`, or `undefined` before a default is configured. `requireSelection()` refuses an unconfigured request with `MODEL_NOT_CONFIGURED`. `saveSelection()` stores the complete selection for later reads; no provider is selected automatically.
 
 ```text
 const selection = ctx.agentDefaultModel.currentSelection()
 await ctx.agentDefaultModel.saveSelection({ provider, model, reasoningEffort: 'high' })
 ```
 
-Without a configuration editor, `saveSelection()` is a no-op. The service does not validate catalog membership; the consumer opening a model request owns availability diagnostics.
+`registerSource(source)` lets one product own default persistence. Its `currentSelection()` may return `undefined` to inherit Config; its `saveSelection(next)` persists selections without a profile write. A second source is refused, and disposing the registration restores Config behavior. Without a source or configuration editor, `saveSelection()` is a no-op. The service does not validate catalog membership; the consumer opening a model request owns availability diagnostics.
+
+With a product source registered, only an owner Remote caller or trusted in-process code can persist the global default. A non-owner's `saveSelection()` resolves without changing that default, allowing an authorized entry point to keep its model choice on the Session. Caller identity comes from the current invocation and cannot be supplied in the selection payload.
 
 -----
 
@@ -78,7 +80,7 @@ The service retains its validated Config references and samples them in `current
 
 ### Behavior notes
 
-`currentSelection()` returns a detached selection. A captured selection stays stable while later operations read updated Config references.
+An unconfigured runtime keeps its model catalog and blank conversations usable. Request entry points require an explicit selection before calling a model. A captured selection stays stable while later operations read updated Config references.
 
 </details>
 
@@ -113,7 +115,7 @@ Changing the default affects only agents that subsequently resolve from it. An e
 These limits define the service's scope. They are current package constraints, not a task backlog.
 
 - **One process-wide default** — the service owns a single default; per-session model selection remains the entry point's responsibility.
-- **Persistence requires a profile configuration editor** — without it, saving a default does not retain the selection.
+- **Persistence requires an owner** — without a registered source or profile configuration editor, saving a default does not retain the selection.
 
 <a id="dev-note"></a>
 ### Dev Note

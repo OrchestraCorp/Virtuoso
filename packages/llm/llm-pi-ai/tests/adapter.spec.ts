@@ -440,9 +440,10 @@ describe('PiAiAdapter provider routing', () => {
 })
 
 describe('provider profile lifecycle', () => {
-  it('keeps adapter helpers off the package root', () => {
+  it('exports the domain runtime while keeping wire conversion helpers private', () => {
+    expect(LlmPiAi.createPiAiRuntime).toBeTypeOf('function')
+    expect(LlmPiAi.resolveProfiles).toBeTypeOf('function')
     for (const helper of [
-      'resolveProfiles',
       'toPiContext',
       'toPiReplayState',
       'toPiAssistant',

@@ -27,6 +27,14 @@ Desktop product events use the optional [product analytics service](../product-a
 <a id="use-this-package"></a>
 ## Use this package
 
+The provider directory shows a centered shared loader with a localized status name and busy state before its first ready snapshot. Actions use shared compact capsule geometry, keyboard focus uses a separate neutral ring, and model IDs and API addresses use the code font.
+
+Provider cards and model editors keep opaque reading surfaces. Increased spacing separates model identity, capabilities, and actions without changing their saved configuration or write semantics.
+
+**Model connections** appears before Models when the `modelConnections` Remote is mounted. It edits domain-owned connections through revision-fenced operations, without writing Cordis provider settings. New connections use the supplied default endpoint; bundled models are choices, not an automatically enabled catalog. Each model can use its bundled protocol default, Chat Completions for an unknown ID, or an explicit protocol. The editor exposes token capacities, text/image inputs, and DSH reasoning levels paired with their API values. API values apply only where the selected adapter and provider support an effort parameter; Anthropic Messages uses DSH’s thinking-budget strategy by default and does not send these values verbatim. Capacities accept K/M suffixes and must resolve to positive whole token counts. Missing capabilities stay undeclared; model names do not imply image or reasoning support. Existing model fields and an explicit `reasoningEfforts: false` survive unrelated edits.
+
+API-key fields always start empty; the credential provider owns storage, and a blank field preserves the saved key. Fetching models requires choosing a discovery protocol independently of the saved model order. Candidates enter an editable draft with that protocol before saving. Testing a saved model requires an explicit action. Enabling and setting a default are separate actions. A default with an explicit reasoning effort offers **Reset default reasoning**, which keeps the provider and model while removing that default effort; existing Session selections remain unchanged. Conflicts retain the draft and require refreshing and reopening the connection. The original Models page and its optional DeepSeek onboarding remain available.
+
 Saving credentials or a custom provider preserves the selected model. The user can select an available model from the composer.
 
 DeepSeek Account appears first and DeepSeek second in the provider list; third-party providers retain their directory order.
@@ -37,7 +45,7 @@ A provider with a stored catalog error remains visible with its diagnostic and e
 
 After Apply closes an editor, its saved status appears when the current provider, settings, and credential snapshot is ready. Opening any row's editor, adding a provider, and opening a removal confirmation wait for that refresh. A newly opened Models section, or one retrying after a page-load failure, waits for a ready snapshot before mounting editors. A background refresh preserves an open draft while its editor remains mounted; a failed page load or provider removal can close it.
 
-Host configuration `credentialOnboarding` defaults to `true`. The Electron preload marker suppresses automatic credential onboarding and the Web welcome notice; Models settings and explicit API-key editing remain available. The [account plugin](../ui-settings-account/README.md#desktop-onboarding) owns the Desktop introduction. Other native shells can disable only the credential step with `credentialOnboarding: false`. Host publishes this public boolean through `webserver/index-inject`, and Client validates it before registering dialogs. It is page initialization data, not a durable completion marker.
+Host configuration `credentialOnboarding` defaults to `false`, leaving model connections and API-key settings available without an automatic provider credential dialog. An explicit composition can enable the API-key step with `credentialOnboarding: true`; the Electron preload marker suppresses automatic credential onboarding and the Web welcome notice. Host publishes this public boolean through `webserver/index-inject`, and Client validates it before registering dialogs. It is page initialization data, not a durable completion marker.
 
 ### API keys
 

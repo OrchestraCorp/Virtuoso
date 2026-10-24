@@ -67,8 +67,8 @@ const GROUPS = [{
 /** Boot the plugin over fake faces + a stateful fake host (current moves on selectModel). */
 async function bench(locale: 'zh' | 'en' = 'zh') {
   const ctx = new Context()
-  let defaultSelection: ModelSelection = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
-  let selected = defaultSelection
+  let defaultSelection: ModelSelection | null = { provider: 'deepseek-official', model: 'deepseek-v4-flash' }
+  let selected: ModelSelection = defaultSelection
   const calls = { models: 0, select: 0 }
   const projections = new Map<SessionId, SnapshotStore<ModelSelectionProjection | undefined>>()
   // Whether the Host advertises available models for the current route.
@@ -191,7 +191,7 @@ async function bench(locale: 'zh' | 'en' = 'zh') {
     rejectSelection: () => {
       selectionFailure = new RemoteError('session/writer-held', 'writer held', { sessionId: sid('owned') })
     },
-    setHostCurrent: (selection: ModelSelection) => { defaultSelection = selection },
+    setHostCurrent: (selection: ModelSelection | null) => { defaultSelection = selection },
     setProjected: (id: SessionId, value: ModelSelectionProjection) => { projections.get(id)?.set(value) },
     address: (id: SessionId) => { addressed.add(id) },
     setGroups: (next: typeof GROUPS) => { groups = next },
@@ -556,4 +556,22 @@ it.each([false, true])('reports accepted switches with blank=%s and no refused s
     await face.select({ provider: 'deepseek-official', model: 'deepseek-v4-flash' })
     expect(b.track).not.toHaveBeenCalled()
   } finally { await scope.fiber.dispose(); await b.ctx.fiber.dispose() }
+})
+
+it('keeps a blank conversation unselected when the host has no default', async () => {
+  const b = await bench()
+  try {
+    b.setHostCurrent(null)
+    b.remote.emit('model-connections/changed', [])
+    const handle = b.mint('no-default', true)
+    const directory = b.ctx.modelDirectories.directoryFor(sid('no-default'))
+    await directory.load()
+    expect(directory.store.getSnapshot()).toMatchObject({ current: null, routable: false, status: 'ready' })
+    const result = await directory.select({ provider: 'external', model: 'deepseek-v4-flash' })
+    expect(result.ok).toBe(true)
+    expect(directory.store.getSnapshot().current).toMatchObject({ provider: 'external', model: 'deepseek-v4-flash' })
+    await handle.fiber.dispose()
+  } finally {
+    await b.ctx.fiber.dispose()
+  }
 })

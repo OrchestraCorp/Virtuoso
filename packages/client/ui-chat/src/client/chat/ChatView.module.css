@@ -279,9 +279,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
-  margin-top: -34px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
+  margin-top: calc(0px - var(--dsw-control-height-compact));
   padding: 0;
   border: 0;
   --dsw-elevation-stroke-color: var(--dsw-alias-border-l3);
@@ -294,11 +294,15 @@
   pointer-events: auto;
 }
 
-.toBottom:hover {
-  background: var(--dsw-alias-button-floating-hover);
+@media (hover: hover) {
+  .toBottom:hover {
+    background: var(--dsw-alias-button-floating-hover);
+  }
 }
 
 /* Host open-path refusal: same dialog family as the workspace folder error. */
 .modalAction {
   min-width: 72px;
 }
+
+.toBottom:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

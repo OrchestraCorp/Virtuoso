@@ -29,6 +29,8 @@ kind: "package-reference"
 
 要贡献一个标签页，带 `id`、`order` 和本地化的 `label` 注册进 `settings.plugins.tab`；分区按序渲染条目，标签页在首次被选中时挂载。功能文案留在注册方自己的字典里。
 
+多个标签页共用胶囊形选择条，以蓝色填充标识选中项，并使用独立的中性键盘焦点环。选项使用共用的紧凑高度：桌面为 36px，粗指针设备为 44px；较长的标签行在分区内部滚动。方向键、Home 和 End 同步移动焦点与选择，已访问的面板保留草稿。
+
 -----
 
 <a id="understand-the-implementation"></a>

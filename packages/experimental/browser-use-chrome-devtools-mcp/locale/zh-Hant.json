@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "瀏覽器操作（Chrome DevTools）",
+    "description": "讓模型透過 Chrome DevTools MCP，在新啟動的 Chrome 中檢查及操作網頁。"
+  }
+}

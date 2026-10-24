@@ -47,12 +47,11 @@
   position: relative; /* overlay anchor positioning context */
   display: flex;
   flex-direction: column;
-  /* figma Input 75:8208: 12px between the text area and the button row; the
-     card's top pad before .InputText tightened from the drawn 10 to 8. */
-  gap: 12px;
+  /* The opaque draft surface separates reading and editing from the operation row. */
+  gap: 16px;
   width: 100%;
   max-width: var(--dsh-composer-card-max-width);
-  padding-top: 8px;
+  padding-top: 12px;
   /* Input stroke: the light neutral (l2, one step above the menus' l1),
      drawn as the elevation hairline so it costs no layout; the shadow is the
      soft elevation tier. Fill: the input surface token (elevated in dark). */
@@ -103,8 +102,10 @@
   pointer-events: none;
 }
 
-.cardWorkspaceTrigger:hover::after {
-  color: var(--dsw-alias-state-business-primary);
+@media (hover: hover) {
+  .cardWorkspaceTrigger:hover::after {
+    color: var(--dsw-alias-state-business-primary);
+  }
 }
 
 .accessory {
@@ -259,10 +260,8 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  /* 2px moved from the bottom pad to the top: the whole control row sits 2px
-     lower in the card (it read too high against the textarea) while the
-     controls' own centering stays untouched. */
-  padding: 2px 8px 6px;
+  /* The operation row keeps its own breathing room below the draft. */
+  padding: 4px 12px 10px;
   min-width: 0;
   /* Size container so the chips inside can collapse to icon-only when the
      card runs out of row width (PermissionSelect @container rule). Anonymous
@@ -320,18 +319,21 @@
   display: grid;
   place-items: center;
   flex: none;
-  width: 28px;
-  height: 28px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: none;
   border-radius: 999px;
   corner-shape: round;
-  background: var(--dsw-specific-selector);
+  background: var(--dsw-control-core-fill);
+  box-shadow: var(--dsw-control-core-shadow);
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
 }
 
-.add:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover-solid);
+@media (hover: hover) {
+  .add:hover:not(:disabled) {
+    background: var(--dsw-control-core-hover-fill);
+  }
 }
 
 .add:disabled {
@@ -343,12 +345,13 @@
    (figma ToggleButton: 13/20 medium secondary, 12px chevron). */
 .select {
   max-width: 220px;
-  height: 28px;
-  padding: 0 20px 0 8px;
+  height: var(--dsw-control-height-compact);
+  padding: 0 24px 0 12px;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   outline: none;
-  background-color: transparent;
+  background-color: var(--dsw-control-glass-fill);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%2381858C' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 4px center;
@@ -362,8 +365,10 @@
   appearance: none;
 }
 
-.select:hover:not(:disabled) {
-  background-color: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .select:hover:not(:disabled) {
+    background-color: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .select:disabled {
@@ -371,32 +376,27 @@
   cursor: default;
 }
 
-/* Primary send (figma IconButton 34:10465): 34px circle, #3964FE light /
-   #679EFE dark — the info-fill pair (500→400), NOT button-primary (ink);
-   white glyph; empty text = 0.4 opacity. */
+/* The send action uses the same primary fill and circular geometry in both palettes. */
 .primary {
   display: grid;
   place-items: center;
   flex: none;
-  width: 34px;
-  height: 34px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: none;
   border-radius: 999px;
   corner-shape: round;
-  background: var(--dsw-alias-button-info-fill);
-  /* Static white, not the foreground token: the arrow stays white on the blue
-     fill in both themes (design 34:10465). */
-  color: #fff;
+  background: var(--dsw-alias-button-primary-fill);
+  color: var(--dsw-alias-label-primary-foreground);
   cursor: pointer;
   transition: background-color 100ms ease;
-  /* Opts out of the row's 2px downward shift (.row top pad): the send circle
-     keeps its original seat while the smaller chips sit lower. Transform, not
-     margin, so flex centering math is untouched. */
-  transform: translateY(-2px);
+  transform: none;
 }
 
-.primary:hover:not(:disabled) {
-  background: var(--dsw-alias-button-info-hover);
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    background: var(--dsw-alias-button-primary-hover);
+  }
 }
 
 .primary:disabled {
@@ -408,11 +408,13 @@
   margin-left: 8px;
   padding: 1px 8px;
   border: 1px solid currentColor;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   background: transparent;
   color: inherit;
   font-size: 12px;
   cursor: pointer;
+  min-height: var(--dsw-control-height-compact);
+  corner-shape: round;
 }
 
 .standardControls { display: flex; align-items: center; gap: 12px; min-width: 0; }
@@ -421,3 +423,7 @@
 .activity { display: flex; align-items: center; flex: none; }
 .activity:empty { display: none; }
 .activityExpanded { flex: 1; min-width: 0; }
+
+.add, .select, .primary, .retry { box-sizing: border-box; }
+.add:focus-visible, .select:focus-visible, .primary:focus-visible, .retry:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }
+.card:has(.input:focus-visible) { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }

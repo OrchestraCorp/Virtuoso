@@ -1,5 +1,5 @@
-// Real-composition acceptance for DeepSeek account sign-in from a plain browser. The
-// scaffold boots the shipped Web Loader tree, so the real account provider drives
+// Explicit upstream-composition acceptance for account sign-in from a plain browser.
+// The optional account fixture adds the provider to the Web Loader tree and drives
 // auth_init, the loopback OAuth callback, and auth_exchange against a loopback Platform
 // double, while a real Chromium follows the tab the Web UI preopens.
 import { createServer, type Server } from 'node:http'
@@ -9,7 +9,8 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { chromium, type Browser } from 'playwright'
 import { afterAll, beforeAll, describe, expect, it, onTestFailed, onTestFinished } from 'vitest'
-import { compareOrRefreshGolden, launchWebScaffold, watchConsole, webSnapshotMode, type WebScaffold } from './scaffold.ts'
+import { compareOrRefreshGolden, watchConsole, webSnapshotMode, type WebScaffold } from './scaffold.ts'
+import { launchOptionalAccountScaffold } from './optional-account-scaffold.ts'
 import { saveFailureShot } from './support.ts'
 
 const OVERLAY_TEMPLATE = fileURLToPath(new URL('./fixtures/account-login/cordis.patch.yml', import.meta.url))
@@ -107,7 +108,7 @@ describe.skipIf(MODE === 'record')('web e2e: DeepSeek account sign-in in a plain
     root = await mkdtemp(join(tmpdir(), 'dsh-web-account-login-'))
     const overlay = join(root, 'account-login.overlay.yml')
     await writeFile(overlay, (await readFile(OVERLAY_TEMPLATE, 'utf8')).replaceAll('{{origin}}', platform.origin))
-    scaffold = await launchWebScaffold({ extraOverlayPath: overlay })
+    scaffold = await launchOptionalAccountScaffold({ extraOverlayPath: overlay })
     browser = await chromium.launch()
   })
 

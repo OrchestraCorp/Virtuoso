@@ -1,10 +1,10 @@
-/* Appearance row (figma 'Frame 2117131228': title + cube row, column gap 8,
- * pad 16/0, hairline separator; the section column strips it when last). */
-
+/* Appearance choices share one operation rail and retain their committed selection. */
 .group {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
   padding: 16px 0;
   border-bottom: 0.5px solid var(--dsw-alias-border-l2);
 }
@@ -17,41 +17,70 @@
 }
 
 .cubeRow {
+  position: relative;
+  isolation: isolate;
   display: flex;
-  align-items: stretch;
-  gap: 8px;
   flex-wrap: wrap;
+  gap: 4px;
+  max-width: 100%;
+  padding: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
 }
 
-/* Appearance cube (figma '.Selector Cube' 276x82, pad 20/32, centered
- * icon-over-label column, gap 4); flexed down from the figma width so all
- * three sit on one row in the 800 panel, wrapping when narrower. */
+.cubeRow::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: round;
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  box-shadow: var(--dsw-control-shadow);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
+  pointer-events: none;
+  content: '';
+}
+
 .themeCube {
   box-sizing: border-box;
-  flex: 1 1 180px;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  flex: 1 1 auto;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 20px 32px;
-  border: 0.5px solid var(--dsw-alias-border-l4);
-  border-radius: var(--dsw-radius-xl);
+  gap: 6px;
+  min-height: var(--dsw-control-height-compact);
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   font: inherit;
   font-size: 14px;
   line-height: 22px;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
+  transition: background-color var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.themeCube:hover:not(.selected) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .themeCube:hover:not(.selected) {
+    background: var(--dsw-control-hover-fill);
+  }
 }
 
-/* Selected cube: #F5F6F7 fill + #ADB2B8 border (static token — the bluish-400
- * step has no alias-layer name). */
+.themeCube:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
+}
+
 .selected {
-  background: var(--dsw-alias-bg-module-platform);
-  border-color: var(--dsw-static-neutral-bluish-400);
+  background: var(--dsw-control-selected-fill);
+  color: var(--dsw-control-selected-label);
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .cubeRow::before {
+    border: 1px solid var(--dsw-control-edge);
+  }
 }

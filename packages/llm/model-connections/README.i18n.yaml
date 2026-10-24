@@ -1,0 +1,40 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/llm/model-connections/README.md
+/:
+  en: 30cdefc1dd798828
+  zh: d86542ee60431cf2
+/deepseek-ai-dsh-model-connections:
+  en: ad752aab8f4913d7
+  zh: ce77c75a711ae10d
+/deepseek-ai-dsh-model-connections/summary:
+  en: 012ee283ebe8cf21
+  zh: 2aae85e065845d36
+/deepseek-ai-dsh-model-connections/table-of-contents:
+  en: 2e89ddb1e73218cb
+  zh: 8a6bc778724bb498
+/deepseek-ai-dsh-model-connections/use-this-package:
+  en: d2d0107ce0326fde
+  zh: 4b035e9117f8d95d
+/deepseek-ai-dsh-model-connections/model-experience:
+  en: 215e7ba838619b7b
+  zh: a311da3843709f90
+/deepseek-ai-dsh-model-connections/model-experience/requests-through-a-selected-connection:
+  en: 34657832c7311375
+  zh: 409667c389352248
+/deepseek-ai-dsh-model-connections/model-experience/requests-through-a-selected-connection/what-the-model-sees:
+  en: f4f2c939833ddef5
+  zh: 6882a5ae661b8574
+/deepseek-ai-dsh-model-connections/model-experience/requests-through-a-selected-connection/token-effect:
+  en: 5f9d76a541f590b9
+  zh: dfd3ed91319a1135
+/deepseek-ai-dsh-model-connections/model-experience/requests-through-a-selected-connection/kv-cache-effect:
+  en: 7dc03fe54399eca6
+  zh: 334a97cc37c1fc82
+/deepseek-ai-dsh-model-connections/known-limitations-and-deferred-work:
+  en: 964219f2a82b275f
+  zh: c810823555301d33
+/deepseek-ai-dsh-model-connections/known-limitations-and-deferred-work/dev-note:
+  en: 60b26d0e8f737914
+  zh: 1a6b48235ee6e2e1

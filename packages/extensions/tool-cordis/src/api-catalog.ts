@@ -84,19 +84,32 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
   {
     key: 'agentDefaultModel',
     summary: 'Owns the default model selection independently of any Host or transport.',
-    description: 'Owns the default model selection independently of any Host or transport. Each operation reads the owning Config references.',
+    description: 'Owns the default model selection independently of any Host or transport. A registered product source owns persistence; absent a selection, reads inherit Config.',
     methods: [
       {
-        signature: 'currentSelection(): ModelSelection',
+        signature: 'currentSelection(): ModelSelection | undefined',
         description: 'Read the current default model selection.',
         parameters: [],
-        returns: 'a detached provider, model, and optional reasoning selection.',
+        returns: 'a detached selection, or undefined until a model is explicitly configured.',
+      },
+      {
+        signature: 'requireSelection(): ModelSelection',
+        description: 'Resolve the explicit default before a model request starts.',
+        parameters: [],
+        returns: 'the configured model selection.',
+        throws: ['LlmError MODEL_NOT_CONFIGURED until a default has been selected.'],
       },
       {
         signature: 'async saveSelection(next: ModelSelection): Promise<void>',
-        description: 'Save the complete default model selection. A deployment without a configuration editor keeps its composition entry. Saves commit in submission order; a failed save rejects its caller without blocking later saves.',
+        description: 'Save the complete default through the registered source or profile editor. A non-owner Remote caller cannot persist a registered product default; its entry point may still keep the selected model on that caller\'s Session. Without either, the deployment keeps its composition entry. Saves commit in submission order; a failed save rejects its caller without blocking later saves.',
         parameters: [{ name: 'next', description: 'resolved selection accepted by an entry point.' }],
         returns: 'fulfillment after the optional profile write settles.',
+      },
+      {
+        signature: 'registerSource(source: DefaultModelSource): () => void',
+        description: 'Register one product-owned default; unloading the registration restores Config behavior.',
+        parameters: [{ name: 'source', description: 'Product persistence owner. A second simultaneous source is refused.' }],
+        returns: 'the caller-owned disposer.',
       },
     ],
   },
@@ -1581,6 +1594,49 @@ export const SERVICE_API: readonly ServiceApiEntry[] = [
         description: 'Delete one item after checking its version; absence succeeds without an event.',
         parameters: [{ name: 'request', description: 'Session, message, and observed item version.' }],
         returns: 'the stable absent postcondition or an explicit failure.',
+      },
+    ],
+  },
+  {
+    key: 'modelConnections',
+    summary: 'Host-owned connection state and its pi-ai route projection.',
+    description: 'Host-owned connection state and its pi-ai route projection.',
+    methods: [
+      {
+        signature: '@Remote async list(): Promise<ConnectionsSnapshot>',
+        description: 'Read saved configuration and activation status without secrets.',
+        parameters: [],
+        returns: 'the current durable revision and public connection metadata.',
+      },
+      {
+        signature: '@Remote async save(draft: ConnectionDraft, expectedRevision: number, apiKey?: string): Promise<ConnectionsSnapshot>',
+        description: 'Save a complete draft and optionally rotate its key. Credential failure leaves the record unchanged.',
+        parameters: [{ name: 'draft', description: 'Complete connection configuration; no id creates a new route.' }, { name: 'expectedRevision', description: 'Last revision observed by the editor.' }, { name: 'apiKey', description: 'New non-empty key; omission retains the current credential.' }],
+        returns: 'committed configuration with unavailable default reasoning removed and any route activation failure displayed.',
+      },
+      {
+        signature: '@Remote async deleteConnection(id: string, expectedRevision: number): Promise<ConnectionsSnapshot>',
+        description: 'Remove a saved connection; a default must be changed first.',
+        parameters: [{ name: 'id', description: 'Stable connection/provider id.' }, { name: 'expectedRevision', description: 'Last revision observed by the editor.' }],
+        returns: 'committed configuration after route removal.',
+      },
+      {
+        signature: '@Remote async setDefault(connectionId: string, modelId: string, expectedRevision: number): Promise<ConnectionsSnapshot>',
+        description: 'Persist a model for newly created Agents without changing existing Sessions.',
+        parameters: [{ name: 'connectionId', description: 'Enabled connection route.' }, { name: 'modelId', description: 'Saved model id.' }, { name: 'expectedRevision', description: 'Last revision observed by the editor.' }],
+        returns: 'committed default and public connections.',
+      },
+      {
+        signature: '@Remote async discover(id: string, protocol?: ConnectionProtocol, signal?: AbortSignal): Promise<DiscoveredModel[]>',
+        description: 'Fetch model candidates from a saved endpoint; nothing is adopted automatically.',
+        parameters: [{ name: 'id', description: 'Saved connection id.' }, { name: 'protocol', description: 'Listing protocol; omission consistently uses OpenAI Chat Completions.' }, { name: 'signal', description: 'Remote caller lifetime.' }],
+        returns: 'the endpoint\'s candidate model metadata.',
+      },
+      {
+        signature: '@Remote async test(id: string, modelId: string, signal?: AbortSignal): Promise<ConnectionTestResult>',
+        description: 'Send one bounded text probe through the enabled saved model route. This may consume provider credits.',
+        parameters: [{ name: 'id', description: 'Saved, enabled connection id.' }, { name: 'modelId', description: 'Saved model id to probe.' }, { name: 'signal', description: 'Remote caller lifetime.' }],
+        returns: 'a sanitized success or failure diagnostic.',
       },
     ],
   },
@@ -4374,6 +4430,14 @@ export const EVENT_API: readonly EventApiEntry[] = [
     parameters: [{ name: 'options', description: 'the full request. A LOOP-built request carries the process-local {@link markAgentLoopRequest} identity and arrives deep-frozen (mutation throws): its content is a pure function of the session log (the reconstructability Agent Note), so listeners read it, never rewrite it. Hand-built calls do not carry that marker; callers own their request inputs and must keep them unchanged until the stream settles.' }],
   },
   {
+    name: 'model-connections/changed',
+    mode: 'emit',
+    signature: '\'model-connections/changed\'(): void',
+    summary: 'Saved connections or their default changed after runtime activation.',
+    description: 'Saved connections or their default changed after runtime activation. Readers reload their authorized state; the notification carries no data.',
+    parameters: [],
+  },
+  {
     name: 'permission-presets/catalog-changed',
     mode: 'emit',
     signature: '\'permission-presets/catalog-changed\'(): void',
@@ -4990,6 +5054,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export interface ButtonProps {\n    readonly label: string;\n    readonly hotkey?: string | undefined;\n    readonly disabled?: boolean | undefined;\n    readonly onPress?: (() => unknown) | undefined;\n}',
   },
   {
+    name: 'CatalogModel',
+    declaration: 'export interface CatalogModel {\n    id: string;\n    name: string;\n    protocol: ConnectionProtocol;\n}',
+  },
+  {
     name: 'ChangeResult',
     declaration: 'export interface ChangeResult {\n    changed: boolean;\n    application: \'applied\' | \'restart-required\' | \'overridden\' | \'failed\' | \'cancelled\';\n    restartReason?: RestartReason;\n    stage: \'install\' | \'enable\' | \'remove\';\n    target: string;\n    enabled?: boolean;\n    error?: ManagementError;\n    warnings?: string[];\n    packageResult?: PackageResult;\n    bundle?: string;\n    version?: string;\n    pendingBuilds?: string[];\n    approvedBuilds?: string[];\n    registries?: Registry[];\n    failedAt?: \'registry\' | \'spec-host\';\n}',
   },
@@ -5098,6 +5166,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type ConnectionAdmission = {\n    readonly peer: PeerScope;\n    readonly release: () => Promise<void>;\n} | {\n    readonly rejection: 401 | 403 | 409;\n};',
   },
   {
+    name: 'ConnectionDefaultSelection',
+    declaration: 'export interface ConnectionDefaultSelection {\n    provider: string;\n    model: string;\n    reasoningEffort?: string;\n}',
+  },
+  {
+    name: 'ConnectionDraft',
+    declaration: 'export interface ConnectionDraft {\n    id?: string;\n    name: string;\n    baseURL: string;\n    enabled: boolean;\n    models: ConnectionModelDraft[];\n}',
+  },
+  {
     name: 'ConnectionFetchHandler',
     declaration: 'export interface ConnectionFetchHandler {\n    requestBodyMode(request: {\n        readonly method: string;\n        readonly url: URL;\n    }): ConnectionRequestBodyMode;\n    fetch(request: Request, peer: PeerScope): Promise<Response>;\n}',
   },
@@ -5116,6 +5192,30 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ConnectionIndexResponse',
     declaration: 'export interface ConnectionIndexResponse {\n    writeHead(status: number, headers?: Readonly<Record<string, string>>): unknown;\n    end(body?: string): unknown;\n}',
+  },
+  {
+    name: 'ConnectionModality',
+    declaration: 'export type ConnectionModality = \'text\' | \'image\';',
+  },
+  {
+    name: 'ConnectionModel',
+    declaration: 'export interface ConnectionModel extends ConnectionModelDraft {\n    protocol: ConnectionProtocol;\n}',
+  },
+  {
+    name: 'ConnectionModelDraft',
+    declaration: 'export interface ConnectionModelDraft {\n    id: string;\n    name?: string;\n    protocol?: ConnectionProtocol;\n    contextWindow?: number;\n    maxTokens?: number;\n    input?: ConnectionModality[];\n    reasoningEfforts?: false | ConnectionReasoningEfforts;\n}',
+  },
+  {
+    name: 'ConnectionProtocol',
+    declaration: 'export type ConnectionProtocol = \'openai-completions\' | \'openai-responses\' | \'anthropic-messages\';',
+  },
+  {
+    name: 'ConnectionReasoningEfforts',
+    declaration: 'export type ConnectionReasoningEfforts = Partial<Record<ConnectionReasoningLevel, string | null>>;',
+  },
+  {
+    name: 'ConnectionReasoningLevel',
+    declaration: 'export type ConnectionReasoningLevel = \'off\' | \'minimal\' | \'low\' | \'medium\' | \'high\' | \'xhigh\' | \'max\';',
   },
   {
     name: 'ConnectionRequestBodyMode',
@@ -5148,6 +5248,14 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ConnectionRpcResult',
     declaration: 'export type ConnectionRpcResult<T> = {\n    readonly ok: true;\n    readonly value: T;\n} | {\n    readonly ok: false;\n    readonly error: ConnectionRpcFailure;\n};',
+  },
+  {
+    name: 'ConnectionsSnapshot',
+    declaration: 'export interface ConnectionsSnapshot {\n    revision: number;\n    defaultBaseURL: string;\n    connections: ModelConnection[];\n    defaultSelection?: ConnectionDefaultSelection;\n    catalog: CatalogModel[];\n    reasoningLevels: ConnectionReasoningLevel[];\n}',
+  },
+  {
+    name: 'ConnectionTestResult',
+    declaration: 'export interface ConnectionTestResult {\n    ok: boolean;\n    message: string;\n}',
   },
   {
     name: 'ConnectionTrustRequest',
@@ -5330,6 +5438,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
     declaration: 'export type DeepSeekLlmApiJson = null | boolean | number | string | DeepSeekLlmApiJson[] | {\n    [key: string]: DeepSeekLlmApiJson;\n};',
   },
   {
+    name: 'DefaultModelSource',
+    declaration: 'export interface DefaultModelSource {\n    currentSelection(): ModelSelection | undefined;\n    saveSelection(next: ModelSelection): Promise<void>;\n}',
+  },
+  {
     name: 'DeliveryRetentionBounds',
     declaration: 'export interface DeliveryRetentionBounds {\n    readonly days: number;\n    readonly records: number;\n}',
   },
@@ -5372,6 +5484,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'DirectoryRegistrationHandle',
     declaration: 'export interface DirectoryRegistrationHandle {\n    (): void;\n    replace(entries: readonly LlmConfigurableProvider[]): void;\n}',
+  },
+  {
+    name: 'DiscoveredModel',
+    declaration: 'export interface DiscoveredModel {\n    id: string;\n    name?: string;\n    contextWindow?: number;\n    maxTokens?: number;\n}',
   },
   {
     name: 'Domain',
@@ -6219,7 +6335,7 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   },
   {
     name: 'ModelCatalog',
-    declaration: 'export interface ModelCatalog {\n    readonly default: ModelSelection;\n    readonly routableProviders: readonly string[];\n    readonly groups: readonly ModelProviderGroup[];\n    readonly failures: readonly ModelCatalogFailure[];\n}',
+    declaration: 'export interface ModelCatalog {\n    readonly default: ModelSelection | null;\n    readonly routableProviders: readonly string[];\n    readonly groups: readonly ModelProviderGroup[];\n    readonly failures: readonly ModelCatalogFailure[];\n}',
   },
   {
     name: 'ModelCatalogFailure',
@@ -6228,6 +6344,10 @@ export const TYPE_API: readonly TypeApiEntry[] = [
   {
     name: 'ModelCatalogModel',
     declaration: 'export interface ModelCatalogModel {\n    readonly id: string;\n    readonly name: string;\n    readonly description?: string;\n    readonly reasoning?: ModelReasoning;\n}',
+  },
+  {
+    name: 'ModelConnection',
+    declaration: 'export interface ModelConnection {\n    id: string;\n    name: string;\n    baseURL: string;\n    enabled: boolean;\n    models: ConnectionModel[];\n    credentialConfigured: boolean;\n    activationError?: string;\n}',
   },
   {
     name: 'ModelMessageSource',

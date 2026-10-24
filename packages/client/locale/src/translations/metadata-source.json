@@ -1,0 +1,206 @@
+{
+  "packages/experimental/cot-translation-bundle/locale/en.json": {
+    "meta": {
+      "title": "Machine translation of reasoning",
+      "description": "Machine translation of expanded reasoning; source text is sent to the selected service"
+    }
+  },
+  "packages/experimental/computer-use-cua-driver-native/locale/en.json": {
+    "meta": {
+      "title": "Computer Use (Cua Driver)",
+      "description": "Let the model operate the desktop with the bundled Cua Driver runtime; needs desktop permissions for the app that launches dsh."
+    }
+  },
+  "packages/experimental/speech-to-text/locale/en.json": {
+    "meta": {
+      "title": "Speech recognition",
+      "description": "Manage speech transcription and select a recognition service."
+    }
+  },
+  "packages/experimental/terminal-bundle/locale/en.json": {
+    "meta": {
+      "title": "Persistent terminals",
+      "description": "Keep shell processes alive across tool calls."
+    }
+  },
+  "packages/experimental/session-inspector/locale/en.json": {
+    "meta": {
+      "title": "Session Log",
+      "description": "Enable analysis of the current session's raw data and grouped chat messages in the session sidebar."
+    }
+  },
+  "packages/experimental/plugin-market-bundle/locale/en.json": {
+    "meta": {
+      "title": "Custom plugin markets",
+      "description": "Adds a Discover tab to Plugins for browsing and installing bundles from plugin market indexes you add"
+    }
+  },
+  "packages/experimental/session-titles-bundle/locale/en.json": {
+    "meta": {
+      "title": "Conversation-following titles",
+      "description": "Refresh session titles as new human prompts arrive."
+    }
+  },
+  "packages/experimental/client-ui-cot-translation/locale/en.json": {
+    "meta": {
+      "title": "Machine translation of reasoning",
+      "description": "Display expanded reasoning in another language using machine translation."
+    }
+  },
+  "packages/experimental/browser-use-chrome-devtools-mcp/locale/en.json": {
+    "meta": {
+      "title": "Browser Use (Chrome DevTools)",
+      "description": "Let the model inspect and operate web pages through Chrome DevTools MCP in a launched Chrome."
+    }
+  },
+  "packages/experimental/inspector/locale/en.json": {
+    "meta": {
+      "title": "NodeJS Inspector",
+      "description": "Press Ctrl/Cmd+Shift+. to open Chrome DevTools in the bottom panel for development and debugging."
+    }
+  },
+  "packages/experimental/inspector-profile/locale/en.json": {
+    "meta": {
+      "title": "Developer Tools",
+      "description": "Inspect and debug raw session data, grouped chat messages, and the NodeJS backend."
+    }
+  },
+  "packages/experimental/skill-badge/locale/en.json": {
+    "meta": {
+      "title": "DSH",
+      "description": "Provide the official powered-by-DSH badge skill."
+    }
+  },
+  "packages/experimental/agent-team-profile/locale/en.json": {
+    "meta": {
+      "title": "Agent Teams",
+      "description": "Enable team collaboration, team tools, the member roster, and the shared task board."
+    }
+  },
+  "packages/experimental/computer-use-cua-driver-mcp/locale/en.json": {
+    "meta": {
+      "title": "Computer Use (Cua Driver MCP)",
+      "description": "Let the model operate the desktop through a separately installed cua-driver executable."
+    }
+  },
+  "packages/experimental/badge-skill-bundle/locale/en.json": {
+    "meta": {
+      "title": "DSH badge skill",
+      "description": "Let agents add a “powered by dsh” badge to documents, pull requests, and other outputs."
+    }
+  },
+  "packages/experimental/client-ui-voice-input/locale/en.json": {
+    "meta": {
+      "title": "Voice recording",
+      "description": "Record speech and insert editable text into the conversation draft."
+    }
+  },
+  "packages/experimental/ralph-bundle/locale/en.json": {
+    "meta": {
+      "title": "Ralph loops",
+      "description": "Run explicitly requested repeated work with fresh agents."
+    }
+  },
+  "packages/experimental/agent-team/locale/en.json": {
+    "meta": {
+      "title": "Team Collaboration",
+      "description": "Manage team members, member messages, and shared tasks."
+    }
+  },
+  "packages/experimental/tool-agent-team/locale/en.json": {
+    "meta": {
+      "title": "Team Tools",
+      "description": "Give agents tools to coordinate members, exchange messages, and manage shared tasks."
+    }
+  },
+  "packages/experimental/client-ui-agent-team/locale/en.json": {
+    "meta": {
+      "title": "Team Panel",
+      "description": "View team members and shared tasks, and navigate to member conversations."
+    }
+  },
+  "packages/experimental/auto-review/locale/en.json": {
+    "meta": {
+      "title": "Auto Authorization Review",
+      "description": "Add an Auto review permission mode that uses the model to assess authorization before each tool call."
+    }
+  },
+  "packages/experimental/speech-to-text-sensevoice/locale/en.json": {
+    "meta": {
+      "title": "Local SenseVoice recognition",
+      "description": "Transcribe recordings into text locally with SenseVoice."
+    }
+  },
+  "packages/experimental/voice-input-bundle/locale/en.json": {
+    "meta": {
+      "title": "Voice input",
+      "description": "Transcribe recordings locally with SenseVoice; first use requires installing dependencies"
+    }
+  },
+  "packages/experimental/session-search/locale/en.json": {
+    "meta": {
+      "title": "Session search",
+      "description": "Give Agents tools to search and read earlier sessions from the current workspace."
+    }
+  },
+  "packages/experimental/tool-worktree/locale/en.json": {
+    "meta": {
+      "title": "Git Worktrees",
+      "description": "Let the agent create a new Git branch and worktree, then continue there."
+    }
+  },
+  "packages/experimental/api-speech-to-text/locale/en.json": {
+    "meta": {
+      "title": "Speech transcription API",
+      "description": "Provide speech transcription for browser clients."
+    }
+  },
+  "packages/experimental/browser-use-playwright-mcp/locale/en.json": {
+    "meta": {
+      "title": "Browser Use (Playwright)",
+      "description": "Let the model browse and operate web pages through Playwright MCP in a launched Chromium."
+    }
+  },
+  "packages/schedule/schedule/locale/en.json": {
+    "meta": {
+      "title": "Task scheduling",
+      "description": "Stores automation tasks, runs each in its original session when it is due, and gives the agent tools to manage them."
+    }
+  },
+  "packages/context/time-context/locale/en.json": {
+    "meta": {
+      "title": "Time awareness",
+      "description": "Tells the model the current time, the browser's time zone, and the time since the previous message at each step."
+    }
+  },
+  "packages/client/ui-secret-mask/locale/en.json": {
+    "meta": {
+      "title": "ui-secret-mask",
+      "description": "Masks recognized keys, tokens, and passwords in sent messages."
+    }
+  },
+  "packages/client/ui-schedule/locale/en.json": {
+    "meta": {
+      "title": "Task interface",
+      "description": "The Automation tasks page in the sidebar, plus task cards and reminder marks in sessions."
+    }
+  },
+  "packages/client/ui-brand-official/locale/en.json": {
+    "meta": {
+      "title": "Virtuoso branding",
+      "description": "Displays the Virtuoso name and mark in the sidebar and its mark in the conversation hero."
+    }
+  },
+  "packages/subagent/subagent-claude-code/locale/en.json": {
+    "meta": {
+      "title": "Claude Code subagent",
+      "description": "Delegate one task to Claude Code using its native authentication and settings."
+    }
+  },
+  "packages/subagent/subagent-codex/locale/en.json": {
+    "meta": {
+      "title": "Codex subagent",
+      "description": "Delegate one task to Codex using its native authentication and settings."
+    }
+  }
+}

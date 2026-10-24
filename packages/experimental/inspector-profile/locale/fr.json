@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Outils de développement",
+    "description": "Inspecter et déboguer les données brutes des sessions, les messages regroupés et le serveur NodeJS."
+  }
+}

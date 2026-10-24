@@ -3674,15 +3674,18 @@ describe('Task detail name and instruction edits', () => {
     expect(stylesheet).toMatch(/\.editName\s*\{[^}]*font-size:\s*20px;[^}]*font-weight:\s*500;/)
     expect(stylesheet).toMatch(/\.editName:hover\s*\{[^}]*box-shadow:\s*0 1px var\(--dsw-alias-border-l3\);/)
     expect(stylesheet).toMatch(
-      /\.editName:focus\s*\{[^}]*box-shadow:\s*0 1px var\(--dsw-focus-ring-color, var\(--dsw-alias-state-business-primary\)\);/,
+      new RegExp(
+        /\.editName:focus-visible\s*\{[^}]*outline:\s*2px solid /.source
+      + /var\(--dsw-focus-ring-color, var\(--dsw-alias-state-business-primary\)\);[^}]*outline-offset:\s*2px;/.source,
+      ),
     )
     // The bar keeps the mock's 44px in the Tasks page's own detail column; the
     // right-panel placement states the cross size that lands its rule on the
     // conversation header's rule, and the actions keep the mock's -8px inset.
     const tabStrip = /^\.detailTabsBar\s*\{([^}]*)\}/m.exec(stylesheet)?.[1] ?? ''
-    expect(tabStrip).toMatch(/min-height:\s*44px;/)
+    expect(tabStrip).toMatch(/min-height:\s*calc\(var\(--dsw-control-height-compact\) \+ 8px\);/)
     const placement = /^\.tabBody > \.detail \.detailTabsBar\s*\{([^}]*)\}/m.exec(stylesheet)?.[1] ?? ''
-    expect(placement).toMatch(/min-height:\s*37px;/)
+    expect(placement).toMatch(/min-height:\s*calc\(var\(--dsw-control-height-compact\) \+ 8px\);/)
     expect(tabStrip).toMatch(/padding:\s*0 var\(--detail-gutter\);/)
     expect(stylesheet).toMatch(/\.detailActions\s*\{[^}]*margin-right:\s*-8px;/)
     // The mock's `.detail-heading` is the scrolling rule view's first content:
@@ -3708,7 +3711,10 @@ describe('Task detail name and instruction edits', () => {
     expect(instruction).toMatch(/font-size:\s*14px;/)
     expect(instruction).toMatch(/line-height:\s*24px;/)
     expect(stylesheet).toMatch(/\.instruction:hover\s*\{[^}]*border-color:\s*var\(--dsw-alias-border-l2\);/)
-    expect(stylesheet).toMatch(/\.instruction:focus\s*\{[^}]*border-color:\s*var\(--dsw-alias-state-business-primary\);/)
+    expect(stylesheet).toMatch(new RegExp(
+      /\.instruction:focus-visible\s*\{[^}]*outline:\s*2px solid /.source
+      + /var\(--dsw-focus-ring-color, var\(--dsw-alias-state-business-primary\)\);/.source,
+    ))
     expect(stylesheet).toMatch(/\.ruleRows\s*\{[^}]*border-radius:\s*16px;/)
   })
 })
@@ -3793,10 +3799,10 @@ describe('Mock detail metrics shared with the task list', () => {
     // The Plugins toolbar's Add-plugin capsule, repeated by the creation action.
     expect(rule('creationActions')).toMatch(/gap:\s*16px;/)
     const newButton = rule('newButton')
-    expect(newButton).toMatch(/height:\s*32px;/)
+    expect(newButton).toMatch(/height:\s*var\(--dsw-control-height-compact\);/)
     expect(newButton).toMatch(/font-size:\s*13px;/)
     expect(newButton).toMatch(/padding:\s*0 12px;/)
-    expect(newButton).toMatch(/border-radius:\s*16px;/)
+    expect(newButton).toMatch(/border-radius:\s*var\(--dsw-control-radius\);/)
     const headingTitle = /\.pageHeading h1\s*\{([^}]*)\}/.exec(stylesheet)?.[1] ?? ''
     // The first-level title step is the Plugins page's `pageTitle`, not the
     // mock's larger page heading; the equality case below pins that pair.
@@ -3806,21 +3812,24 @@ describe('Mock detail metrics shared with the task list', () => {
     expect(rule('filters')).toMatch(/gap:\s*8px 12px;/)
     expect(rule('filters')).toMatch(/margin-bottom:\s*14px;/)
     const tab = rule('filterTab')
-    expect(tab).toMatch(/height:\s*28px;/)
+    expect(tab).toMatch(/height:\s*var\(--dsw-control-height-compact\);/)
     expect(tab).toMatch(/padding:\s*0 10px;/)
-    expect(tab).toMatch(/border-radius:\s*14px;/)
+    expect(tab).toMatch(/border-radius:\s*var\(--dsw-control-radius\);/)
     expect(tab).toMatch(/font-size:\s*14px;/)
     // The selected chip keeps the chip's own weight; only the fill marks it.
     expect(rule('filterTabActive')).not.toMatch(/font-weight/)
     // The mock's `.searchbox` keeps its hairline at the repository's 0.5px.
     const field = rule('searchField')
-    expect(field).toMatch(/height:\s*36px;/)
+    expect(field).toMatch(/height:\s*var\(--dsw-control-height-compact\);/)
     expect(field).toMatch(/padding:\s*0 10px;/)
     expect(field).toMatch(/border:\s*0\.5px solid var\(--dsw-alias-border-l3\);/)
-    expect(field).toMatch(/border-radius:\s*12px;/)
+    expect(field).toMatch(/border-radius:\s*var\(--dsw-control-field-radius\);/)
     expect(stylesheet).toMatch(/\.searchField:hover\s*\{[^}]*border-color:\s*var\(--dsw-alias-border-l2\);/)
     expect(stylesheet)
-      .toMatch(/\.searchField:focus-within\s*\{[^}]*border-color:\s*var\(--dsw-alias-state-business-primary\);/)
+      .toMatch(new RegExp(
+        /\.searchField:has\(:focus-visible\)\s*\{[^}]*outline:\s*2px solid /.source
+      + /var\(--dsw-focus-ring-color, var\(--dsw-alias-state-business-primary\)\);/.source,
+      ))
     expect(stylesheet).toMatch(/\.searchField > :first-child svg\s*\{[^}]*width:\s*14px;/)
     expect(stylesheet).toMatch(/\.searchField input::placeholder\s*\{[^}]*color:\s*var\(--dsw-alias-label-caption\);/)
     expect(stylesheet).toMatch(/\.searchField input::-webkit-search-cancel-button\s*\{[^}]*display:\s*none;/)
@@ -3839,8 +3848,8 @@ describe('Mock detail metrics shared with the task list', () => {
     expect(row).toMatch(/border-radius:\s*12px;/)
     expect(row).not.toMatch(/border(?:-(?!radius)|:)/)
     expect(stylesheet)
-      .toMatch(/\.row:hover\s*\{[^}]*background:\s*var\(--dsw-alias-interactive-bg-hover\);/)
-    expect(rule('selectedRow')).toMatch(/background:\s*var\(--dsw-alias-interactive-bg-hover\);/)
+      .toMatch(/\.row:hover:not\(\.selectedRow\)\s*\{[^}]*background:\s*var\(--dsw-alias-interactive-bg-hover\);/)
+    expect(rule('selectedRow')).toMatch(/background:\s*var\(--dsw-control-selected-fill\);/)
     // The inline glyph on the title line, sized to the 20px leading.
     const glyph = rule('rowGlyph')
     expect(glyph).toMatch(/width:\s*16px;/)

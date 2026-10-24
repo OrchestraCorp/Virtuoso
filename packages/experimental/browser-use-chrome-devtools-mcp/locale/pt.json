@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Controle do navegador (Chrome DevTools)",
+    "description": "Permite que o modelo inspecione e opere páginas da web pelo Chrome DevTools MCP em uma instância aberta do Chrome."
+  }
+}

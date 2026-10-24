@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "컴퓨터 조작(Cua Driver)",
+    "description": "내장 Cua Driver 런타임으로 모델이 데스크톱을 조작합니다. dsh를 실행하는 앱에 데스크톱 접근 권한이 필요합니다."
+  }
+}

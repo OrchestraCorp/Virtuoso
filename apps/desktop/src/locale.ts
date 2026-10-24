@@ -1,4 +1,5 @@
-/** Typed English and Chinese copy owned by the Electron shell. */
+/** Typed native copy and language selection owned by the Electron shell. */
+import { extraDesktopMessages } from './locale-extra.ts'
 
 export const en = {
   cliCommandMenu: 'Manage dsh Command…',
@@ -48,6 +49,19 @@ export const en = {
   backgroundNoticeBody: 'Running tasks will continue. You can reopen the window from the system tray.',
   backgroundNoticeConfirm: 'Confirm',
   edit: 'Edit',
+  windowMenu: 'Window',
+  minimize: 'Minimize',
+  zoom: 'Zoom',
+  bringAllToFront: 'Bring All to Front',
+  pasteAndMatchStyle: 'Paste and Match Style',
+  substitutions: 'Substitutions',
+  showSubstitutions: 'Show Substitutions',
+  smartQuotes: 'Smart Quotes',
+  smartDashes: 'Smart Dashes',
+  textReplacement: 'Text Replacement',
+  speech: 'Speech',
+  startSpeaking: 'Start Speaking',
+  stopSpeaking: 'Stop Speaking',
   menuBar: 'Application menu',
   delete: 'Delete',
   undo: 'Undo',
@@ -219,6 +233,19 @@ export const zh = {
   backgroundNoticeBody: '正在运行的任务不会中断，可在系统托盘中重新打开窗口',
   backgroundNoticeConfirm: '确认',
   edit: '编辑',
+  windowMenu: '窗口',
+  minimize: '最小化',
+  zoom: '缩放',
+  bringAllToFront: '全部置于最前',
+  pasteAndMatchStyle: '粘贴并匹配样式',
+  substitutions: '替换',
+  showSubstitutions: '显示替换项',
+  smartQuotes: '智能引号',
+  smartDashes: '智能破折号',
+  textReplacement: '文本替换',
+  speech: '语音',
+  startSpeaking: '开始朗读',
+  stopSpeaking: '停止朗读',
   menuBar: '应用菜单',
   delete: '删除',
   undo: '撤销',
@@ -341,15 +368,39 @@ export const zh = {
 
 /** Locale payload exposed to the Desktop-owned renderer. */
 export interface DesktopLocale {
-  readonly id: 'en' | 'zh-CN'
+  readonly id: DesktopLocaleId
   readonly messages: DesktopMessages
+}
+
+/** Canonical identifiers shipped by the native Desktop shell. */
+export const DESKTOP_LOCALE_IDS = ['en', 'zh-CN', 'zh-Hant', 'ja', 'ko', 'de', 'fr', 'es', 'pt'] as const
+
+/** A canonical language identifier accepted by native Desktop windows. */
+export type DesktopLocaleId = typeof DESKTOP_LOCALE_IDS[number]
+
+const dictionaries = {
+  en,
+  'zh-CN': zh,
+  ...extraDesktopMessages,
+} satisfies Readonly<Record<DesktopLocaleId, DesktopMessages>>
+
+function supportedDesktopLocaleId(locale: string): DesktopLocaleId | undefined {
+  const [language, ...subtags] = locale.trim().toLowerCase().replaceAll('_', '-').split('-')
+  if (language === 'zh') {
+    if (subtags.includes('hant')) return 'zh-Hant'
+    if (subtags.includes('hans')) return 'zh-CN'
+    return subtags.some(tag => tag === 'tw' || tag === 'hk' || tag === 'mo') ? 'zh-Hant' : 'zh-CN'
+  }
+  switch (language) {
+    case 'en': case 'ja': case 'ko': case 'de': case 'fr': case 'es': case 'pt': return language
+    default: return undefined
+  }
 }
 
 /** Resolve Electron's locale to one shipped Desktop dictionary. */
 export function resolveDesktopLocale(locale: string): DesktopLocale {
-  return locale.toLowerCase().startsWith('zh')
-    ? { id: 'zh-CN', messages: zh }
-    : { id: 'en', messages: en }
+  const id = supportedDesktopLocaleId(locale) ?? 'en'
+  return { id, messages: dictionaries[id] }
 }
 
 /**
@@ -359,11 +410,11 @@ export function resolveDesktopLocale(locale: string): DesktopLocale {
  * @returns the supported dictionary, falling back to English.
  */
 export function resolveDesktopStartupLocale(preference: string | null, languages: readonly string[]): DesktopLocale {
-  const selected = preference?.toLowerCase()
-  if (selected === 'zh' || selected === 'en') return resolveDesktopLocale(selected)
+  const selected = preference === null ? undefined : supportedDesktopLocaleId(preference)
+  if (selected !== undefined) return { id: selected, messages: dictionaries[selected] }
   for (const language of languages) {
-    const primary = language.toLowerCase().split('-')[0]
-    if (primary === 'zh' || primary === 'en') return resolveDesktopLocale(primary)
+    const id = supportedDesktopLocaleId(language)
+    if (id !== undefined) return { id, messages: dictionaries[id] }
   }
   return resolveDesktopLocale('en')
 }

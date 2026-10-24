@@ -12,7 +12,7 @@
  * are unchanged.
  *
  * The dialog is the body-portaled Modal primitive, so nothing this package
- * renders enters the IconActions row's flex layout beyond the two 28px
+ * renders enters the IconActions row's flex layout beyond the two compact
  * buttons and the failure notice.
  */
 import { readdirSync, readFileSync } from 'node:fs'
@@ -79,13 +79,14 @@ describe.each(SHEETS)('%s theme styles', (name) => {
 })
 
 describe('MessageFeedbackActions row styles', () => {
-  it('slot-injected actions ride the content font-size axis like their host row', () => {
-    // These buttons render inside ui-chat's MessageIconActions row; a fixed
-    // 28px would leave them undersized (or overflowing) once the Settings
-    // font size moves the row.
-    expect(block('MessageFeedbackActions', '.action')).toMatch(/width:\s*calc\(28px \+ var\(--dsh-content-font-delta, 0px\)\)/)
-    expect(block('MessageFeedbackActions', '.action')).toMatch(/height:\s*calc\(28px \+ var\(--dsh-content-font-delta, 0px\)\)/)
+  it('slot-injected actions share their host row target and retain scalable glyphs', () => {
+    const action = block('MessageFeedbackActions', '.action')
+    expect(action).toContain('width: var(--dsw-control-height-compact)')
+    expect(action).toContain('height: var(--dsw-control-height-compact)')
+    expect(action).toContain('border-radius: var(--dsw-control-radius)')
+    expect(action).toContain('box-sizing: border-box')
     expect(block('MessageFeedbackActions', '.action svg')).toMatch(/width:\s*calc\(15px \+ var\(--dsh-content-font-delta, 0px\)\)/)
+    expect(block('MessageFeedbackActions', '.action:focus-visible')).toContain('outline-offset: 2px')
   })
 
   it('uses the tertiary label colour for recorded rating icons', () => {
@@ -101,7 +102,7 @@ describe('FeedbackDialog layout styles', () => {
     expect(block('FeedbackDialog', '.chip')).toMatch(/color:\s*var\(--dsw-alias-label-primary\)/)
     expect(block('FeedbackDialog', '.detail::placeholder')).toMatch(/color:\s*var\(--dsw-alias-label-caption\)/)
     expect(block('FeedbackDialog', '.detail')).toContain('border-radius: var(--dsw-radius-lg)')
-    expect(block('FeedbackDialog', '.submit')).toContain('border-radius: var(--dsw-radius-lg)')
+    expect(block('FeedbackDialog', '.submit')).toContain('border-radius: var(--dsw-control-radius)')
     expect(block('FeedbackDialog', '.submit')).toMatch(/font-weight:\s*500/)
   })
 })

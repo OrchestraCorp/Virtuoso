@@ -29,6 +29,7 @@ import type {
   Provider,
   ThinkingLevelMap,
 } from '@earendil-works/pi-ai'
+import { anthropicApiRoot } from './endpoint.ts'
 
 /**
  * Pricing for a model the installed catalog does not describe. The harness
@@ -603,6 +604,8 @@ function assertOfferedCompatFields(
 export interface PiAiModelProfile {
   /** Model id sent to the provider and accepted by {@link GenerateOptions.model}. */
   id: string
+  /** Explicit wire protocol for this model; wins over the route and installed catalog. */
+  api?: string
   /** Display name for selectors; defaults to the catalog name, then the id. */
   name?: string
   /** Maximum combined request and response context in tokens. */
@@ -651,7 +654,7 @@ export type PiAiModelOverride = Omit<PiAiModelProfile, 'id'>
 export interface RouteCatalogRequest {
   /** Provider route key, stamped onto every materialized model. */
   provider: string
-  /** Wire protocol override; absent defers to each catalog model's own API. */
+  /** Model protocol default; an explicit entry API wins, then each catalog model's API. */
   api?: string
   /** Endpoint override; absent defers to the catalog model, then the catalog provider. */
   baseURL?: string
@@ -669,6 +672,18 @@ export interface RouteCatalogRequest {
   defaultInput: Model<Api>['input']
 }
 
+/** Protocols that explicit route and model declarations may select. */
+export const CONFIGURABLE_PROTOCOLS = ['openai-completions', 'openai-responses', 'anthropic-messages'] as const
+
+const configurableProtocols: ReadonlySet<string> = new Set(CONFIGURABLE_PROTOCOLS)
+
+/** Refuse an explicit protocol before a catalog provider could receive it. */
+function assertConfiguredApi(provider: string, location: string, api: string | undefined): void {
+  if (api !== undefined && !configurableProtocols.has(api)) {
+    invalid(provider, `${location} names api "${api}", which this build cannot serve; supported protocols are ${CONFIGURABLE_PROTOCOLS.join(', ')}`)
+  }
+}
+
 /** An expected configuration failure that stored-catalog reads may retain for repair. */
 export class PiAiCatalogError extends Error {}
 
@@ -683,7 +698,7 @@ function invalid(provider: string, detail: string): never {
  * a provider's newest release — without restating the protocol its siblings
  * already use. A route whose shipped models disagree (an OpenAI-style catalog
  * spanning Responses and Chat Completions) has no such answer, so a model it
- * does not describe must name its protocol at the route.
+ * does not describe must obtain an explicit model or route protocol.
  */
 function sharedCatalogApi(defaults: ReadonlyMap<string, Model<Api>>): string | undefined {
   const apis = new Set<string>()
@@ -860,7 +875,8 @@ export function resolveRouteModels(
 ): RouteCatalog {
   const { provider } = request
   const defaults = catalogModels(provider)
-  const providerBaseUrl = catalogProvider(provider)?.baseUrl
+  const installedProvider = catalogProvider(provider)
+  const providerBaseUrl = installedProvider?.baseUrl
   // An absent `models` key and an empty one are the same request: the config
   // schema materializes `[]` for the absent case, and an empty catalog could
   // serve no request anyway, so both mean "serve the installed catalog".
@@ -909,17 +925,22 @@ export function resolveRouteModels(
   const seen = new Set<string>()
   const configuredMaxTokens = new Map<string, number>()
   const resolveEntry = (entry: PiAiModelProfile): Model<Api> => {
+    assertConfiguredApi(provider, `model "${entry.id}"`, entry.api)
     assertOfferedCompatFields(provider, `model "${entry.id}"`, entry.compat)
     if (entry.id.length === 0) invalid(provider, 'has a model with an empty id')
     if (seen.has(entry.id)) invalid(provider, `lists model "${entry.id}" more than once`)
     seen.add(entry.id)
     const base = defaults.get(entry.id)
-    const api = request.api ?? base?.api ?? routeApi
+    const api = entry.api ?? request.api ?? base?.api ?? routeApi
     if (api === undefined) {
       invalid(provider, `model "${entry.id}" needs an api; the installed catalog does not describe it, so set the`
         + ' route\'s api to the wire protocol its endpoint speaks')
     }
-    const baseUrl = request.baseURL ?? base?.baseUrl ?? providerBaseUrl
+    const configuredBaseURL = request.baseURL
+    const explicitProtocol = installedProvider === undefined || request.api !== undefined || entry.api !== undefined
+    const baseUrl = configuredBaseURL !== undefined && explicitProtocol && api === 'anthropic-messages'
+      ? anthropicApiRoot(configuredBaseURL)
+      : configuredBaseURL ?? base?.baseUrl ?? providerBaseUrl
     if (baseUrl === undefined) {
       invalid(provider, `model "${entry.id}" needs a baseURL; the installed catalog does not describe this route`)
     }

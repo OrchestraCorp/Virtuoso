@@ -470,7 +470,7 @@ export function ProviderEditor(props: ProviderEditorProps): ReactNode {
             <div className={styles['field']}>
               <span className={styles['fieldLabel']}>{t('baseUrl')}</span>
               <input
-                className={styles['input']}
+                className={`${styles['input']} ${styles['technicalInput']}`}
                 type="text"
                 value={stringAt(draft, 'baseURL') ?? ''}
                 placeholder={family === 'deepseek'

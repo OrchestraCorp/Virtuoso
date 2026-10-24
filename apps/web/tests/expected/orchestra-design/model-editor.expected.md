@@ -1,0 +1,63 @@
+- region "Model connections":
+  - heading "Model connections" [level=2]
+  - button "Refresh connections"
+  - paragraph: Connect a model API, choose its models, and set the default for new conversations.
+  - paragraph: No model API is connected. Add a connection to get started.
+  - list
+  - text: Connection name
+  - textbox "Connection name": Team model API
+  - text: Base URL
+  - textbox "Base URL": https://llm-api.x-aio.com/v1
+  - text: API key
+  - textbox "API key":
+    - /placeholder: Enter your API key
+  - paragraph: The credential provider stores this key. Stored keys are never shown here; leave this field blank to keep an existing key.
+  - text: Enabled
+  - switch "Enabled" [checked]
+  - text: Add a bundled model
+  - combobox "Add a bundled model":
+    - option "Choose a model" [selected]
+    - option "Kimi K2.7 Code · kimi-k2.7-code"
+    - option "GPT 5.6 Terra · gpt-5.6-terra"
+    - option "GPT 5.6 Sol · gpt-5.6-sol"
+    - option "Codex Auto Review · codex-auto-review"
+    - option "Kimi K3 · kimi-k3"
+    - option "GLM 5.3 · glm-5.3"
+    - option "GLM 5.3 Flash · glm-5.3-flash"
+    - option "GPT 6 Astra · gpt-6-astra"
+    - option "DeepSeek V4.1 Flash · deepseek-v4.1-flash"
+    - option "GPT 6 Sol · gpt-6-sol"
+    - option "GPT 6 Luna · gpt-6-luna"
+    - option "GPT 6.1 Sol · gpt-6.1-sol" [disabled]
+  - paragraph: Automatic uses the bundled protocol for a known model ID and Chat Completions for an unknown ID.
+  - paragraph: Declare only inputs and reasoning levels supported by this API. The selected adapter determines their request format; model names do not determine capabilities.
+  - text: Model ID 1
+  - textbox "Model ID 1": gpt-6.1-sol
+  - text: Display name 1
+  - textbox "Display name 1": GPT 6.1 Sol
+  - text: API protocol 1
+  - combobox "API protocol 1":
+    - option "Automatic · OpenAI Responses" [selected]
+    - option "OpenAI Chat Completions"
+    - option "OpenAI Responses"
+    - option "Anthropic Messages"
+  - text: Context window 1
+  - textbox "Context window 1":
+    - /placeholder: Uses the provider default
+  - text: Max output tokens 1
+  - textbox "Max output tokens 1":
+    - /placeholder: Uses the provider default
+  - group "Input types 1":
+    - text: Input types
+    - checkbox "Text" [checked] [disabled]
+    - text: Text
+    - checkbox "Image"
+    - text: Image
+  - group "Reasoning levels 1":
+    - text: Reasoning levels
+    - button "About reasoning levels": "?"
+    - switch "Reasoning levels 1"
+  - button "Delete model 1": Delete model
+  - button "Add model"
+  - button "Cancel"
+  - button "Save connection"

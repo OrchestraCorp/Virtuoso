@@ -76,7 +76,7 @@ kind: "package-reference"
 |---|---|---|
 | `apiKeyEnv` | 无 | 按请求解析的凭据引用；省略时交由 pi-ai 环境发现 |
 | `displayName` | 提供方名 | 选择器界面显示的标签 |
-| `api` | 目录协议 | 协议格式；仅目录不提供的路由需要 |
+| `api` | 目录协议 | 路由的默认协议；模型显式 `api` 优先 |
 | `baseURL` | 目录端点 | 路由上所有模型的端点 |
 | `models` | 已安装目录 | 整体替换路由目录；每个条目从已安装模型取默认值 |
 | `modelOverrides` | 无 | 重塑个别已安装目录模型，而不替换其余模型 |
@@ -89,6 +89,12 @@ kind: "package-reference"
 | `retryPolicy` | normal，5 次重试 | 由 `dsh-llm-retry` 执行的提供方自有重试策略 |
 
 生成的[配置目录](../../../docs/config-catalog.zh.md#deepseek-aidsh-llm-pi-ai)是每个受支持字段及其 JSDoc 的穷尽式真源。
+
+### 模型协议与领域持久化的连接
+
+模型显式声明的 `api` 优先于路由 `api`，再使用已安装目录中该模型的协议。同一自定义路由可同时提供 `openai-completions` 与 `openai-responses` 模型，并保持一个提供方 id 和凭据引用。显式协议仅接受 `supportedProtocols()` 返回的三种自定义协议；目录未描述且模型和路由均未声明协议时拒绝请求。适配器不会将 Chat Completions 作为推理协议回退。显式 Anthropic 路由接受带或不带尾部 `/v1` 的根地址；派生模型端点先移除该版本段，再由 SDK 追加 `/v1/messages`，部署路径前缀和保存的地址不变。未覆盖协议的原生目录路由保留端点拼写。
+
+在 Cordis 配置之外持久化连接的应用可用 `resolveProfiles(providers)` 编译完整提供方声明，再调用 `createPiAiRuntime(ctx, { profiles: () => current })`。返回的 `adapter` 复用插件的凭据、附件、回放与取消行为；`discoverModels(request, signal?)` 返回候选模型但不保存。调用方负责路由注册、持久化和授权界面。更新时发布新的已编译 map，不原地修改旧值，再对 `registerAdapter()` 返回的句柄调用 `replace([...current.keys()])`；注册失败时保留旧 map。已准备的调用继续使用捕获的协议与端点，后续调用使用新快照。凭据在开始流式请求时解析。
 
 ### 登录提供方
 
@@ -112,11 +118,11 @@ profile 的 `models` 列表会替换而非扩展路由的已安装目录；每�
 
 ### 从端点发现模型
 
-插件会回答「该提供方可以提供哪些模型？」，供配置界面正在编辑或起草的路由使用。已安装目录提供的路由直接由目录回答，不发网络请求，并将其 `input` 数组保留为发现结果的 `inputModalities`；只有目录未描述的路由才会经网络询问。`openai-completions` 与 `openai-responses` 使用带 bearer 鉴权的 `GET {baseURL}/models`，`anthropic-messages` 则以 `x-api-key` 和 `anthropic-version` 使用原生 `GET /v1/models?limit=1000` 语义；其列表 URL 接受带或不带末尾 `/v1` 的 API 根地址，因为网关文档两种写法都会发布，且只有该列表 URL 会归一化这一段，模型请求收到的仍是配置原样的 `baseURL`。已配置且具名的路由会在 Host 内部提供已存凭据与 profile `headers`，因此通过 `cordis.patch.yml` 或 Cordis 配置设置的部署标头可以到达模型发现请求，但不会成为发现请求或 Models 页面的字段；表单中新键入的密钥仍优先于已存凭据。解析器接受标准 `data` 数组或富信息 `models` 对象，并归一化每个候选的 id、显示名、上下文窗口与最大输出 token 数；Anthropic 的 `max_input_tokens` 与 `max_tokens` 会进入相同容量字段，即使对象条目点名了另一个规范 id，对象键仍是请求 id，原始类型的对象属性会被忽略，缺失的显示名则回退到该请求 id。回答是界面可以提供给用户采纳的候选元数据——不存储任何内容，`cordis.patch.yml` 仍然是决定路由服务内容的唯一事实。
+插件会回答「该提供方可以提供哪些模型？」，供配置界面正在编辑或起草的路由使用。已安装目录提供的路由直接由目录回答，不发网络请求，并将其 `input` 数组保留为发现结果的 `inputModalities`；只有目录未描述的路由才会经网络询问。`openai-completions` 与 `openai-responses` 使用带 bearer 鉴权的 `GET {baseURL}/models`，`anthropic-messages` 则以 `x-api-key` 和 `anthropic-version` 使用原生 `GET /v1/models?limit=1000` 语义；其列表 URL 接受带或不带末尾 `/v1` 的 API 根地址，因为网关文档两种写法都会发布，显式 Anthropic 推理路由也使用同样的根地址归一化。已配置且具名的路由会在 Host 内部提供已存凭据与 profile `headers`，因此通过 `cordis.patch.yml` 或 Cordis 配置设置的部署标头可以到达模型发现请求，但不会成为发现请求或 Models 页面的字段；表单中新键入的密钥仍优先于已存凭据。解析器接受标准 `data` 数组或富信息 `models` 对象，并归一化每个候选的 id、显示名、上下文窗口与最大输出 token 数；Anthropic 的 `max_input_tokens` 与 `max_tokens` 会进入相同容量字段，即使对象条目点名了另一个规范 id，对象键仍是请求 id，原始类型的对象属性会被忽略，缺失的显示名则回退到该请求 id。回答是界面可以提供给用户采纳的候选元数据——不存储任何内容，所属配置或连接服务决定路由服务哪些模型。
 
 ### 失败与恢复
 
-pi-ai 不提供的路由需要 `api`、`baseURL` 与非空 `models` 列表；无法服务的 profile 会在写入处被拒绝，并点名路由与模型。失败携带稳定 code：无法使用的凭据以 `INVALID_CREDENTIAL` 失败并点名路由与引用，`apiKeyEnv` 引用解析为空的路由以 `MISSING_CREDENTIAL` 失败，未配置模型以 `UNKNOWN_MODEL` 失败，终止性提供方失败则区分 `QUOTA` 与暂时性 `RATE_LIMIT`。`GenerateOptions.stop` 以 `UNSUPPORTED_OPTION` 被拒绝，因为 pi-ai 的通用流式 UI 无法跨提供方保证它。
+pi-ai 不提供的路由需要 `baseURL`、非空 `models` 列表，以及路由或每个模型声明的协议；无法服务的 profile 会在写入处被拒绝，并点名路由与模型。失败携带稳定 code：无法使用的凭据以 `INVALID_CREDENTIAL` 失败并点名路由与引用，`apiKeyEnv` 引用解析为空的路由以 `MISSING_CREDENTIAL` 失败，未配置模型以 `UNKNOWN_MODEL` 失败，终止性提供方失败则区分 `QUOTA` 与暂时性 `RATE_LIMIT`。`GenerateOptions.stop` 以 `UNSUPPORTED_OPTION` 被拒绝，因为 pi-ai 的通用流式 UI 无法跨提供方保证它。
 
 Config 更新严格验证发生变化的 provider。初始加载将已存储的目录故障保留为可编辑的 provider 诊断；未更改的故障 provider 不阻止其他编辑。可用模型仍可选择，无法解析的模型在网络 I/O 前失败。修复或删除问题配置会清除其诊断。
 
@@ -152,6 +158,7 @@ Config 更新严格验证发生变化的 provider。初始加载将已存储的�
 | [`src/provider-data.ts`](src/provider-data.ts) | 配置界面使用的认证与端点生成数据 |
 | [`src/models.ts`](src/models.ts) | 基于 pi-ai 窄入口的 model collection、静态 provider 与 reasoning level |
 | [`src/provider.ts`](src/provider.ts) | 受支持协议表与提供方构建 |
+| [`src/runtime.ts`](src/runtime.ts) | 配置与领域数据驱动适配器共用的 Host 集成 |
 | [`src/context.ts`](src/context.ts) | Harness 到 pi-ai 的上下文转换、图片处理、回放恢复 |
 | [`src/stream.ts`](src/stream.ts) | 把 pi-ai 事件转换为 harness `StreamChunk` 值 |
 | [`src/replay.ts`](src/replay.ts) | 带版本的 `ReplayEnvelope` 存储与校验 |
@@ -249,7 +256,7 @@ pi-ai 事件变成 harness 的推理、文本、工具调用、用量与 finish 
 - **`headers` 可以携带 redactor 永远看不到的凭据**——profile 解析会拒绝 Fetch 无法表示的名称与值，但该字典仍是纯字符串；以 `apiKeyEnv` 引用存储凭据。
 - **发现操作不更改已配置模型**——需显式将发现结果采纳到路由配置中。
 - **Anthropic 模型发现最多读取 1,000 个模型**——请求使用 API 的最大页大小，但不会遍历 `has_more`；第一页之外的条目需要手工添加。
-- **目录外模型需要明确的协议**——目录路由保留每个模型的协议，包括 `azure` 下的两种 Azure API。混合协议目录中不存在的模型需要显式设置路由级 `api`；该设置覆盖路由上的所有模型，且必须属于受支持的自定义协议。Azure 部署名称应通过 `AZURE_OPENAI_DEPLOYMENT_NAME_MAP` 设置，模型 ID 保持为目录中的 ID。
+- **目录外模型需要明确的协议**——目录路由保留每个模型的协议，包括 `azure` 下的两种 Azure API。混合协议目录中不存在的模型需要显式设置模型或路由的 `api`；模型显式值优先，且两种声明都必须属于受支持的自定义协议。Azure 部署名称应通过 `AZURE_OPENAI_DEPLOYMENT_NAME_MAP` 设置，模型 ID 保持为目录中的 ID。
 - **模态声明不受校验**——声明 `image` 而其网关不支持的模型会在提示词准入后被提供方拒绝。持久图片仍留在历史中，同一误声明模型可能再次失败；切换到纯文本模型仍然可行，因为共享 LLM 运行时会针对该请求把图片引用投影为稳定文本。
 - **未认证路由取决于其协议**——不点名凭据的路由解析为已配置但无密钥，但 pi-ai 的 OpenAI 兼容实现仍要求 API 密钥或 `Authorization` 标头，因此无密钥本地服务器需要由 `apiKeyEnv` 引用或 `headers` 中的 `Authorization` 条目提供的占位凭据。
 - **不支持 `GenerateOptions.stop`**——pi-ai 的通用流式选项无法跨提供方保证停止序列行为。

@@ -25,7 +25,8 @@
   padding: 0 10px 0 8px;
   box-sizing: border-box;
   border: none;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   cursor: pointer;
   overflow: hidden;
@@ -35,8 +36,10 @@
   line-height: 22px;
 }
 
-.trigger:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 /* Rail trigger: the same 36x36 box and 12px rounding as the other rail
@@ -75,7 +78,7 @@
   backdrop-filter: var(--dsw-mask-blur);
 }
 
-/* Settings uses a shared 800×800 panel; longer sections scroll
+/* Settings uses a shared 920px-wide panel; longer sections scroll
    inside the options column; the navigation scrolls independently. One height for
    every section, taken from the viewport rather than the content, because a
    content-sized panel would resize under the pointer on every nav click.
@@ -86,12 +89,12 @@
   position: relative;
   z-index: 1;
   display: flex;
-  width: 800px;
+  width: 920px;
   height: min(800px, calc(100vh - 2 * max(24px, var(--dsh-frame-overlay-top, 24px))));
   max-width: calc(100vw - 48px);
   border-radius: var(--dsw-radius-panel);
   overflow: hidden;
-  background: var(--dsw-alias-bg-layer-2);
+  background: var(--dsw-content-panel-fill);
   box-shadow: var(--dsw-elevation-prominent);
   /* Elevated surface: the scrollbar thumb takes the l2 elevation tokens.
      Declared on the panel rather than the scrolling `.options` child so the
@@ -112,9 +115,11 @@
   flex: none;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  width: 188px;
-  padding: 22px 12px 0;
+  gap: 20px;
+  width: 224px;
+  padding: 24px 16px 16px;
+  background: var(--dsw-specific-sidebar-fill);
+  border-right: 0.5px solid var(--dsw-alias-border-l1);
   box-sizing: border-box;
 }
 
@@ -145,7 +150,8 @@
   padding: 9px 16px 9px 12px;
   box-sizing: border-box;
   border: none;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   cursor: pointer;
   font-family: inherit;
@@ -156,12 +162,15 @@
   text-align: left;
 }
 
-.navCell:hover {
-  background: var(--dsw-specific-sidebar-nav-item-hover);
+@media (hover: hover) {
+  .navCell:hover {
+    background: var(--dsw-specific-sidebar-nav-item-hover);
+  }
 }
 
 .navCell.active {
-  background: var(--dsw-specific-sidebar-nav-item-active);
+  background: var(--dsw-control-selected-fill);
+  color: var(--dsw-alias-link);
 }
 
 .navIcon {
@@ -191,8 +200,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
-  height: 54px;
-  padding: 20px 14px 8px 10px;
+  height: 64px;
+  padding: 20px 20px 12px;
   box-sizing: border-box;
 }
 
@@ -210,25 +219,28 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   cursor: pointer;
   color: var(--dsw-alias-label-primary);
 }
 
-.close:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .close:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 /* Options area (figma Options 501:29983): pad (24,0,24,24), scrolls. */
 .options {
   flex: 1;
   min-height: 0;
-  padding: 0 24px 24px;
+  padding: 4px 28px 28px;
   overflow-y: auto;
 }
 
@@ -246,3 +258,14 @@
    ui-web base.css's `body > :not(#root)` subtraction covers it wherever it
    overlaps a chrome row's drag — including above every column, which an in-root
    overlay could not promise once a chrome row declares drag itself. */
+
+@media (max-width: 680px) {
+  .panel { flex-direction: column; max-width: calc(100vw - 24px); }
+  .nav { width: 100%; gap: 8px; padding: 12px 16px 8px; border-right: 0; border-bottom: 0.5px solid var(--dsw-alias-border-l1); }
+  .navTitle { padding: 0 8px; }
+  .navList { flex-direction: row; flex-wrap: nowrap; flex: none; gap: 6px; padding: 4px; overflow-x: auto; overflow-y: hidden; }
+  .navCell { flex: none; height: 36px; padding: 6px 12px; }
+  .content { min-height: 0; }
+  .header { height: 48px; padding: 8px 16px; }
+  .options { padding: 4px 16px 20px; }
+}

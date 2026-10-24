@@ -75,15 +75,14 @@ describe('web e2e: settings modal and General preferences', () => {
       if (await dialog.isVisible()) await page.keyboard.press('Escape')
       await dialog.waitFor({ state: 'hidden' })
     })
-    const trigger = page.getByRole('button', { name: '账号菜单', exact: true })
-    expect(await trigger.getAttribute('aria-haspopup')).toBe('menu')
+    const trigger = page.getByRole('button', { name: '设置', exact: true })
+    expect(await trigger.getAttribute('aria-haspopup')).toBe('dialog')
     expect(await trigger.getAttribute('aria-expanded')).toBe('false')
     await trigger.click()
     expect(await trigger.getAttribute('aria-expanded')).toBe('true')
-    await page.getByRole('menuitem', { name: '设置', exact: true }).click()
     const dialog = page.getByRole('dialog', { name: '设置' })
     await dialog.waitFor({ timeout: 10_000 })
-    expect(await trigger.getAttribute('aria-expanded')).toBe('false')
+    expect(await trigger.getAttribute('aria-expanded')).toBe('true')
     // General is active by default; Permission, Language and Appearance are functional.
     expect(await dialog.getByRole('button', { name: '通用设置' }).getAttribute('aria-current')).toBe('true')
     await dialog.getByRole('button', { name: '工作区内修改' }).waitFor({ timeout: 10_000 })
@@ -369,7 +368,7 @@ describe('web e2e: settings modal and General preferences', () => {
       })
       expect(state).toEqual({
         attr: true,
-        background: 'rgb(21, 21, 23)',
+        background: 'rgb(13, 18, 26)',
         colorScheme: 'dark',
       })
     } finally {
@@ -382,7 +381,7 @@ describe('web e2e: settings modal and General preferences', () => {
     acknowledgeReloadConnectionLoss(tripwire, warningStart)
     await openSettings(page, 'zh')
     const restoredDialog = page.getByRole('dialog', { name: '设置' })
-    const systemCube = restoredDialog.getByRole('button', { name: '跟随系统' })
+    const systemCube = restoredDialog.getByRole('button', { name: '跟随系统', exact: true })
     // The boot palette precedes the settings mirror's saved preference.
     const restoredDarkCube = restoredDialog.getByRole('button', { name: '深色' })
     await expect.poll(() => restoredDarkCube.getAttribute('aria-pressed'), { timeout: 5_000 }).toBe('true')
@@ -489,7 +488,7 @@ describe('web e2e: settings modal and General preferences', () => {
 
     // `system` follows the emulated OS scheme (dark stays dark, light clears).
     await openSettings(page, 'zh')
-    const systemCube = page.getByRole('dialog', { name: '设置' }).getByRole('button', { name: '跟随系统' })
+    const systemCube = page.getByRole('dialog', { name: '设置' }).getByRole('button', { name: '跟随系统', exact: true })
     await selectTheme(systemCube, 'system')
     await expect.poll(() => systemCube.getAttribute('aria-pressed'), { timeout: 5_000 }).toBe('true')
     await expect.poll(async () => (await readState()).attr, { timeout: 5_000 }).toBe(false)
@@ -769,16 +768,21 @@ describe('web e2e: settings modal and General preferences', () => {
     // markup's `en` must already have been replaced — asserting it here (rather
     // than only in an English scenario) is what makes the check discriminating.
     expect(await page.evaluate(() => document.documentElement.lang)).toBe('zh-CN')
-    // The Language selector pill shows the active locale's own name.
-    const selector = zhDialog.getByRole('button', { name: '中文' })
+    // Automatic language selection includes its resolved locale in the pill.
+    const selector = zhDialog.getByRole('button', { name: '跟随系统（中文）', exact: true })
     expect(await selector.getAttribute('aria-haspopup')).toBe('menu')
     await selector.click()
-    await page.getByRole('menuitem', { name: 'English' }).click()
+    await page.getByRole('menuitem', { name: '跟随系统', exact: true }).waitFor()
+    expect(await page.getByRole('menuitem').allTextContents()).toEqual([
+      '跟随系统', '中文', 'English', '繁體中文', '日本語', '한국어', 'Deutsch', 'Français', 'Español', 'Português',
+    ])
+    await page.getByRole('menuitem', { name: 'English', exact: true }).click()
     // The settings-owned copy re-registers localized: dialog title, nav,
-    // Appearance labels. (Only the settings namespaces are localized —
-    // the rest of the app's copy is intentionally out of this row's scope.)
+    // and Appearance labels follow the explicit language selection.
     const enDialog = page.getByRole('dialog', { name: 'Settings' })
     await enDialog.waitFor({ timeout: 10_000 })
+    await enDialog.getByRole('button', { name: 'English', exact: true }).waitFor()
+    expect(await enDialog.getByRole('button', { name: 'System (English)', exact: true }).count()).toBe(0)
     // ...and the attribute follows that switch, in the assembled app.
     await expect.poll(() => page.evaluate(() => document.documentElement.lang), { timeout: 5_000 }).toBe('en')
     expect(await enDialog.getByRole('button', { name: 'General' }).getAttribute('aria-current')).toBe('true')
@@ -793,7 +797,7 @@ describe('web e2e: settings modal and General preferences', () => {
     await page.reload({ waitUntil: 'load' })
     await page.waitForSelector('[class*="frame"]', { timeout: 30_000 })
     acknowledgeReloadConnectionLoss(tripwire, warningStart)
-    const enTrigger = page.getByRole('button', { name: 'Account menu' })
+    const enTrigger = page.getByRole('button', { name: 'Settings', exact: true })
     await enTrigger.waitFor({ timeout: 10_000 })
 
     // A Chinese browser on another port still receives the explicit English
@@ -807,7 +811,7 @@ describe('web e2e: settings modal and General preferences', () => {
       await secondPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
       await openSettings(secondPage, 'en')
       await secondPage.getByRole('dialog', { name: 'Settings' })
-        .getByRole('button', { name: 'English' }).waitFor({ timeout: 10_000 })
+        .getByRole('button', { name: 'English', exact: true }).waitFor({ timeout: 10_000 })
       expect(await secondPage.evaluate(() => localStorage.getItem('dsh.locale'))).toBeNull()
       expect(secondTripwire.pageErrors).toEqual([])
       expect(secondTripwire.warnings).toEqual([])
@@ -817,12 +821,22 @@ describe('web e2e: settings modal and General preferences', () => {
     }
 
     await openSettings(page, 'en')
-    await page.getByRole('dialog', { name: 'Settings' }).getByRole('button', { name: 'English' }).click()
-    await page.getByRole('menuitem', { name: '中文' }).click()
-    await page.getByRole('dialog', { name: '设置' }).waitFor({ timeout: 10_000 })
+    await page.getByRole('dialog', { name: 'Settings' }).getByRole('button', { name: 'English', exact: true }).click()
+    await page.getByRole('menuitem', { name: '中文', exact: true }).click()
+    const restored = page.getByRole('dialog', { name: '设置' })
+    await restored.waitFor({ timeout: 10_000 })
+    await restored.getByRole('button', { name: '中文', exact: true }).waitFor()
     expect(await page.evaluate(() => localStorage.getItem('dsh.locale'))).toBeNull()
     await expect.poll(async () => readFile(join(scaffold.harnessHome, 'profiles', 'scaffold', 'cordis.patch.yml'), 'utf8'), { timeout: 5_000 })
       .toContain('preference: zh')
+    // Following the system clears the override even when the resolved language
+    // stays Chinese, and keeps the language menu distinct from the theme row.
+    await restored.getByRole('button', { name: '中文', exact: true }).click()
+    await page.getByRole('menuitem', { name: '跟随系统', exact: true }).click()
+    await restored.getByRole('button', { name: '跟随系统（中文）', exact: true }).waitFor()
+    await expect.poll(() => scaffold.ctx.settings.describe().find(row => row.ns === 'locale')?.value)
+      .toEqual({})
+    expect(await page.evaluate(() => document.documentElement.lang)).toBe('zh-CN')
     await page.keyboard.press('Escape')
     expect(tripwire.pageErrors).toEqual([])
   }, 90_000)
@@ -843,7 +857,7 @@ describe('web e2e: settings modal and General preferences', () => {
       await openSettings(enPage, 'en')
       const dialog = enPage.getByRole('dialog', { name: 'Settings' })
       await dialog.waitFor({ timeout: 10_000 })
-      await dialog.getByRole('button', { name: 'English' }).waitFor({ timeout: 10_000 })
+      await dialog.getByRole('button', { name: 'System (English)', exact: true }).waitFor({ timeout: 10_000 })
       // The plugin list resolves shipped preset names through the en
       // dictionaries instead of echoing the preset declarations' Chinese metadata.
       await dialog.getByRole('button', { name: 'Built-in plugins', exact: true }).click()
@@ -868,37 +882,36 @@ describe('web e2e: settings modal and General preferences', () => {
   }, 90_000)
 
   it('opens a browser asking for no shipped language in English', async () => {
-    // The product default for "no usable signal": a French browser ships
-    // neither zh nor en, so resolution falls to FALLBACK_LOCALE (en) rather
-    // than to Chinese.
+    // Indonesian is outside the nine shipped languages, so resolution falls
+    // to FALLBACK_LOCALE (en) rather than to Chinese.
     const fresh = await launchWebScaffold({ developerTools: false })
-    const frPage = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: 'fr-FR' })
-    const frTripwire = watchConsole(frPage)
-    onTestFailed(() => saveSettingsFailureShot(frPage, 'settings-unshipped-language'))
+    const unsupportedPage = await browser.newPage({ viewport: { width: 1680, height: 1000 }, locale: 'id-ID' })
+    const unsupportedTripwire = watchConsole(unsupportedPage)
+    onTestFailed(() => saveSettingsFailureShot(unsupportedPage, 'settings-unshipped-language'))
     try {
-      await frPage.goto(fresh.authenticatedUrl, { waitUntil: 'load' })
-      await frPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
-      expect(await frPage.evaluate(() => localStorage.getItem('dsh.locale'))).toBeNull()
-      await openSettings(frPage, 'en')
-      const dialog = frPage.getByRole('dialog', { name: 'Settings' })
+      await unsupportedPage.goto(fresh.authenticatedUrl, { waitUntil: 'load' })
+      await unsupportedPage.waitForSelector('[class*="frame"]', { timeout: 30_000 })
+      expect(await unsupportedPage.evaluate(() => localStorage.getItem('dsh.locale'))).toBeNull()
+      await openSettings(unsupportedPage, 'en')
+      const dialog = unsupportedPage.getByRole('dialog', { name: 'Settings' })
       await dialog.waitFor({ timeout: 10_000 })
-      await dialog.getByRole('button', { name: 'English' }).waitFor({ timeout: 10_000 })
+      await dialog.getByRole('button', { name: 'System (English)', exact: true }).waitFor({ timeout: 10_000 })
       // A locale-owned nav label proves the dictionaries resolved to en.
       await dialog.getByRole('button', { name: 'Agent presets' }).waitFor({ timeout: 10_000 })
       // The markup already ships `en`, so this alone cannot prove the sync ran
       // — the zh scenario above is the discriminating half. Asserted here too
       // so a future change that resolves en but writes the wrong tag is caught.
-      expect(await frPage.evaluate(() => document.documentElement.lang)).toBe('en')
+      expect(await unsupportedPage.evaluate(() => document.documentElement.lang)).toBe('en')
       // Golden of the English fallback dialog — the visible output this change
       // produces. The zh golden above covers the detected-locale surface, so
       // the pair pins both directions of the resolution.
       await dialog.getByText(`Current version: ${version}`, { exact: true }).waitFor()
-      const snapshot = await captureStableAria(frPage, '[role="dialog"]', fresh.workspaceCwd, versionCapture)
+      const snapshot = await captureStableAria(unsupportedPage, '[role="dialog"]', fresh.workspaceCwd, versionCapture)
       await compareOrRefreshGolden(DIALOG_EN_EXPECTED, snapshot, MODE)
-      expect(frTripwire.pageErrors).toEqual([])
-      expect(frTripwire.warnings).toEqual([])
+      expect(unsupportedTripwire.pageErrors).toEqual([])
+      expect(unsupportedTripwire.warnings).toEqual([])
     } finally {
-      await frPage.close()
+      await unsupportedPage.close()
       await fresh.close()
     }
   }, 90_000)

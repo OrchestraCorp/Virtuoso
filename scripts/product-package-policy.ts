@@ -16,6 +16,10 @@ export interface ProductPackagePolicy {
  * Optional integrations may be reached by an optional bundle without becoming default capabilities.
  */
 export const PRODUCT_PACKAGE_POLICY: Readonly<Record<string, ProductPackagePolicy>> = {
+  'packages/credentials/deepseek-account-platform': { category: 'optional', reason: 'Upstream Platform authorization provider is excluded from the product profiles.' },
+  'packages/llm/llm-deepseek-account': { category: 'optional', reason: 'Account-token model access is available only to an explicitly composed upstream integration.' },
+  'packages/api/account-controller': { category: 'optional', reason: 'Account Remote controller is excluded from the product profiles and client assembly.' },
+  'packages/client/ui-settings-account': { category: 'optional', reason: 'Upstream account, balance, and recharge UI is not part of the product clients.' },
   'packages/browser-use/browser-use': { category: 'optional', reason: 'Service definition used by explicitly selected browser providers.' },
   'packages/computer-use/computer-use': { category: 'optional', reason: 'Service definition used by explicitly selected computer providers.' },
   'packages/lsp/lsp': { category: 'optional', reason: 'Service definition for deployment-configured language servers.' },

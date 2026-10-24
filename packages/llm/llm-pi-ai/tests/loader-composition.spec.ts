@@ -14,7 +14,7 @@ import LocalCredentialProvider from '@deepseek-ai/dsh-credentials-local'
 import { profileComposition } from '../../../settings/settings/tests/profile-composition.ts'
 import * as LlmPiAi from '@deepseek-ai/dsh-llm-pi-ai'
 import { assemble } from './assemble.ts'
-import { closeMockServers, mockServer, textEvents } from './mock-server.ts'
+import { closeMockServers, mockServer, responsesTextEvents, textEvents } from './mock-server.ts'
 
 /** One text block, then a tool call truncated by the output-token ceiling. */
 const truncatedToolCallEvents = [
@@ -87,6 +87,36 @@ async function loadComposition(): Promise<{ ctx: Context; settingsPath: string }
 }
 
 describe('llm-pi-ai real dormant composition', () => {
+  it('serves Chat Completions and Responses models under one configured route', async () => {
+    const server = await mockServer([{ events: textEvents }, { events: responsesTextEvents }])
+    const { ctx, settingsPath } = await loadComposition()
+    await writeFile(settingsPath, [
+      '- id: llm-pi-ai',
+      '  config:',
+      '    providers:',
+      '      mixed-gateway:',
+      '        apiKeyEnv: PI_COMPOSITION_KEY',
+      '        api: openai-completions',
+      `        baseURL: ${server.url}/v1`,
+      '        models:',
+      '          - id: chat',
+      '          - id: response',
+      '            api: openai-responses',
+      '',
+    ].join('\n'))
+    await vi.waitFor(() => {
+      expect(ctx.llm.listProviders().map(provider => provider.id)).toEqual(['mixed-gateway'])
+    }, { timeout: 5000 })
+    const chat = await assemble(ctx, { provider: 'mixed-gateway', model: 'chat', messages: [] })
+    const response = await assemble(ctx, { provider: 'mixed-gateway', model: 'response', messages: [] })
+    expect(chat.finish).toEqual({ kind: 'stop' })
+    expect(response.finish).toEqual({ kind: 'stop' })
+    expect(chat.message.content).toEqual([{ type: 'text', text: 'hello' }])
+    expect(response.message.content).toEqual([{ type: 'text', text: 'response' }])
+    expect(server.paths).toEqual(['/v1/chat/completions', '/v1/responses'])
+    expect(server.headers.map(headers => headers.authorization)).toEqual(['Bearer key-from-store', 'Bearer key-from-store'])
+  })
+
   it('boots with zero routes and registers one the moment settings supply a profile', async () => {
     vi.stubEnv('PI_COMPOSITION_KEY', '')
     const server = await mockServer([{ events: textEvents }])

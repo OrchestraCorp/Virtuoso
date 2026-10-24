@@ -91,6 +91,9 @@
     },
     {
       "path": "../../credentials/deepseek-account"
+    },
+    {
+      "path": "../../llm/model-connections"
     }
   ]
 }

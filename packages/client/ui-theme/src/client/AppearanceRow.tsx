@@ -1,6 +1,6 @@
 /**
  * Appearance preference row registered into the General section item slot
- * (figma 501:30012 'Frame 2117131228'): title + three preference cubes.
+ * as a compact title and three directly available preference actions.
  * Registered by this package — the theme feature owns its own settings
  * surface. Selection follows the persisted preference, never the resolved
  * active theme.
@@ -27,7 +27,7 @@ export type AppearanceRowComponentProps =
   PropsRuntime<'settings.general.item'> & PropsStore<ReturnType<typeof createAppearanceRowStore>>
   & PropsLocale<'settings.theme'> & AppearanceRowInjected
 
-/** Cube order and icons (figma 501:30015-30017: Light, Dark, System). */
+/** Preference order and icons: Light, Dark, System. */
 const CUBES: readonly { id: ThemePreference; labelKey: ThemeKey; Icon: typeof IconLightOutlineMedium }[] = [
   { id: 'light', labelKey: 'appearance.light', Icon: IconLightOutlineMedium },
   { id: 'dark', labelKey: 'appearance.dark', Icon: IconDarkOutlineMedium },

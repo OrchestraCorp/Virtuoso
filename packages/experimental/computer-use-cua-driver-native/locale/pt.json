@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Controle do computador (Cua Driver)",
+    "description": "Permite que o modelo opere a área de trabalho com o ambiente Cua Driver incluído; o aplicativo que inicia o dsh precisa de permissões de acesso à área de trabalho."
+  }
+}

@@ -1,50 +1,77 @@
 .tabs {
+  box-sizing: border-box;
   position: relative;
+  isolation: isolate;
   display: grid;
   padding: 4px;
-  border-radius: var(--dsw-radius-lg);
-  background: var(--dsw-alias-bg-module-platform);
+  border: 0;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  box-shadow: var(--dsw-control-shadow);
+}
+
+.tabs::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  corner-shape: round;
+  background: var(--dsw-control-glass-fill);
+  background-image: var(--dsw-control-sheen);
+  backdrop-filter: var(--dsw-control-backdrop-filter);
+  pointer-events: none;
 }
 
 .indicator {
   position: absolute;
   inset: 4px auto 4px 4px;
   box-sizing: border-box;
-  border: 0.5px solid var(--dsw-alias-border-l3);
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-layer-3);
-  transition: transform 180ms ease;
+  border: 0;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-selected-fill);
+  box-shadow: var(--dsw-control-core-shadow);
+  transition: transform var(--ds-transition-duration) var(--ds-ease-in-out);
   pointer-events: none;
 }
 
 .tab {
+  box-sizing: border-box;
   position: relative;
   justify-content: center;
-  height: 34px;
+  min-height: var(--dsw-control-height-compact);
   padding: 0 12px;
-  border-radius: var(--dsw-radius-md);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   font-size: 14px;
   line-height: 20px;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
-  transition: color 180ms ease;
+  transition: color var(--ds-transition-duration) var(--ds-ease-in-out),
+    background-color var(--ds-transition-duration) var(--ds-ease-in-out);
 }
 
-.tab:hover,
+@media (hover: hover) {
+  .tab:hover:not([aria-selected='true']) {
+    background: var(--dsw-control-hover-fill);
+    color: var(--dsw-alias-label-primary);
+  }
+}
+
 .tab[aria-selected='true'] {
   background: transparent;
-  color: var(--dsw-alias-label-primary);
+  color: var(--dsw-control-selected-label);
+  font-weight: 500;
 }
 
-.tab[aria-selected='true'] {
-  font-weight: 600;
+.tab:active {
+  box-shadow: var(--dsw-control-pressed-shadow);
 }
 
 .tab:focus-visible {
-  outline: none;
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: -4px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -52,4 +79,8 @@
   .tab {
     transition: none;
   }
+}
+
+@media (forced-colors: active) {
+  .tabs { border: 1px solid ButtonText; }
 }

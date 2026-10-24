@@ -329,11 +329,19 @@ export function conversationContextKey(kind: string, id: string): string {
   return `${kind.length}:${kind}${id}`
 }
 
-/** Open Settings through the sidebar account menu.
+/** Open the default Settings button, or the optional account plugin's menu.
  * @param page - browser page with the mounted sidebar.
  * @param locale - current UI language.
  */
 export async function openSettings(page: Page, locale: 'en' | 'zh'): Promise<void> {
-  await page.getByRole('button', { name: locale === 'zh' ? '账号菜单' : 'Account menu', exact: true }).click()
+  const settings = page.getByRole('button', { name: locale === 'zh' ? '设置' : 'Settings', exact: true })
+    .and(page.locator('[aria-haspopup="dialog"]'))
+  const accountMenu = page.getByRole('button', { name: locale === 'zh' ? '账号菜单' : 'Account menu', exact: true })
+  await settings.or(accountMenu).waitFor()
+  if (await settings.count() > 0) {
+    await settings.click()
+    return
+  }
+  await accountMenu.click()
   await page.getByRole('menuitem', { name: locale === 'zh' ? '设置' : 'Settings', exact: true }).click()
 }

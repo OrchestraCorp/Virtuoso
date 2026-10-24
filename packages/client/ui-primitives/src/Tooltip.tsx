@@ -56,7 +56,8 @@ type TooltipLabel = string | (() => string)
  * @param props.children - a single anchor element; its own ref (callback or object) is forwarded alongside the tooltip's.
  * @returns the cloned anchor plus a fixed-position bubble, optionally portaled to the body.
  * The bubble stays hidden until ResizeObserver supplies its size for viewport fitting; clicking the
- * anchor dismisses the bubble unless openOnClick is enabled, and focus arriving after a pointer
+ * anchor dismisses the bubble unless openOnClick is enabled. Escape dismisses every visible
+ * bubble; focus arriving after a pointer
  * interaction (a closing menu refocusing its trigger) never raises it.
  */
 export function Tooltip({ label, shortcutKeys, side = 'right', align = 'center', delayMs = 0, focusDelayMs = 0, gap = 8, disabled = false, portal = false, maxWidth, openOnClick = false, children }: { label: TooltipLabel; shortcutKeys?: readonly string[] | undefined; side?: TooltipSide; align?: 'center' | 'end'; delayMs?: number; focusDelayMs?: number; gap?: number; disabled?: boolean; portal?: boolean; maxWidth?: number; openOnClick?: boolean; children: ReactElement<AnchorProps> }) {
@@ -193,15 +194,15 @@ export function Tooltip({ label, shortcutKeys, side = 'right', align = 'center',
   }, [cancelShow, withdraw])
   useDismissOnOutsidePointer(anchor, openOnClick && visible, dismiss, bubble)
   useEffect(() => {
-    if (!openOnClick || !visible) return
+    if (!visible || suppressed) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' && event.key !== 'Tab') return
+      if (event.key !== 'Escape' && (!openOnClick || event.key !== 'Tab')) return
       if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation() }
       dismiss()
     }
     document.addEventListener('keydown', onKeyDown, true)
     return () => { document.removeEventListener('keydown', onKeyDown, true) }
-  }, [dismiss, openOnClick, visible])
+  }, [dismiss, openOnClick, suppressed, visible])
 
   const content = visible && !suppressed && (
     <span

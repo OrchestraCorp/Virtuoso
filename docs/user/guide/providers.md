@@ -114,18 +114,7 @@ Both fields state a claim about your endpoint rather than checking it. A model t
 
 ### DeepSeek account models
 
-A signed-in DeepSeek account lists its models from the account service, so the Models page offers no model editor for it. Adjust a single model with `modelOverrides` in `$DSH_HOME/profiles/<profile>/cordis.patch.yml`; the fields match a DeepSeek `models` entry, and unset fields keep the listed values:
-
-```yaml
-- id: llm-deepseek-account
-  config:
-    modelOverrides:
-      deepseek-flash:
-        contextWindow: 524288
-        maxTokens: 131072
-```
-
-A model that needs a newer DeepSeek Harness fails with `CLIENT_UPGRADE_REQUIRED`, which names the version to install. The [account provider reference](../../../packages/llm/llm-deepseek-account/README.md) owns the listing, fallback, and gating rules.
+Maestro and Virtuoso do not load DeepSeek account authorization or account-token model routes. Configure API keys through **Settings → Model connections** or **Settings → Models**. If an existing Session selects `deepseek-account`, explicitly choose an available configured model before continuing; see the [upgrade guide](../../upgrade-guide/v0.2.1-rc.2/deepseek-account-removed/guide.md).
 
 ### Reasoning effort
 

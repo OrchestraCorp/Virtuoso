@@ -1,5 +1,5 @@
 ---
-description: "面向侧栏的官方 DeepSeek Harness 品牌填充，仅在官方构建中生效；供选择或替换品牌呈现的用户与维护者阅读。"
+description: "通过现有 DSH 品牌 slot 在侧栏和会话首屏展示 Virtuoso 产品身份。"
 kind: "package-reference"
 ---
 
@@ -9,7 +9,7 @@ kind: "package-reference"
 
 ## 概述
 
-本包让以 `official` profile 构建的客户端在侧栏显示 DeepSeek Harness 标志与名称。其他构建 profile 保留外壳的鱼形标志与本地构建标签，会话首屏则始终使用动画鱼。品牌为 DeepSeek Harness 的部署应选择本包；使用其他品牌的部署应提供替代品牌包。本包不保留运行时状态，也不影响模型请求。
+本包在侧栏显示已批准的 Virtuoso 标志与名称，并在会话首屏显示同一静态标志。本地与官方客户端构建使用相同的产品身份。本包不保留运行时状态，也不影响模型请求。
 
 ## 目录
 
@@ -25,15 +25,15 @@ kind: "package-reference"
 <a id="use-this-package"></a>
 ## 使用本包
 
-在采用 DeepSeek 自有品牌的部署中，将本插件挂载到浏览器插件名单，然后以 `official` profile 构建客户端，让填充得以注册。
+将本插件挂载到产品浏览器插件名单。它占用现有侧栏标志、名称和会话首屏标志 slot，不增加导航或另一个应用宿主。
 
 ### 选择 profile
 
-`DSH_CLIENT_BUILD_PROFILE` 决定渲染哪个品牌。`official` 构建在侧栏显示官方标志与名称；任何其他取值都让外壳回退——鱼形标志与本地构建标签——保持原样。会话首屏无论 profile 如何都显示来自 `dsh-client-ui-conversation` 的动画首屏鱼，因为这个回退本身就是官方标志。两种情况下插件都会照常加载并通过校验；只有注册受 profile 门控。
+客户端构建 profile 选择构建元数据，不切换此产品身份。Web 和桌面均使用包内 `src/client/assets/product-logo.svg`，不从相邻 checkout 解析资源。
 
 ### 替换品牌
 
-自有身份的部署不组合本包，而是组合另一个占据侧栏 slot——以及本包留给回退的首屏 slot——的包。占据 slot 是唯一的组合路径；这里不存在任何品牌配置面。
+部署可用占据相同品牌 slot 的其他包替换本包。产品标志使用提供的 SVG 资源，不生成替代图形。侧栏所有者选择方形尺寸，首屏所有者另提供呈现类名。
 
 -----
 
@@ -43,7 +43,7 @@ kind: "package-reference"
 <details>
 <summary>实现细节——点击展开</summary>
 
-两个填充作为一组声明感知的注册安装：嵌套的 `ctx.slots.inject()` 调用等待侧栏声明，因此无论本行在声明者之前还是之后激活，这组注册都能工作；声明消失时两个填充一并撤回，HMR 期间也不会留下残缺的品牌混合。浏览器半部是 [`src/client/index.ts`](src/client/index.ts)；node 半部是一个空 Loader 座位。浏览器标题是构建环境的事（`DSH_CLIENT_TITLE`），不在 slot 系统之内。
+侧栏填充通过嵌套 `ctx.slots.inject()` 一起安装。首屏填充独立等待其声明，因此任一界面均可挂载或卸载，不留下残缺的侧栏身份。插件卸载会移除所有填充。SVG 通过静态导入交由图片打包器内联，浏览器标题仍由独立的 `DSH_CLIENT_TITLE` 决定。
 
 </details>
 

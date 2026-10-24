@@ -64,6 +64,8 @@
 }
 
 .expand {
+  min-height: var(--dsw-control-height-compact);
+  border-radius: var(--dsw-radius-xs);
   display: block;
   width: 100%;
   padding: 0 22px;
@@ -75,6 +77,13 @@
   text-align: left;
 }
 
-.expand:hover {
-  color: var(--dsw-alias-label-secondary);
+@media (hover: hover) {
+  .expand:hover {
+    color: var(--dsw-alias-label-secondary);
+  }
+}
+
+.expand:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);
+  outline-offset: -4px;
 }

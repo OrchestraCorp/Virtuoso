@@ -247,7 +247,7 @@ export function CustomProviderCard(props: CustomProviderCardProps): ReactNode {
       <div className={styles['field']}>
         <span className={styles['fieldLabel']}>{t('baseUrl')}</span>
         <input
-          className={styles['input']}
+          className={`${styles['input']} ${styles['technicalInput']}`}
           type="text"
           value={baseURL}
           placeholder={t(protocol === 'anthropic-messages'

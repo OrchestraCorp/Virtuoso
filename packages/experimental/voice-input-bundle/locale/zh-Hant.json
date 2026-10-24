@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "語音輸入",
+    "description": "在本機使用 SenseVoice 轉寫錄音，首次使用需要安裝相依套件。"
+  }
+}

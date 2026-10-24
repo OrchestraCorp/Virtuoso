@@ -98,6 +98,7 @@ export const SERVICE_PAGE: Record<string, string> = {
   webServer: 'web-server.md',
   webApp: 'web-server.md',
   llm: 'llm-streaming.md',
+  modelConnections: 'llm-streaming.md',
   lsp: 'lsp.md',
   messageFeedback: 'feedback.md',
   sessionFeedback: 'feedback.md',
@@ -219,6 +220,7 @@ export const SERVICE_WALK_EXEMPTIONS: Record<string, string> = {
  * {@link EVENT_WALK_EXEMPTIONS} names each one with its documentation owner.
  */
 export const EVENT_SCOPE_PAGE: Record<string, string> = {
+  'model-connections': 'llm-streaming.md',
   'app-boot': 'boot.md',
   hmr: 'boot.md',
   'plugin-manager': 'boot.md',
@@ -333,6 +335,12 @@ export const LINK_MAP: Readonly<Record<string, string>> = {
   AgentFactory: 'core.md',
   AgentHandle: 'core.md',
   ModelSelection: 'core.md',
+  DefaultModelSource: 'core.md',
+  ConnectionDraft: 'llm-streaming.md',
+  ConnectionProtocol: 'llm-streaming.md',
+  ConnectionsSnapshot: 'llm-streaming.md',
+  DiscoveredModel: 'llm-streaming.md',
+  ConnectionTestResult: 'llm-streaming.md',
   AllowedModelRoute: 'subagent.md',
   SubagentModelSelectionSettings: 'subagent.md',
   AgentOptions: 'core.md',

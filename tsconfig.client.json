@@ -7,6 +7,7 @@
   "extends": "./tsconfig.base.client.json",
   "compilerOptions": {
     "noEmit": true,
+    "resolveJsonModule": true,
     "rewriteRelativeImportExtensions": false,
     // Tests execute under vitest on node (e2e files spawn processes); browser
     // purity of package src is each package's own tsconfig plus
@@ -14,6 +15,7 @@
     "types": ["node"]
   },
   "include": [
+    "packages/client/locale/src/translations/*.json",
     // The native/renderer keyboard fixture imports only these Cordis-free Desktop modules.
     "apps/desktop/tests/keyboard.spec.ts",
     "apps/desktop/src/keyboard.ts",

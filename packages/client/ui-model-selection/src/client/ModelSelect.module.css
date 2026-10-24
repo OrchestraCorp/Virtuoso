@@ -10,16 +10,16 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
+  min-width: var(--dsw-control-height-compact);
   /* Legacy fallback, then a row-relative cap that grants long names more
      room without letting this trailing control consume the composer. */
   max-width: 220px;
   max-width: min(360px, 45cqw);
-  height: 28px;
+  height: var(--dsw-control-height-compact);
   padding: 0 4px 0 8px;
   border: none;
   /* Rounded chip chrome, matching the sibling permission trigger. */
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
   outline: none;
   background: transparent;
   color: var(--dsw-alias-label-secondary);
@@ -27,10 +27,14 @@
   line-height: 20px;
   font-weight: 400;
   cursor: pointer;
+  box-sizing: border-box;
+  corner-shape: round;
 }
 
-.trigger:hover:not(:disabled) {
-  background: var(--dsw-alias-interactive-bg-hover);
+@media (hover: hover) {
+  .trigger:hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .trigger:focus-visible:not([data-selection-focus]) {
@@ -153,6 +157,7 @@
   font: inherit;
   font-weight: 600;
   cursor: pointer;
+  min-height: var(--dsw-control-height-compact);
 }
 
 .searchRow {
@@ -182,8 +187,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   border: none;
   border-radius: 50%;
@@ -193,10 +198,16 @@
   cursor: pointer;
 }
 
-.searchClear:hover,
 .searchClear:focus-visible {
   outline: none;
   background: var(--dsw-alias-interactive-bg-hover);
+}
+
+@media (hover: hover) {
+  .searchClear:hover {
+    outline: none;
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .searchRow .search:focus-within {
@@ -225,7 +236,7 @@
   gap: 6px;
   width: auto;
   min-width: 100%;
-  min-height: 34px;
+  min-height: var(--dsw-control-height-compact);
   padding: 5px 7px;
   border: none;
   border-radius: var(--dsw-radius-md);
@@ -236,10 +247,15 @@
   cursor: pointer;
 }
 
-.option:not(.modelOption):hover:not(:disabled),
 .option:focus-visible,
 .optionActive:not(:disabled) {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+
+@media (hover: hover) {
+  .option:not(.modelOption):hover:not(:disabled) {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 /* Selection marker is the trailing check, not a fill — matches the Menu
@@ -290,7 +306,7 @@
   gap: 6px;
   width: auto;
   min-width: 100%;
-  height: 34px;
+  height: var(--dsw-control-height-compact);
   padding: 0 8px;
   border: none;
   border-radius: var(--dsw-radius-md);
@@ -303,9 +319,14 @@
   outline: none;
 }
 
-.cell:hover,
 .cell:focus-visible {
   background: var(--dsw-alias-interactive-bg-hover);
+}
+
+@media (hover: hover) {
+  .cell:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+  }
 }
 
 .cellLabel {
@@ -329,3 +350,8 @@
   height: 12px;
   color: var(--dsw-alias-menu-icon);
 }
+
+.trigger:focus-visible:not([data-selection-focus]) { box-shadow: none; outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: 2px; }
+.searchClear:focus-visible, .option:focus-visible, .cell:focus-visible, .retry:focus-visible { outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary)); outline-offset: -4px; }
+.searchRow .search { min-height: var(--dsw-control-height-compact); }
+.searchRow .searchWithQuery { padding-right: calc(var(--dsw-control-height-compact) + 8px); }

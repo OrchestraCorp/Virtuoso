@@ -11,6 +11,7 @@
  */
 
 import { useEffect, useRef, type ReactNode } from 'react'
+import { Button } from '../Button.tsx'
 import type { SettingsFormShell } from './form-model.ts'
 import css from './SettingsForm.module.css'
 
@@ -60,14 +61,13 @@ export function SettingsForm(props: SettingsFormProps) {
       {props.children}
       <div className={css.footer}>
         {state.failed ? <p className={css.failed} role="status">{labels.saveFailed}</p> : null}
-        <button
+        <Button variant="primary"
           type="button"
-          className={css.save}
           disabled={blocked}
           onClick={props.onSave}
         >
           {state.saving ? labels.saving : labels.save}
-        </button>
+        </Button>
       </div>
     </div>
   )

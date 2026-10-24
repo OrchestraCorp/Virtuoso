@@ -8,6 +8,12 @@
     "rewriteRelativeImportExtensions": false
   },
   "include": [
+    "apps/web/tests/orchestra-design.e2e.ts",
+    "apps/web/tests/json-tree-touch.e2e.ts",
+    "apps/web/tests/chat-touch-targets.e2e.ts",
+    "apps/web/tests/default-no-account.e2e.ts",
+    "apps/web/tests/optional-account-scaffold.ts",
+    "apps/web/tests/maas-settings.e2e.ts",
     "apps/web/tests/collapse-timing.e2e.ts",
     "apps/web/tests/notice-wake-tail.e2e.ts",
     "apps/web/tests/fold-blank-matrix.e2e.ts",
@@ -237,6 +243,7 @@
     "scripts/client-bundle-purity.spec.ts"
   ],
   "references": [
+    { "path": "./packages/llm/model-connections" },
     { "path": "./packages/experimental/client-ui-cot-translation/tsconfig.host.json" },
     { "path": "./packages/experimental/cot-translation-bundle" },
     { "path": "./packages/experimental/session-search" },

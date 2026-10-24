@@ -28,3 +28,18 @@ describe('offline brand font', () => {
     expect(manifest.exports['./brand-font.css']).toBe('./lib/styles/brand-font.css')
   })
 })
+
+it('packages the product UI fonts and their licenses without remote font dependencies', () => {
+  const css = readFileSync(new URL('../src/styles/brand-font.css', import.meta.url), 'utf8')
+  for (const family of ['Inter', 'JetBrains Mono']) expect(css).toContain(`font-family: '${family}'`)
+  const fonts = [...css.matchAll(/url\(\.\/((?:inter|jetbrains-mono)-[^)]*\.woff2)\)/g)]
+  expect(fonts).toHaveLength(7)
+  for (const match of fonts) {
+    const font = readFileSync(new URL(`../src/styles/${match[1]}`, import.meta.url))
+    expect(font.readUInt32BE(0)).toBe(0x774f4632)
+  }
+  for (const license of ['Inter-OFL.txt', 'JetBrainsMono-OFL.txt']) {
+    expect(readFileSync(new URL(`../src/styles/${license}`, import.meta.url), 'utf8')).toContain('SIL OPEN FONT LICENSE')
+  }
+  expect(css).not.toMatch(/url\(https?:/)
+})

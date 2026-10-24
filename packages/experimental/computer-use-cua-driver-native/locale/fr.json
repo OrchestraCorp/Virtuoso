@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Utilisation de l'ordinateur (Cua Driver)",
+    "description": "Permet au modèle d'utiliser le bureau avec l'environnement Cua Driver fourni ; l'application qui lance dsh doit disposer des autorisations d'accès au bureau."
+  }
+}

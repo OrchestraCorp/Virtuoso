@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { getBuiltinModels } from '@earendil-works/pi-ai/providers/all'
 import { assertServiceable, Config, resolveProfiles, type Options } from '../src/config.ts'
 
 /** Validate one hand-declared route, with the caller's fields layered onto it. */
@@ -17,6 +18,54 @@ const routeWith = (profile: Record<string, unknown>): (() => unknown) =>
 /** Validate that route with the caller's fields on its single model entry. */
 const configWith = (model: Record<string, unknown>): (() => unknown) =>
   routeWith({ models: [{ id: 'm', ...model }] })
+
+describe('model protocol declarations', () => {
+  it.each([
+    ['https://gateway.test/v1', 'https://gateway.test'],
+    ['https://gateway.test/prefix/v1/', 'https://gateway.test/prefix'],
+    ['https://gateway.test/prefix/', 'https://gateway.test/prefix'],
+  ])('normalizes explicit Anthropic endpoint %s without changing the configured value', (baseURL, root) => {
+    const configured = { baseURL, models: [{ id: 'm', api: 'anthropic-messages' }] }
+    const profile = resolveProfiles({ gateway: configured }).get('gateway')
+    expect(profile?.piProvider?.getModels()[0]?.baseUrl).toBe(root)
+    expect(profile?.baseURL).toBe(baseURL)
+    expect(configured.baseURL).toBe(baseURL)
+  })
+
+  it('preserves native catalog endpoint spelling when no protocol is overridden', () => {
+    const baseURL = 'https://gateway.test/native/v1'
+    const profile = resolveProfiles({ anthropic: { baseURL } }).get('anthropic')
+    expect(profile?.piProvider?.getModels()[0]?.baseUrl).toBe(baseURL)
+  })
+
+  it('accepts supported per-model protocols and refuses unknown ones at the schema and resolver', () => {
+    expect(configWith({ api: 'openai-responses' })).not.toThrow()
+    expect(configWith({ api: 'unknown-api' })).toThrow()
+    expect(() => resolveProfiles({ gateway: {
+      baseURL: 'https://gateway.test/v1', models: [{ id: 'm', api: 'unknown-api' }],
+    } })).toThrow(/model "m" names api "unknown-api".*cannot serve/)
+  })
+
+  it('uses model protocol before the route and catalog without adding a generic default', () => {
+    const profile = resolveProfiles({ gateway: {
+      api: 'anthropic-messages', baseURL: 'https://gateway.test/v1',
+      models: [{ id: 'chat', api: 'openai-completions' }, { id: 'response', api: 'openai-responses' }, { id: 'inherited' }],
+    } }).get('gateway')
+    expect(profile?.piProvider?.getModels().map(model => model.api))
+      .toEqual(['openai-completions', 'openai-responses', 'anthropic-messages'])
+    expect(() => resolveProfiles({ gateway: { baseURL: 'https://gateway.test/v1', models: [{ id: 'm' }] } }))
+      .toThrow(/needs an api/)
+  })
+
+  it('lets an explicit model protocol override the route and installed model protocol', () => {
+    const model = getBuiltinModels('openai').find(model => model.api === 'openai-responses')
+    if (model === undefined) throw new Error('the installed OpenAI catalog has no Responses model')
+    const profile = resolveProfiles({ openai: {
+      api: 'anthropic-messages', models: [{ id: model.id, api: 'openai-completions' }],
+    } }).get('openai')
+    expect(profile?.piProvider?.getModels()[0]?.api).toBe('openai-completions')
+  })
+})
 
 describe('reasoning schema boundary', () => {
   it('accepts an empty provider section and propagates unexpected catalog failures', () => {

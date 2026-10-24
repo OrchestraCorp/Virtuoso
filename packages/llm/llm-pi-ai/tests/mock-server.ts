@@ -30,6 +30,20 @@ export const textEvents = [
   '[DONE]',
 ]
 
+/** A minimal complete Responses text result. */
+export const responsesTextEvents = [
+  JSON.stringify({ type: 'response.created', response: { id: 'resp_runtime' } }),
+  ...['response.output_item.added', 'response.output_item.done'].map(type => JSON.stringify({
+    type, output_index: 0,
+    item: { type: 'message', id: 'msg_runtime', role: 'assistant', content: [{ type: 'output_text', text: 'response', annotations: [] }] },
+  })),
+  JSON.stringify({ type: 'response.completed', response: {
+    id: 'resp_runtime', status: 'completed',
+    output: [{ type: 'message', id: 'msg_runtime', role: 'assistant', content: [{ type: 'output_text', text: 'response', annotations: [] }] }],
+    usage: { input_tokens: 3, output_tokens: 1, total_tokens: 4 },
+  } }),
+]
+
 /**
  * One Anthropic Messages SSE frame, named by its own `type`.
  * @param data - the frame payload.

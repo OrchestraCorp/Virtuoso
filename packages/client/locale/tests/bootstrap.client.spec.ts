@@ -22,7 +22,7 @@ describe('native locale initialization', () => {
   })
 
   it('uses native language order without persisting a provisional choice', async () => {
-    vi.stubGlobal('window', {})
+    vi.stubGlobal('window', { addEventListener: vi.fn(), removeEventListener: vi.fn() })
     vi.stubGlobal('navigator', { languages: ['en-US'], language: 'en-US' })
     const ctx = new Context()
     const host = stubConfigForm<LocaleSettings>()

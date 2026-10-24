@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "電腦操作（Cua Driver）",
+    "description": "讓模型使用內建的 Cua Driver 執行環境操作桌面；需要為啟動 dsh 的應用程式授予桌面權限。"
+  }
+}

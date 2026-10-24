@@ -35,14 +35,15 @@
 }
 
 .close {
+  box-sizing: border-box;
   position: absolute;
   top: 20px;
   right: 20px;
   z-index: 1;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   border: 0.5px solid var(--dsw-alias-border-l2-darkmode-thin);
   border-radius: 999px;
   corner-shape: round;

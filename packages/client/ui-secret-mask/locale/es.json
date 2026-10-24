@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "ui-secret-mask",
+    "description": "Oculta las claves, tokens y contraseñas detectados en los mensajes enviados."
+  }
+}

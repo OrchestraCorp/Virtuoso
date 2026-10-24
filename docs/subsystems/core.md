@@ -50,6 +50,12 @@ interface AgentHandle {
 
 `AgentFactory` is the creation interface behind the registry: the loop registers its factory via `ctx.agents.setFactory()`, so consumers use `ctx.agents` without depending on the concrete loop package. A runtime child creator sets `options.parentAgent`; the registry passes the options and caller Context to the factory without deriving one from the other. The exact `create`/`resume` signatures and rollback contracts are in the [generated section](#ctxagents--agentregistry) below.
 
+<a id="default-model-sources"></a>
+
+## Default model sources
+
+[`agent-default-model`](../../packages/core/agent-default-model/README.md) accepts one `DefaultModelSource` whose `currentSelection()` supplies the product default and whose `saveSelection()` owns its persistence. A source returning no selection inherits the plugin Config; disposing its registration restores Config behavior. The source declaration lives in [`src/index.ts`](../../packages/core/agent-default-model/src/index.ts), while Session-specific model selection remains with the calling entry point.
+
 ## The agent handle
 
 `Agent` is the surface every plugin (UI, hooks, orchestrators) programs against; `ctx.agents.get(id)` returns it, and the [initiator scope](#initiating-agent) carries it. The concrete implementation is package-internal to dsh-agent-loop; nothing outside the loop depends on it. The unified `send` method exposes target and wakeup routing directly; `followup`, `steer`, and `inject` are fixed-preset aliases.
@@ -421,23 +427,38 @@ Generated from source by `scripts/gen-cordis-catalog.ts` (verified fresh by `pnp
 
 ### `ctx.agentDefaultModel` — `AgentDefaultModelConfig`
 
-Owns the default model selection independently of any Host or transport. Each operation reads the owning Config references.
+Owns the default model selection independently of any Host or transport. A registered product source owns persistence; absent a selection, reads inherit Config.
 
 ```ts cordis-catalog
 /**
  * Read the current default model selection.
- * @returns a detached provider, model, and optional reasoning selection.
+ * @returns a detached selection, or undefined until a model is explicitly configured.
  */
-currentSelection(): ModelSelection
+currentSelection(): ModelSelection | undefined
 
 /**
- * Save the complete default model selection. A deployment without a configuration
- * editor keeps its composition entry. Saves commit in submission order; a failed
+ * Resolve the explicit default before a model request starts.
+ * @returns the configured model selection.
+ * @throws LlmError MODEL_NOT_CONFIGURED until a default has been selected.
+ */
+requireSelection(): ModelSelection
+
+/**
+ * Save the complete default through the registered source or profile editor.
+ * A non-owner Remote caller cannot persist a registered product default;
+ * its entry point may still keep the selected model on that caller's Session.
+ * Without either, the deployment keeps its composition entry. Saves commit in submission order; a failed
  * save rejects its caller without blocking later saves.
  * @param next - resolved selection accepted by an entry point.
  * @returns fulfillment after the optional profile write settles.
  */
 async saveSelection(next: ModelSelection): Promise<void>
+
+/** Register one product-owned default; unloading the registration restores Config behavior.
+ * @param source Product persistence owner. A second simultaneous source is refused.
+ * @returns the caller-owned disposer.
+ */
+registerSource(source: DefaultModelSource): () => void
 ```
 
 Source: [`packages/core/agent-default-model/src/index.ts`](../../packages/core/agent-default-model/src/index.ts)

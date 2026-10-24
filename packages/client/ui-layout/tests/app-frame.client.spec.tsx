@@ -10,6 +10,8 @@ import type { MainPanelId, RightbarOwnerProps, SidebarOwnerProps } from '../src/
 import { createLayoutStore } from '../src/client/stores.ts'
 import type { WorkspaceSnapshot } from '@deepseek-ai/dsh-api-workspace-controller/client'
 import type { SessionId } from '@deepseek-ai/dsh-session/types'
+import { en as commonEnglish } from '@deepseek-ai/dsh-client-locale/src/locales/en.ts'
+import { zh as commonChinese } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts'
 
 const useResource = (() => ({ status: 'none' as const, value: undefined, failure: undefined })) as GlobalStandardProps['useResource']
 let selectedSession: SessionId | undefined
@@ -60,7 +62,7 @@ function resize(width: number): void {
   })
 }
 
-function mountFrame(windowWidth = frameWidth) {
+function mountFrame(windowWidth = frameWidth, common = commonEnglish) {
   vi.stubGlobal('innerWidth', windowWidth)
   const instance = createLayoutStore().create()
   const slotCalls: { key: string; props: object; options: RenderOpts | undefined }[] = []
@@ -100,7 +102,7 @@ function mountFrame(windowWidth = frameWidth) {
       useResource={useResource}
       useWorkspaces={sel => sel(workspaceState)}
       {...allowAllAccess}
-      t={key => key === 'brand.localBuild' ? 'DSH Local Build' : key}
+      t={key => common[key]}
     />
   )
   const utils = render(element())
@@ -184,9 +186,9 @@ afterEach(() => {
 })
 
 describe('AppFrame', () => {
-  it('localizes the product title without a configured build title', () => {
-    mountFrame()
-    expect(document.title).toBe('DSH Local Build')
+  it.each([commonEnglish, commonChinese])('uses the product name without a configured build title (%#)', (common) => {
+    mountFrame(frameWidth, common)
+    expect(document.title).toBe('Virtuoso')
   })
 
   it('follows the selected durable Session title', () => {
@@ -285,7 +287,7 @@ describe('AppFrame', () => {
       expect(instance.getSnapshot().layoutInfo).toBe(layoutInfo)
       expect(tracks(frame)).toEqual([280, 0])
       expect(selectedSession).toBe(sessionId)
-      expect(document.title).toBe(panelId === null ? 'Session title — DSH Local Build' : 'DSH Local Build')
+      expect(document.title).toBe(panelId === null ? 'Session title — Virtuoso' : 'Virtuoso')
     }
   })
 })

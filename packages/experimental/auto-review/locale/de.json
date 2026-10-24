@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Automatische Berechtigungsprüfung",
+    "description": "Fügt einen Berechtigungsmodus für die automatische Überprüfung hinzu, bei dem das Modell vor jedem Werkzeugaufruf die Autorisierung prüft."
+  }
+}

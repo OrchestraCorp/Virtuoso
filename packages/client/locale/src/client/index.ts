@@ -27,6 +27,7 @@ import {
 import type { LanguageRowInjected } from './LanguageRow.tsx'
 import { LanguageRow } from './LanguageRow.tsx'
 import { createLanguageRowStore } from './settings-store.ts'
+import { PRODUCT_LANGUAGE_PACKS, PRODUCT_CONTEXT_TRANSLATIONS, type ProductLanguagePack } from './product-languages.ts'
 
 export type { LanguageRowComponentProps, LanguageRowInjected } from './LanguageRow.tsx'
 export type { LanguageOptionRow, LanguageRowState } from './settings-store.ts'
@@ -163,6 +164,7 @@ function syncDocumentLanguage(snapshot: LocaleSnapshot): void {
  * `ctx.slots.installLocale`.
  */
 export class LocaleRuntime {
+  private productLanguages: readonly ProductLanguagePack[] = []
   private dicts = new Map<string, Map<string, LocaleDict>>()
   private bound = new Map<string, Translate>()
   private catalog = new Map<string, LocaleDefinition>()
@@ -191,6 +193,13 @@ export class LocaleRuntime {
     this.provisional = resolveInitialLocale(locales, bootstrap?.languages)
     this.preference = bootstrap?.preference ?? undefined
     this.snapshot = Object.freeze({ active: this.resolveActive(), locales, revision: 0 })
+    if (typeof window !== 'undefined') {
+      ctx.effect(() => {
+        const onLanguageChange = (): void => { this.publishCatalog() }
+        window.addEventListener('languagechange', onLanguageChange)
+        return () => { window.removeEventListener('languagechange', onLanguageChange) }
+      }, 'locale: system language changes')
+    }
     if (host !== undefined) {
       ctx.effect(() => host.subscribe(() => { this.adopt(host) }), 'locale: settings scope adoption')
       this.adopt(host)
@@ -255,9 +264,67 @@ export class LocaleRuntime {
   setLocale(id: string): void {
     const match = this.catalog.get(localeKey(id))
     if (match === undefined) throw new Error(`locale "${id}" is not registered`)
+    const previous = this.preference
     this.preference = match.id
-    if (this.snapshot.active !== match.id) this.publish(match.id, true)
+    if (this.snapshot.active !== match.id || previous !== match.id) {
+      this.publish(match.id, this.snapshot.active !== match.id)
+    }
     void this.host?.set(LOCALE_PREFERENCE_FIELD, match.id)
+  }
+
+  /**
+   * Install the packaged product languages for this runtime. Only registered
+   * dictionary templates use these translations; package metadata stays authored.
+   * @returns idempotent disposer removing the languages and their product translations.
+   * @throws if a product language is already registered.
+   */
+  installProductLanguages(): () => void {
+    if (this.productLanguages.length > 0) throw new Error('product languages are already installed')
+    const disposers: (() => void)[] = []
+    this.productLanguages = PRODUCT_LANGUAGE_PACKS
+    try {
+      for (const pack of PRODUCT_LANGUAGE_PACKS) {
+        disposers.push(this.addLanguage({ id: pack.id, label: pack.label, fallback: 'en' }))
+      }
+    } catch (error) {
+      this.productLanguages = []
+      for (const dispose of disposers.reverse()) dispose()
+      throw error
+    }
+    let installed = true
+    return () => {
+      if (!installed) return
+      installed = false
+      this.productLanguages = []
+      for (const dispose of disposers.reverse()) dispose()
+    }
+  }
+
+  private translateProductTemplate(value: string, namespace: string, key: string): string {
+    for (const id of this.fallbackChain(this.snapshot.active)) {
+      const pack = this.productLanguages.find(item => localeKey(item.id) === localeKey(id))
+      if (pack === undefined || !Object.hasOwn(pack.templates, value)) continue
+      const context = PRODUCT_CONTEXT_TRANSLATIONS[namespace]?.[key]?.[pack.id]
+      return context ?? pack.templates[value] ?? value
+    }
+    return value
+  }
+
+  /** @returns the explicit language preference, or undefined while following the system. */
+  getPreference(): LocaleId | undefined {
+    return this.preference
+  }
+
+  /** Clear the durable override and resume the browser or native system language. */
+  useSystemLocale(): void {
+    const previous = this.preference
+    this.preference = undefined
+    this.provisional = resolveInitialLocale(this.localeList(), this.bootstrap?.languages)
+    const active = this.resolveActive()
+    if (previous !== undefined || active !== this.snapshot.active) {
+      this.publish(active, active !== this.snapshot.active)
+    }
+    void this.host?.unset(LOCALE_PREFERENCE_FIELD)
   }
 
   /**
@@ -304,10 +371,11 @@ export class LocaleRuntime {
   private adopt(host: ConfigForm<LocaleSettings>): void {
     const section = host.getSnapshot().value
     if (section === undefined) return
+    const previous = this.preference
     this.preference = section.preference
     const target = this.resolveActive()
-    if (this.snapshot.active === target) return
-    this.publish(target, true)
+    if (this.snapshot.active === target && previous === this.preference) return
+    this.publish(target, this.snapshot.active !== target)
   }
 
   /** Recompute browser fallback and publish the current catalog. */
@@ -477,7 +545,7 @@ export class LocaleRuntime {
     const locales = this.dicts.get(ns)
     for (const locale of chain) {
       const value = locales?.get(localeKey(locale))?.[key]
-      if (value !== undefined) return value
+      if (value !== undefined) return localeKey(locale) === 'en' ? this.translateProductTemplate(value, ns, key) : value
     }
     return undefined
   }
@@ -543,6 +611,10 @@ function detectBrowserLocale(locales: readonly LocaleDefinition[], languages?: r
     const requested = localeKey(tag)
     const exact = locales.find(locale => localeKey(locale.id) === requested)
     if (exact !== undefined) return exact.id
+    if (/^zh-(?:hant|tw|hk|mo)(?:-|$)/.test(requested)) {
+      const traditional = locales.find(locale => localeKey(locale.id) === 'zh-hant')
+      if (traditional !== undefined) return traditional.id
+    }
     const primary = requested.split('-')[0]
     const match = locales.find(locale => localeKey(locale.id).split('-')[0] === primary)
     if (match !== undefined) return match.id
@@ -576,6 +648,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
   }
   const host = ctx.configForms.get<LocaleSettings>(LOCALE_SETTINGS_NAMESPACE)
   const locale = new LocaleRuntime(ctx, host, bootstrap)
+  ctx.effect(() => locale.installProductLanguages(), 'locale: packaged product languages')
   locale.register(COMMON_NS, { zh, en })
   locale.register(SETTINGS_NS, { zh: settingsZh, en: settingsEn })
   ctx.provide('locale', locale)
@@ -596,6 +669,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
       snapshot.active,
       snapshot.locales.map(l => ({ id: l.id, label: l.label })),
       snapshot.revision,
+      locale.getPreference() === undefined,
     )
   }
   ctx.effect(() => locale.subscribe(sync), 'locale: language row and document synchronization')
@@ -610,6 +684,7 @@ export async function apply(ctx: ClientContext): Promise<void> {
     sync()
     return {
       setLocale: (id) => { locale.setLocale(id) },
+      useSystemLocale: () => { locale.useSystemLocale() },
     }
   }
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({

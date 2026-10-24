@@ -29,6 +29,8 @@ Open **Built-in plugins** in Settings. [ui-settings-plugin-inventory](../ui-sett
 
 To contribute a tab, register into `settings.plugins.tab` with an `id`, an `order`, and a localized `label`; the section renders the entries in order and mounts a tab on its first selection. Feature copy stays in the registering plugin's dictionary.
 
+Multiple tabs share a capsule selection rail with a blue selected fill and a distinct neutral keyboard ring. Choices use the shared 36px compact height on desktop and 44px with a coarse pointer; long tab rows scroll within the section. Arrow keys, Home and End move focus and selection together, while visited panels keep their drafts.
+
 -----
 
 <a id="understand-the-implementation"></a>

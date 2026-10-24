@@ -71,6 +71,13 @@ it.each([
     DOWNLOAD_TEST_ORIGIN: 'https://desktop-updates.example.com',
     DOWNLOAD_TEST_RELEASE_ID: '0123456789abcdef0123456789abcdef',
   }, platform, arch)
+  expect(desktopConfig.files).toEqual(expect.arrayContaining([
+    'lib/main.js', 'lib/preload-app.cjs', 'lib/preload-mandatory.cjs', 'lib/preload-update-dialog.cjs',
+    '!renderer/welcome.html', '!renderer/welcome.css', '!renderer/assets/welcome-brand.svg',
+  ]))
+  expect(desktopConfig.files).not.toContain('lib/preload-welcome.cjs')
+  expect(desktopConfig.files).not.toContain('lib/preload-platform-account.cjs')
+  expect(desktopConfig.files).not.toContain('lib/welcome/**/*')
   const config: Configuration = {
     files: desktopConfig.files.map(file => typeof file === 'string' ? file : { ...file, filter: [...file.filter] }),
   }

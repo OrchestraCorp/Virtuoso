@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Claude Code サブエージェント",
+    "description": "Claude Code の標準認証と設定を使用して、1 つのタスクを委任します。"
+  }
+}

@@ -14,7 +14,7 @@ import type {
 import type { LlmResolvedModelInfo } from '@deepseek-ai/dsh-llm'
 import { THINKING_LEVELS } from './catalog.ts'
 
-/** Input accepted by the static, single-protocol providers this package builds. */
+/** Input accepted by the static providers this package builds. */
 interface StaticProviderOptions {
   id: string
   name: string
@@ -36,9 +36,9 @@ export function createModels(options?: CreateModelsOptions): MutableModels {
 }
 
 /**
- * Create the static, single-protocol provider used by configured custom routes.
- * @param input - provider identity, models, authentication, and protocol implementation.
- * @returns a provider that delegates each operation to the supplied protocol.
+ * Create a static provider backed by the supplied protocol dispatcher.
+ * @param input - provider identity, models, authentication, and protocol dispatch.
+ * @returns a provider that delegates each operation to the supplied implementation.
  */
 export function createProvider(input: StaticProviderOptions): Provider {
   return {

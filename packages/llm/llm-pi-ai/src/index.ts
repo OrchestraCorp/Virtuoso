@@ -59,24 +59,21 @@ import type {} from '@deepseek-ai/dsh-settings'
 import type {} from '@deepseek-ai/cordis-plugin-loader'
 
 import type { Context } from '@deepseek-ai/cordis'
-import { launchEnvironmentOf } from '@deepseek-ai/dsh-launch-environment'
-import { assertUsableApiKey, LlmError, resolveImageAttachmentAccess } from '@deepseek-ai/dsh-llm'
 import type { AdapterRegistrationHandle, DirectoryRegistrationHandle, LlmConfigurableProvider } from '@deepseek-ai/dsh-llm'
-import type {} from '@deepseek-ai/dsh-fs'
 import { deepEqualJson } from '@deepseek-ai/dsh-util-values'
-import { PiAiAdapter } from './adapter.ts'
 import { authContextFrom, credentialStoreFrom } from './auth.ts'
 import { catalogProvider, catalogProviderIds } from './catalog.ts'
 import { assertServiceable, Config, resolveProfiles } from './config.ts'
 import type { ResolvedPiAiProviderProfile } from './config.ts'
-import { discoverModels } from './discovery.ts'
-import type { StoredModelDiscoveryProfile } from './discovery.ts'
 import { registerPiAiFlows } from './login.ts'
 import { providerDefaultsOf } from './provider-data.ts'
+import { createPiAiRuntime } from './runtime.ts'
 
 export { PiAiAdapter } from './adapter.ts'
 export type { PiAiAdapterOptions } from './adapter.ts'
-export { Config } from './config.ts'
+export { Config, resolveProfiles } from './config.ts'
+export { createPiAiRuntime } from './runtime.ts'
+export type { PiAiRuntime, PiAiRuntimeOptions } from './runtime.ts'
 export type {
   Options,
   PiAiCompatProfile,
@@ -185,52 +182,9 @@ export function apply(ctx: Context, config: Config): void {
     return raw
   })
 
-  const resolveApiKey = async (
-    provider: string,
-    profile: ResolvedPiAiProviderProfile,
-  ): Promise<string | undefined> => {
-    const ref = profile.apiKeyEnv
-    // Only a profile that names no credential at all defers to pi-ai's
-    // provider-native discovery. Once one is named, a miss must fail loud:
-    // handing pi-ai `undefined` would let it pick up an unrelated ambient key
-    // (OPENAI_API_KEY and friends), billing another tenant for a request the
-    // deployment meant to authenticate differently.
-    if (ref === undefined) return undefined
-    const credentials = ctx.get('credentials')
-    const hit = credentials !== undefined
-      ? (await credentials.resolve(ref))?.value
-      // Without the seam the environment is the whole credential plane.
-      : launchEnvironmentOf(ctx).get(ref)?.value
-    if (hit !== undefined && hit.length > 0) return assertUsableApiKey(hit, 'llm-pi-ai', ref)
-    throw new LlmError(
-      `llm-pi-ai: no credential for provider route "${provider}"; its profile resolves ${ref}, which is not`
-      + ` set — store ${ref} through the credentials service (the web Models page writes it) or export it,`
-      + ' and remove apiKeyEnv only if this provider should authenticate from pi-ai\'s own environment discovery',
-      'MISSING_CREDENTIAL',
-    )
-  }
-
-  // One store and one ambient context for the whole plugin instance: both read
-  // through `ctx` per call, so they stay correct across the collection rebuilds
-  // a configuration change causes, and a sign-in survives one.
   const auth = { credentials: credentialStoreFrom(ctx), authContext: authContextFrom(ctx) }
-  const adapter = new PiAiAdapter({
-    profiles,
-    resolveApiKey,
-    auth,
-    resolveAttachments: () => ctx.get('attachments'),
-    resolveImageAccess: (attachments, ref) => resolveImageAttachmentAccess(
-      attachments,
-      hostPath => ctx.get('fs')?.processPathFromHostPath(hostPath),
-      ref,
-    ),
-    onReplayDegrade: ({ provider, model, reason }) => {
-      ctx.logger.warn(
-        `llm-pi-ai: unusable replay state on assistant history for route "${provider}/${model}";`
-        + ` sending that message as provider-neutral content (${reason})`,
-      )
-    },
-  })
+  const runtime = createPiAiRuntime(ctx, { profiles, auth })
+  const { adapter } = runtime
   // Independent of the route set: signing in is what makes a route worth
   // adding, so the flows are offered before any profile names their provider.
   // Scoped to the authorization seam rather than injected outright, because a
@@ -259,28 +213,7 @@ export function apply(ctx: Context, config: Config): void {
     directoryFacts = entries
   }
   ensureDirectory()
-  /** Host-owned request inputs for discovery of one configured route. */
-  const storedDiscoveryProfile = (
-    provider: string | undefined,
-  ): StoredModelDiscoveryProfile | undefined => {
-    if (provider === undefined) return undefined
-    const profile = profiles().get(provider)
-    if (profile === undefined) return undefined
-    return {
-      headers: profile.headers,
-      resolveApiKey: () => resolveApiKey(provider, profile),
-    }
-  }
-  // Interrogating an endpoint is a configuration-time action over a draft, so
-  // it is offered for the whole namespace rather than per route: the provider
-  // a surface is adding does not exist yet. The draft is the whole request
-  // except the stored credential and deployment-owned headers: the curated UI
-  // accepts neither, so an already-configured route supplies both inside the
-  // Host rather than widening the discovery request.
-  ctx.llm.registerModelDiscovery(settingsNs, (request, signal) => discoverModels(
-    { ...request, ...signal === undefined ? {} : { signal } },
-    () => storedDiscoveryProfile(request.provider),
-  ))
+  ctx.llm.registerModelDiscovery(settingsNs, (request, signal) => runtime.discoverModels(request, signal))
   // Route effects bind to this apply fiber via the stable `ctx` reference,
   // even when a swap runs inside the scoped settings callback below. A bare
   // mount (zero routes) is the dormant posture: nothing registers until a

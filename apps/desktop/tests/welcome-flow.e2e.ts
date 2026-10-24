@@ -2,7 +2,7 @@
 
 import { createHash } from 'node:crypto'
 import { createServer } from 'node:http'
-import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -82,7 +82,7 @@ async function mockPlatform() {
   }
 }
 
-describe.skipIf(!existsSync(builtHost))('built Desktop welcome flow', () => {
+describe.skipIf(!existsSync(builtHost))('optional upstream Desktop welcome flow', () => {
   it('persists explicit API keys and browser account login independently across Host restarts', async () => {
     vi.stubEnv('DSH_CLIENT_VERSION', '1.2.3')
     const root = mkdtempSync(join(tmpdir(), 'dsh-desktop-welcome-'))
@@ -96,11 +96,17 @@ describe.skipIf(!existsSync(builtHost))('built Desktop welcome flow', () => {
       mkdirSync(home)
       vi.stubEnv('DSH_HOME', home)
       vi.stubEnv('DSH_TELEMETRY_MODE', 'DISABLED')
+      const dependencyDir = join(root, 'dependencies')
+      mkdirSync(dependencyDir)
+      for (const entry of readdirSync(join(repository, 'node_modules'), { withFileTypes: true })) {
+        if (entry.name.startsWith('.') || (!entry.isDirectory() && !entry.isSymbolicLink())) continue
+        symlinkSync(join(repository, 'node_modules', entry.name), join(dependencyDir, entry.name), process.platform === 'win32' ? 'junction' : 'dir')
+      }
       const project = prepareDevelopmentProject({
         projectDir: join(root, 'project'),
         cliDir: join(repository, 'apps/cli'),
         hostDir: join(repository, 'apps/desktop-host'),
-        dependencyDir: join(repository, 'node_modules/.pnpm/node_modules'),
+        dependencyDir,
         release: {
           schemaVersion: 1,
           version: version(join(repository, 'apps/desktop/package.json')),
@@ -121,7 +127,24 @@ describe.skipIf(!existsSync(builtHost))('built Desktop welcome flow', () => {
         dsh: project,
       })
       await manager.applyRelease()
-      writeFileSync(join(paths.profile, 'cordis.patch.yml'), `- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n- id: deepseek-account\n  config:\n${process.platform === 'linux' ? '    desktopPlatform: darwin\n' : ''}    platformOrigin: ${platform.origin}\n    allowLoopbackHttp: true\n    requestHeaders:\n      Cookie: test_gate=synthetic\n`)
+      const optionalPackages = {
+        '@deepseek-ai/dsh-deepseek-account-platform': 'packages/credentials/deepseek-account-platform',
+        '@deepseek-ai/dsh-api-account-controller': 'packages/api/account-controller',
+      }
+      const profileManifestPath = join(paths.profile, 'package.json')
+      const profileManifest = JSON.parse(readFileSync(profileManifestPath, 'utf8')) as { dependencies?: Record<string, string> }
+      profileManifest.dependencies = {
+        ...profileManifest.dependencies,
+        ...Object.fromEntries(Object.entries(optionalPackages).map(([name, directory]) => [name, `file:${join(repository, directory)}`])),
+      }
+      writeFileSync(profileManifestPath, JSON.stringify(profileManifest))
+      mkdirSync(join(paths.profile, 'node_modules/@deepseek-ai'), { recursive: true })
+      for (const [name, directory] of Object.entries(optionalPackages)) {
+        const target = join(paths.profile, 'node_modules', name)
+        rmSync(target, { recursive: true, force: true })
+        symlinkSync(join(repository, directory), target, process.platform === 'win32' ? 'junction' : 'dir')
+      }
+      writeFileSync(join(paths.profile, 'cordis.patch.yml'), `- id: webserver\n  config:\n    host: 127.0.0.1\n    port: 0\n- insert:\n    - id: deepseek-account\n      name: '@deepseek-ai/dsh-deepseek-account-platform'\n    - id: account-controller\n      name: '@deepseek-ai/dsh-api-account-controller'\n- id: deepseek-account\n  config:\n${process.platform === 'linux' ? '    desktopPlatform: darwin\n' : ''}    platformOrigin: ${platform.origin}\n    allowLoopbackHttp: true\n    requestHeaders:\n      Cookie: test_gate=synthetic\n`)
       let backend: DesktopWelcomeBackend
       let hostOrigin = ''
       const restart = async (): Promise<void> => {
@@ -134,6 +157,9 @@ describe.skipIf(!existsSync(builtHost))('built Desktop welcome flow', () => {
           const headers = new Headers(init?.headers)
           if (cookie !== '') headers.set('cookie', cookie)
           const response = await fetch(input, { ...init, headers, redirect: 'manual' })
+          if (!response.ok && response.status !== 303) {
+            throw new Error(`optional account fixture: ${new URL(input instanceof Request ? input.url : input).pathname} returned ${String(response.status)}`)
+          }
           if (response.status !== 303) return response
           cookie = response.headers.getSetCookie().map(value => value.split(';')[0]).join('; ')
           await response.body?.cancel()

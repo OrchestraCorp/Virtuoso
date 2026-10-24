@@ -25,7 +25,7 @@ kind: "package-reference"
 
 渲染端和 Electron 通过现有认证流订阅 Host 策略变化及重连后的值；Electron 在原生启动上报前还会读取初始策略。欢迎窗口通过 IPC 获取当前策略。Host 在接收事件及读取环境和身份后都检查当前 volatile 配置。`DSH_PRODUCT_ANALYTICS_OTLP_URL` 可覆盖导出目的地，用于隔离的接收端。[导出器](../../host/product-telemetry-otel/README.zh.md)负责批量发送、重试和退出时的交付。
 
-每条产品事件携带可用的 `device_id`、`user_id` 和 `app_version`，以及下表中的静态字段。身份复用现有登录记录，不创建设备标识；每条事件通过 `deepseekAccount.getDeviceIdentity()` 读取身份。静态环境采集独立于身份读取。不发送单独的环境事件；排除 API key、账户令牌、提示词、模型回复、主机名和机器 UUID。
+每条产品事件携带可用的 `device_id`、`user_id` 和 `app_version`，以及下表中的静态字段。仅在显式挂载账号提供方时复用现有登录记录，不创建设备标识；每条事件通过 `deepseekAccount.getDeviceIdentity()` 读取身份，未挂载提供方时省略身份字段。静态环境采集独立于身份读取。不发送单独的环境事件；排除 API key、账户令牌、提示词、模型回复、主机名和机器 UUID。
 
 | 字段 | 含义与来源 |
 |---|---|

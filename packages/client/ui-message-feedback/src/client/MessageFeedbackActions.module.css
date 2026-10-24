@@ -2,14 +2,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  /* Rides the Settings font-size axis like the host row's own actions
-     (ui-chat MessageIconActions), so slot-injected buttons match their
-     siblings at every size. */
-  width: calc(28px + var(--dsh-content-font-delta, 0px));
-  height: calc(28px + var(--dsh-content-font-delta, 0px));
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 6px;
   border: none;
-  border-radius: var(--dsw-radius-sm);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  box-sizing: border-box;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
@@ -22,9 +21,11 @@
   height: calc(15px + var(--dsh-content-font-delta, 0px));
 }
 
-.action:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-  color: var(--dsw-alias-label-secondary);
+@media (hover: hover) {
+  .action:hover {
+    background: var(--dsw-alias-interactive-bg-hover);
+    color: var(--dsw-alias-label-secondary);
+  }
 }
 
 .action:disabled {
@@ -43,4 +44,9 @@
   color: var(--dsw-alias-label-tertiary);
   font-size: 13px;
   line-height: 20px;
+}
+
+.action:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color);
+  outline-offset: 2px;
 }

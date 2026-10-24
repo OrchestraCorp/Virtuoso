@@ -5,18 +5,19 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  flex-wrap: wrap;
   padding: 16px 0;
   border-bottom: 0.5px solid var(--dsw-alias-border-l2);
 }
 
 .rowText {
-  flex: 1;
+  flex: 1 1 140px;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding-right: 48px;
+  padding-right: 0;
 }
 
 .title {
@@ -41,18 +42,18 @@
 }
 
 .stepper {
-  position: relative; /* the arrow column anchors to the pill's right edge */
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 72px;
-  height: 36px;
-  border-radius: var(--dsw-radius-md);
-  background: var(--dsw-alias-bg-module-platform);
+  gap: 4px;
+  padding: 4px;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: var(--dsw-control-core-fill);
+  box-shadow: var(--dsw-control-core-shadow);
 }
 
 .value {
-  min-width: 18px;
+  min-width: 28px;
   text-align: center;
   font-size: 14px;
   line-height: 22px;
@@ -66,43 +67,38 @@
   color: var(--dsw-alias-label-secondary);
 }
 
-/* Arrow column: anchored right so the value stays pill-centered whether or
-   not the arrows are showing; revealed on hover/focus-within. Hidden with
-   opacity, not visibility: the buttons stay in tab order and in the
-   accessibility tree, so keyboard focus itself triggers the reveal. */
+/* Both operations remain directly available to pointer, touch and keyboard users. */
 .arrows {
-  position: absolute;
-  right: 8px;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  opacity: 0;
+  gap: 4px;
 }
 
-.stepper:hover .arrows,
-.stepper:focus-within .arrows {
-  opacity: 1;
-}
-
-/* Arrow buttons: small chips carrying a translucent wash of the layer-1
-   surface (white in light, the elevated layer in dark) over the module fill;
-   hover raises the full layer-1 chip. */
 .arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 17px;
-  height: 12px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
-  border: none;
-  border-radius: var(--dsw-radius-xs);
-  background: color-mix(in srgb, var(--dsw-alias-bg-layer-1) 75%, transparent);
+  border: 0;
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
+  background: transparent;
   color: var(--dsw-alias-label-primary);
   cursor: pointer;
 }
 
-.arrow:hover:not(:disabled) {
-  background: var(--dsw-alias-bg-layer-1);
+@media (hover: hover) {
+  .arrow:hover:not(:disabled),
+  .expander:hover {
+    background: var(--dsw-control-hover-fill);
+  }
+}
+
+.arrow:focus-visible,
+.expander:focus-visible {
+  outline: var(--dsw-focus-ring-width) solid var(--dsw-focus-ring-color, var(--dsw-alias-state-business-primary));
+  outline-offset: 2px;
 }
 
 .arrow:disabled {
@@ -115,19 +111,17 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: var(--dsw-control-height-compact);
+  height: var(--dsw-control-height-compact);
   padding: 0;
   border: none;
-  border-radius: var(--dsw-radius-xs);
+  border-radius: var(--dsw-control-radius);
+  corner-shape: round;
   background: transparent;
   color: var(--dsw-alias-label-tertiary);
   cursor: pointer;
 }
 
-.expander:hover {
-  background: var(--dsw-alias-interactive-bg-hover);
-}
 
 .expander svg {
   transition: transform var(--ds-transition-duration-fast) var(--ds-ease-in-out);
@@ -135,4 +129,11 @@
 
 .expander[aria-expanded='true'] svg {
   transform: rotate(180deg);
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .stepper,
+  .expander {
+    border: 1px solid var(--dsw-control-edge);
+  }
 }

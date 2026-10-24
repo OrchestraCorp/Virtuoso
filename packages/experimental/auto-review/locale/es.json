@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Revisión automática de autorización",
+    "description": "Añade un modo de permisos de revisión automática que usa el modelo para evaluar la autorización antes de cada llamada a una herramienta."
+  }
+}

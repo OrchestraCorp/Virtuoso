@@ -634,7 +634,15 @@ const SERVICE_ROLES: ServiceRole[] = [
     title: 'Default Agent model selection',
     mode: 'core',
     consumers: ['api-session-controller', 'headless'],
-    note: 'Reads the default ModelSelection from volatile Config and saves selections through the profile editor.',
+    note: 'Reads and saves the default ModelSelection through a registered source, falling back to the profile Config and editor when no source is registered.',
+  },
+  {
+    key: 'modelConnections',
+    pkg: 'model-connections',
+    title: 'Saved model connections',
+    mode: 'core',
+    consumers: ['api-remotes', 'client-ui-settings-models'],
+    note: 'Stores revisioned connection records and defaults in domain KV, keeps secrets in the credential service, and publishes per-model pi-ai routes after durable saves.',
   },
   {
     key: 'agentLoop',
