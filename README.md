@@ -2,6 +2,8 @@
 
 English | [中文](README.zh.md)
 
+This repository is [OrchestraCorp Virtuoso](ORCHESTRA_PRODUCT.md), an independently maintained fork of DeepSeek Harness. OrchestraCorp modifications are released under the [MIT license](LICENSE); upstream copyright notices and third-party license terms are retained. The upstream overview follows.
+
 DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
 
 It is built on an **everything-is-a-plugin** architecture and powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512).

@@ -8,7 +8,7 @@
 
 本仓库通过独立 Git 克隆取得基线，拥有独立的本地对象文件，没有借用另一仓库的对象目录或源码软链接。`upstream/master` 可达的提交历史已补齐，当前不是浅仓库；此次未导入上游历史标签，首次基线标签保持原值。
 
-`upstream` 抓取地址指向 DeepSeek 官方仓库，推送地址为 `DISABLED`；产品 `origin` 指向 GitHub 私有仓库 `OrchestraCorp/Virtuoso`。本地 Git 配置不随源码文件传播；迁移时从产品 `origin` 克隆，并重新配置官方 `upstream` 及其禁用的推送地址。
+`upstream` 抓取地址指向 DeepSeek 官方仓库，推送地址为 `DISABLED`；产品 `origin` 指向 GitHub 仓库 `OrchestraCorp/Virtuoso`，源码按 [MIT 许可证](LICENSE)公开。本地 Git 配置不随源码文件传播；迁移时从产品 `origin` 克隆，并重新配置官方 `upstream` 及其禁用的推送地址。
 
 ## 本地检查
 
