@@ -24,6 +24,8 @@ git fsck --full
 
 ## 独立同步与发布
 
+产品仓的主线、人类审核、CI 适配与稳定版准入以[分支与发布规范](ORCHESTRA_BRANCH_GOVERNANCE.md)为准。main 已要求 PR 与独立批准；CODEOWNERS 文件合入后进一步启用路径所有者约束。
+
 上游提交历史已补齐。后续同步执行：
 
 ```sh
