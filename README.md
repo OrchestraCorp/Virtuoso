@@ -1,79 +1,71 @@
-# DeepSeek Harness
+<p align="center"><img src="assets/brand/virtuoso.png" width="144" height="144" alt="Virtuoso logo"></p>
+
+# Virtuoso
 
 English | [中文](README.zh.md)
 
-This repository is [OrchestraCorp Virtuoso](ORCHESTRA_PRODUCT.md), an independently maintained fork of DeepSeek Harness. OrchestraCorp modifications are released under the [MIT license](LICENSE); upstream copyright notices and third-party license terms are retained. The upstream overview follows.
+**An AI workbench for employees, with people supervising their agents.**
 
-DeepSeek Harness (`dsh`) is an open-source agent harness developed by [DeepSeek AI](https://deepseek.com).
+Virtuoso is the employee workspace in [OrchestraCorp](https://github.com/OrchestraCorp). It brings conversations, model connections and tools together so people can use AI in their daily work. The product direction connects that experience to company knowledge and authorized work through Stage.
 
-It is built on an **everything-is-a-plugin** architecture and powered by [Cordis](https://github.com/cordiverse/cordis), whose design is described in [_A Programming Paradigm for Spatiotemporal Composability_](https://arxiv.org/abs/2608.25512).
+## The OrchestraCorp projects
 
-Documentation: [https://deepseek-harness.github.io/deepseek-harness/](https://deepseek-harness.github.io/deepseek-harness/)
+The four projects have distinct responsibilities; the complete enterprise workflow is still under development.
+
+| Project | Responsibility |
+| --- | --- |
+| [Stage](https://github.com/OrchestraCorp/Stage) | The company backend for identity, authorization, controlled operations and audit. |
+| [Maestro](https://github.com/OrchestraCorp/Maestro) | The company management and knowledge maintenance workspace. |
+| [ScoreBook](https://github.com/OrchestraCorp/ScoreBook) | Versioned organization structures, policies, process templates and knowledge. |
+| **Virtuoso** | The employee workspace for conversations, context, tools and human supervision of agents. |
+
+Stage owns authoritative business state. Virtuoso does not create a second company task or permission database, and an agent does not gain independent authority merely by assisting an employee. See the [product scope](ORCHESTRA_PRODUCT.md).
 
 ## Developer preview
 
-DeepSeek Harness is in _developer preview_ and iterating rapidly. **THERE WILL BE COMPATIBILITY-BREAKING CHANGES.**
+Virtuoso is an independently maintained fork of DeepSeek Harness. Interfaces and persistence formats may change during development; review the [safety notice](SAFETY.md) before running it.
 
-Review the [safety notice](SAFETY.md) before running the project.
+| Branch | What it contains |
+| --- | --- |
+| [`main`](https://github.com/OrchestraCorp/Virtuoso/tree/main) | The upstream runtime foundation, product positioning and open-source documentation. |
+| [`codex/maas-connections`](https://github.com/OrchestraCorp/Virtuoso/tree/codex/maas-connections) | MaaS model connections, product branding and UI changes, plus product profile and delivery design checks. |
 
-## Run
+The development branch supports connection settings, per-model protocol selection, model discovery, explicit text tests and default-model selection. It reuses the runtime's streaming, tool calls and cancellation. See [MaaS model connections](https://github.com/OrchestraCorp/Virtuoso/blob/codex/maas-connections/ORCHESTRA_MAAS.md) for configuration and limits.
 
-### Run from `npm`
+Stage login and business integration, packaged product releases, and acceptance against real model services remain pending. Model quality and service stability are priorities for that acceptance; the connection implementation alone does not establish either. Product profiles and target platforms remain design declarations: see [build and release rules](https://github.com/OrchestraCorp/Virtuoso/blob/codex/maas-connections/ORCHESTRA_BUILD_RELEASE.md).
 
-Install `Node.js`, then run:
+<a id="run"></a><a id="run-from-source"></a>
 
-```sh
-npx @deepseek-ai/dsh web
-```
+## Source quick start
 
-The command starts the Web UI at `http://127.0.0.1:3080` by default and opens it in the default browser for a local launch. An SSH launch only prints the host URL because the SSH client or editor owns the local forwarded address. Pass `--no-open` to run the server without opening a browser. See [Web UI guide](docs/user/guide/index.md).
-
-### Run from source
-
-To run from a repository checkout:
+Use Node.js `^22.19.0 || >=24.0.0` and pnpm `11.28.5`. This checkout selects the development branch containing the model connection UI:
 
 ```sh
-git clone https://github.com/deepseek-ai/deepseek-harness.git
-cd deepseek-harness
-pnpm install
+git clone --branch codex/maas-connections https://github.com/OrchestraCorp/Virtuoso.git
+cd Virtuoso
+pnpm install --frozen-lockfile
 pnpm run build
 pnpm dsh web
 ```
 
-`pnpm run build` prepares the repository artifacts. `pnpm dsh web` uses those built artifacts without rebuilding.
+The Web UI defaults to `http://127.0.0.1:3080`. `pnpm run build` prepares artifacts; `pnpm dsh web` launches them. Use `--no-open` to suppress browser opening. The inherited `dsh` command runs this checkout; it is not a separately published Virtuoso package.
 
-## Community and support
-
-- Submit feedback or bug reports through [GitHub Discussions](https://github.com/deepseek-ai/deepseek-harness/discussions).
-- Add the [`dsh-plugin`](https://github.com/topics/dsh-plugin) topic to your plugin repository for discoverability.
-- Join <a href="https://discord.gg/4MrtZUhpxg">DeepSeek Harness Discord community</a>.
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+Configure a connection and explicitly select a model in Settings before using the development branch's model connection routes. Supply credentials for a provider you can access; model tests and conversations can consume that provider's quota. See the [model connection guide](https://github.com/OrchestraCorp/Virtuoso/blob/codex/maas-connections/ORCHESTRA_MAAS.md).
 
 ## Development
 
-Start with the [development guide](docs/development.md) and [architecture documentation](docs/architecture.md).
+`pnpm run dev:web` builds and starts the Web development environment; `pnpm run dev:desktop` uses the desktop development launcher. These source commands do not establish that a packaged Virtuoso release is available.
 
-`pnpm run dev:web` builds, serves, and rebuilds client bundles on source edits in one terminal, and `make help` lists the matching Make targets for Web and Desktop; the guide's application commands section owns the full table.
+- [Development guide](docs/development.md) and [runtime architecture](docs/architecture.md).
+- [Fork maintenance](ORCHESTRA_FORK.md) and [product scope](ORCHESTRA_PRODUCT.md).
+- [Agent instructions](AGENTS.md).
 
-For agents, follow [AGENTS.md](AGENTS.md).
+## Contributing
 
-## Citation
+Use [Virtuoso issues](https://github.com/OrchestraCorp/Virtuoso/issues) for product feedback and bug reports. Read the [contribution guide](CONTRIBUTING.md) before proposing changes, and include the branch, reproduction steps and relevant checks with your report.
 
-```bibtex
-@misc{deepseek-harness2026,
-  title={DeepSeek Harness: Everything is a Plugin},
-  author={DeepSeek-AI},
-  year={2026},
-  publisher={GitHub},
-  howpublished={\url{https://github.com/deepseek-ai/deepseek-harness}},
-}
-```
+## Upstream and license
 
-## License
+Virtuoso builds on [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) and its [Cordis](https://github.com/cordiverse/cordis) plugin architecture. OrchestraCorp maintains this product independently and preserves upstream attribution.
 
-[MIT](LICENSE)
-
-Third-party dependencies and their licenses are disclosed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+Released under the [MIT license](LICENSE), including OrchestraCorp contributions. Upstream copyright notices and [third-party license terms](THIRD_PARTY_NOTICES.md) remain in effect.
